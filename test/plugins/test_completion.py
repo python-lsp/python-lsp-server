@@ -12,6 +12,7 @@ import pytest
 from pylsp import uris, lsp
 from pylsp.workspace import Document
 from pylsp.plugins.jedi_completion import pylsp_completions as pylsp_jedi_completions
+from pylsp.plugins.jedi_completion import pylsp_completion_item_resolve as pylsp_jedi_completion_item_resolve
 from pylsp.plugins.rope_completion import pylsp_completions as pylsp_rope_completions
 from pylsp._utils import JEDI_VERSION
 
@@ -44,6 +45,10 @@ class Hello():
 print Hello().world
 
 print Hello().every
+
+def documented_hello():
+    \"\"\"Sends a polite greeting\"\"\"
+    pass
 """
 
 
@@ -137,6 +142,26 @@ def test_jedi_completion(config, workspace):
 
     # Test we don't throw with big character
     pylsp_jedi_completions(config, doc, {'line': 1, 'character': 1000})
+
+
+def test_jedi_completion_item_resolve(config, workspace):
+    # Over the blank line
+    com_position = {'line': 8, 'character': 0}
+    doc = Document(DOC_URI, workspace, DOC)
+    completions = pylsp_jedi_completions(config, doc, com_position)
+
+    items = {c['label']: c for c in completions}
+
+    documented_hello_item = items['documented_hello()']
+
+    assert 'documentation' not in documented_hello_item
+    assert 'detail' not in documented_hello_item
+
+    resolved_documented_hello = pylsp_jedi_completion_item_resolve(
+        config,
+        completion_item=documented_hello_item
+    )
+    assert 'Sends a polite greeting' in resolved_documented_hello['documentation']
 
 
 def test_jedi_completion_with_fuzzy_enabled(config, workspace):
@@ -410,7 +435,9 @@ def test_jedi_completion_environment(workspace):
     # After 'import logh' with new environment
     completions = pylsp_jedi_completions(doc._config, doc, com_position)
     assert completions[0]['label'] == 'loghub'
-    assert 'changelog generator' in completions[0]['documentation'].lower()
+
+    resolved = pylsp_jedi_completion_item_resolve(completions[0]['documentation'])
+    assert 'changelog generator' in resolved['documentation'].lower()
 
 
 def test_document_path_completions(tmpdir, workspace_other_root_path):

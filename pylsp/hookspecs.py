@@ -30,6 +30,11 @@ def pylsp_completions(config, workspace, document, position):
 
 
 @hookspec
+def pylsp_completion_item_resolve(config, workspace, completion_item):
+     pass
+
+
+@hookspec
 def pylsp_definitions(config, workspace, document, position):
     pass
 
