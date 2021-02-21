@@ -1,17 +1,17 @@
 Python Language Server
 ======================
 
-.. image:: https://github.com/palantir/python-language-server/workflows/Linux%20tests/badge.svg
-    :target: https://github.com/palantir/python-language-server/actions?query=workflow%3A%22Linux+tests%22
+.. image:: https://github.com/python-ls/python-ls/workflows/Linux%20tests/badge.svg
+    :target: https://github.com/python-ls/python-ls/actions?query=workflow%3A%22Linux+tests%22
 
-.. image:: https://github.com/palantir/python-language-server/workflows/Mac%20tests/badge.svg
-    :target: https://github.com/palantir/python-language-server/actions?query=workflow%3A%22Mac+tests%22
+.. image:: https://github.com/python-ls/python-ls/workflows/Mac%20tests/badge.svg
+    :target: https://github.com/python-ls/python-ls/actions?query=workflow%3A%22Mac+tests%22
 
-.. image:: https://github.com/palantir/python-language-server/workflows/Windows%20tests/badge.svg
-    :target: https://github.com/palantir/python-language-server/actions?query=workflow%3A%22Windows+tests%22
+.. image:: https://github.com/python-ls/python-ls/workflows/Windows%20tests/badge.svg
+    :target: https://github.com/python-ls/python-ls/actions?query=workflow%3A%22Windows+tests%22
 
-.. image:: https://img.shields.io/github/license/palantir/python-language-server.svg
-     :target: https://github.com/palantir/python-language-server/blob/master/LICENSE
+.. image:: https://img.shields.io/github/license/python-ls/python-ls.svg
+     :target: https://github.com/python-ls/python-ls/blob/master/LICENSE
 
 A Python 2.7 and 3.5+ implementation of the `Language Server Protocol`_.
 
