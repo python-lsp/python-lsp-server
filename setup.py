@@ -30,7 +30,7 @@ setup(
     long_description=README,
 
     # The project's main homepage.
-    url='https://github.com/palantir/python-language-server',
+    url='https://github.com/python-ls/python-ls',
 
     author='Palantir Technologies, Inc.',
 
@@ -74,7 +74,7 @@ setup(
         'yapf': ['yapf'],
         'test': ['versioneer',
                  'pylint>=2.5.0' if sys.version_info.major >= 3 else 'pylint',
-                 'pytest', 'mock', 'pytest-cov', 'coverage', 'numpy', 'pandas',
+                 'pytest', 'mock', 'pytest-cov', 'coverage', 'numpy<1.20', 'pandas',
                  'matplotlib', 'pyqt5;python_version>="3"', 'flaky'],
     },
 
