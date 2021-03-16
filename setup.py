@@ -4,7 +4,7 @@ from setuptools import find_packages, setup
 import versioneer
 import sys
 
-README = open('README.rst', 'r').read()
+README = open('README.md', 'r').read()
 
 install_requires = [
         'configparser; python_version<"3.0"',
