@@ -28,6 +28,7 @@ setup(
     description='Python Language Server for the Language Server Protocol',
 
     long_description=README,
+    long_description_content_type='text/markdown',
 
     # The project's main homepage.
     url='https://github.com/python-ls/python-ls',
