@@ -52,7 +52,7 @@ Installing these plugins will add extra functionality to the language server:
 * pyls-mypy_ Mypy type checking for Python 3
 * pyls-isort_ Isort import sort code formatting
 * pyls-black_ for code formatting using Black_
-* pyls-memestra_ a static analysis tool for Python, which detects the use of deprecated APIs.
+* pyls-memestra_ for detecting the use of deprecated APIs
 
 Please see the above repositories for examples on how to write plugins for the Python Language Server. Please file an
 issue if you require assistance writing a plugin.
