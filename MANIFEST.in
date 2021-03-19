@@ -1,4 +1,4 @@
-include README.rst
+include README.md
 include versioneer.py
 include pyls/_version.py
 include LICENSE
