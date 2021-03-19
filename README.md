@@ -70,35 +70,35 @@ See [vscode-client/package.json](vscode-client/package.json) for the full set of
 
 Auto Completion:
 
-![image](https://raw.githubusercontent.com/palantir/python-language-server/develop/resources/auto-complete.gif)
+![image](https://raw.githubusercontent.com/python-ls/python-ls/develop/resources/auto-complete.gif)
 
 Code Linting with pycodestyle and pyflakes:
 
-![image](https://raw.githubusercontent.com/palantir/python-language-server/develop/resources/linting.gif)
+![image](https://raw.githubusercontent.com/python-ls/python-ls/develop/resources/linting.gif)
 
 Signature Help:
 
-![image](https://raw.githubusercontent.com/palantir/python-language-server/develop/resources/signature-help.gif)
+![image](https://raw.githubusercontent.com/python-ls/python-ls/develop/resources/signature-help.gif)
 
 Go to definition:
 
-![image](https://raw.githubusercontent.com/palantir/python-language-server/develop/resources/goto-definition.gif)
+![image](https://raw.githubusercontent.com/python-ls/python-ls/develop/resources/goto-definition.gif)
 
 Hover:
 
-![image](https://raw.githubusercontent.com/palantir/python-language-server/develop/resources/hover.gif)
+![image](https://raw.githubusercontent.com/python-ls/python-ls/develop/resources/hover.gif)
 
 Find References:
 
-![image](https://raw.githubusercontent.com/palantir/python-language-server/develop/resources/references.gif)
+![image](https://raw.githubusercontent.com/python-ls/python-ls/develop/resources/references.gif)
 
 Document Symbols:
 
-![image](https://raw.githubusercontent.com/palantir/python-language-server/develop/resources/document-symbols.gif)
+![image](https://raw.githubusercontent.com/python-ls/python-ls/develop/resources/document-symbols.gif)
 
 Document Formatting:
 
-![image](https://raw.githubusercontent.com/palantir/python-language-server/develop/resources/document-format.gif)
+![image](https://raw.githubusercontent.com/python-ls/python-ls/develop/resources/document-format.gif)
 
 ## Development
 
