@@ -4,7 +4,7 @@ from setuptools import find_packages, setup
 import versioneer
 import sys
 
-README = open('README.rst', 'r').read()
+README = open('README.md', 'r').read()
 
 install_requires = [
         'configparser; python_version<"3.0"',
@@ -28,6 +28,7 @@ setup(
     description='Python Language Server for the Language Server Protocol',
 
     long_description=README,
+    long_description_content_type='text/markdown',
 
     # The project's main homepage.
     url='https://github.com/python-ls/python-ls',
