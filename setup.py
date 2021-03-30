@@ -75,7 +75,7 @@ setup(
         'yapf': ['yapf'],
         'test': ['versioneer',
                  'pylint>=2.5.0' if sys.version_info.major >= 3 else 'pylint',
-                 'pytest', 'mock', 'pytest-cov', 'coverage', 'numpy<1.20', 'pandas',
+                 'pytest', 'mock', 'pytest-cov', 'coverage', 'numpy', 'pandas',
                  'matplotlib', 'pyqt5;python_version>="3"', 'flaky'],
     },
 
