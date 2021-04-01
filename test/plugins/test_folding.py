@@ -1,11 +1,11 @@
 # Copyright 2019 Palantir Technologies, Inc.
 
+import sys
 from textwrap import dedent
 
 from pyls import uris
-from pyls.workspace import Document
 from pyls.plugins.folding import pyls_folding_range
-
+from pyls.workspace import Document
 
 DOC_URI = uris.from_fs_path(__file__)
 DOC = dedent("""
@@ -146,6 +146,10 @@ def test_folding(workspace):
                 {'startLine': 62, 'endLine': 63},
                 {'startLine': 64, 'endLine': 65},
                 {'startLine': 67, 'endLine': 68}]
+    if sys.version_info[:2] >= (3, 9):
+        # the argument list of the decorator is also folded in Python >= 3.9
+        expected.insert(4, {'startLine': 9, 'endLine': 10})
+
     assert ranges == expected
 
 
