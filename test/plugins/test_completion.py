@@ -216,14 +216,14 @@ def test_completion_with_class_objects(config, workspace):
 
 
 def test_snippet_parsing(config, workspace):
-    doc = 'import numpy as np\nnp.logical_and'
-    completion_position = {'line': 1, 'character': 14}
+    doc = 'divmod'
+    completion_position = {'line': 0, 'character': 6}
     doc = Document(DOC_URI, workspace, doc)
     config.capabilities['textDocument'] = {
         'completion': {'completionItem': {'snippetSupport': True}}}
     config.update({'plugins': {'jedi_completion': {'include_params': True}}})
     completions = pyls_jedi_completions(config, doc, completion_position)
-    out = 'logical_and(${1:x1}, ${2:x2})$0'
+    out = 'divmod(${1:a}, ${2:b})$0'
     assert completions[0]['insertText'] == out
 
 

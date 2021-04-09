@@ -46,9 +46,13 @@ def test_numpy_hover(workspace):
     contents = 'NumPy\n=====\n\nProvides\n'
     assert contents in pyls_hover(doc, numpy_hov_position_3)['contents'][0]
 
-    contents = 'Trigonometric sine, element-wise.\n\n'
-    assert contents in pyls_hover(
-        doc, numpy_sin_hov_position)['contents'][0]
+    # https://github.com/davidhalter/jedi/issues/1746
+    import numpy as np
+
+    if np.lib.NumpyVersion(np.__version__) < '1.20.0':
+        contents = 'Trigonometric sine, element-wise.\n\n'
+        assert contents in pyls_hover(
+            doc, numpy_sin_hov_position)['contents'][0]
 
 
 def test_hover(workspace):
