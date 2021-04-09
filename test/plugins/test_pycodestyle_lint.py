@@ -25,7 +25,7 @@ def test_pycodestyle(workspace):
     doc = Document(DOC_URI, workspace, DOC)
     diags = pycodestyle_lint.pylsp_lint(workspace, doc)
 
-    assert all([d['source'] == 'pycodestyle' for d in diags])
+    assert all(d['source'] == 'pycodestyle' for d in diags)
 
     # One we're expecting is:
     msg = 'W191 indentation contains tabs'

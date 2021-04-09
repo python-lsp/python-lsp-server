@@ -158,7 +158,7 @@ def test_numpy_completions(config, workspace):
     items = pylsp_jedi_completions(config, doc, com_position)
 
     assert items
-    assert any(['array' in i['label'] for i in items])
+    assert any('array' in i['label'] for i in items)
 
 
 def test_pandas_completions(config, workspace):
@@ -168,7 +168,7 @@ def test_pandas_completions(config, workspace):
     items = pylsp_jedi_completions(config, doc, com_position)
 
     assert items
-    assert any(['DataFrame' in i['label'] for i in items])
+    assert any('DataFrame' in i['label'] for i in items)
 
 
 def test_matplotlib_completions(config, workspace):
@@ -178,7 +178,7 @@ def test_matplotlib_completions(config, workspace):
     items = pylsp_jedi_completions(config, doc, com_position)
 
     assert items
-    assert any(['plot' in i['label'] for i in items])
+    assert any('plot' in i['label'] for i in items)
 
 
 def test_snippets_completion(config, workspace):

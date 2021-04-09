@@ -21,7 +21,7 @@ def test_mccabe(config, workspace):
         doc = Document(DOC_URI, workspace, DOC)
         diags = mccabe_lint.pylsp_lint(config, doc)
 
-        assert all([d['source'] == 'mccabe' for d in diags])
+        assert all(d['source'] == 'mccabe' for d in diags)
 
         # One we're expecting is:
         msg = 'Cyclomatic complexity too high: 1 (threshold 1)'

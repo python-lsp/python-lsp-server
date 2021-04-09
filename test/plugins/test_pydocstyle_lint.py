@@ -22,7 +22,7 @@ def test_pydocstyle(config, workspace):
     doc = Document(DOC_URI, workspace, DOC)
     diags = pydocstyle_lint.pylsp_lint(config, doc)
 
-    assert all([d['source'] == 'pydocstyle' for d in diags])
+    assert all(d['source'] == 'pydocstyle' for d in diags)
 
     # One we're expecting is:
     assert diags[0] == {
