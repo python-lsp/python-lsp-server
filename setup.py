@@ -15,7 +15,7 @@ install_requires = [
         'future>=0.14.0; python_version<"3"',
         'backports.functools_lru_cache; python_version<"3.2"',
         'jedi>=0.17.2,<0.19.0',
-        'python-lsp-jsonrpc>=0.4.0',
+        'python-jsonrpc-server>=0.4.0',
         'pluggy',
         'ujson<=2.0.3 ; platform_system!="Windows" and python_version<"3.0"',
         'ujson>=3.0.0 ; python_version>"3"']
