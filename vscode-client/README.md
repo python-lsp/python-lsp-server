@@ -13,7 +13,7 @@ at once with minimal extra configuration per language.
 To view a language server's stderr output in VSCode, select View → Output.
 To debug further, see the "Hacking on this extension" section below.
 
-After updating the binary for a language server (during development or after an upgrade), just kill the process (e.g., `killall pyls`).
+After updating the binary for a language server (during development or after an upgrade), just kill the process (e.g., `killall pylsp`).
 VSCode will automatically restart and reconnect to the language server process.
 
 > **Note for those who use VSCode as their primary editor:** Because this extension's functionality conflicts with other VSCode extensions

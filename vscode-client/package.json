@@ -1,5 +1,5 @@
 {
-    "name": "pyls",
+    "name": "pylsp",
     "description": "Python language server",
     "author": "Sourcegraph",
     "repository": "https://github.com/Microsoft/vscode-languageserver-node",

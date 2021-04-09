@@ -57,12 +57,12 @@ Configuration is loaded from zero or more configuration sources.  Currently impl
 - pycodestyle: discovered in `~/.config/pycodestyle`, `setup.cfg`, `tox.ini` and `pycodestyle.cfg`.
 - flake8: discovered in `~/.config/flake8`, `setup.cfg`, `tox.ini` and `flake8.cfg`
 
-The default configuration source is pycodestyle. Change the `pyls.configurationSources` setting to `['flake8']` in order to respect flake8 configuration instead.
+The default configuration source is pycodestyle. Change the `pylsp.configurationSources` setting to `['flake8']` in order to respect flake8 configuration instead.
 
 Overall configuration is computed first from user configuration (in home directory), overridden by configuration passed in by the language client, and then overriden by configuration discovered in the workspace.
 
 To enable pydocstyle for linting docstrings add the following setting in your LSP configuration:
-`\` "pyls.plugins.pydocstyle.enabled": true \``
+`\` "pylsp.plugins.pydocstyle.enabled": true \``
 
 See [vscode-client/package.json](vscode-client/package.json) for the full set of supported configuration options.
 
@@ -120,19 +120,19 @@ Install [VSCode](https://code.visualstudio.com/download)
 virtualenv env
 . env/bin/activate
 
-# Install pyls
+# Install pylsp
 pip install .
 
 # Install the vscode-client extension
 cd vscode-client
 yarn install
 
-# Run VSCode which is configured to use pyls
+# Run VSCode which is configured to use pylsp
 # See the bottom of vscode-client/src/extension.ts for info
 yarn run vscode -- $PWD/../
 ```
 
-Then to debug, click View -> Output and in the dropdown will be pyls.
+Then to debug, click View -> Output and in the dropdown will be pylsp.
 To refresh VSCode, press `Cmd + r`
 
 ## License

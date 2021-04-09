@@ -1,4 +1,4 @@
-To release a new version of the PyLS you need to follow these steps:
+To release a new version of the PyLSP you need to follow these steps:
 
 * Close the current milestone on Github
 

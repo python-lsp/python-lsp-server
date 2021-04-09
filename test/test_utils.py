@@ -1,10 +1,12 @@
-# Copyright 2017 Palantir Technologies, Inc.
+# Copyright 2017-2020 Palantir Technologies, Inc.
+# Copyright 2021- Python Language Server Contributors.
+
 import time
 
 import mock
 from flaky import flaky
 
-from pyls import _utils
+from pylsp import _utils
 
 
 @flaky

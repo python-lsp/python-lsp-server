@@ -1,7 +1,9 @@
-# Copyright 2017 Palantir Technologies, Inc.
+# Copyright 2017-2020 Palantir Technologies, Inc.
+# Copyright 2021- Python Language Server Contributors.
+
 import sys
 import pytest
-from pyls import IS_WIN
+from pylsp import IS_WIN
 
 IS_PY3 = sys.version_info.major == 3
 

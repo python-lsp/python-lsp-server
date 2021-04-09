@@ -1,4 +1,6 @@
-# Copyright 2017 Palantir Technologies, Inc.
+# Copyright 2017-2020 Palantir Technologies, Inc.
+# Copyright 2021- Python Language Server Contributors.
+
 import os
 import time
 import multiprocessing
@@ -8,7 +10,7 @@ from threading import Thread
 from pyls_jsonrpc.exceptions import JsonRpcMethodNotFound
 import pytest
 
-from pyls.python_ls import start_io_lang_server, PythonLanguageServer
+from pylsp.python_ls import start_io_lang_server, PythonLSPServer
 
 CALL_TIMEOUT = 10
 PY2 = sys.version_info[0] == 2
@@ -36,11 +38,11 @@ class _ClientServer(object):
                 ParallelKind = multiprocessing.Process
 
         self.process = ParallelKind(target=start_io_lang_server, args=(
-            os.fdopen(csr, 'rb'), os.fdopen(scw, 'wb'), check_parent_process, PythonLanguageServer
+            os.fdopen(csr, 'rb'), os.fdopen(scw, 'wb'), check_parent_process, PythonLSPServer
         ))
         self.process.start()
 
-        self.client = PythonLanguageServer(os.fdopen(scr, 'rb'), os.fdopen(csw, 'wb'), start_io_lang_server)
+        self.client = PythonLSPServer(os.fdopen(scr, 'rb'), os.fdopen(csw, 'wb'), start_io_lang_server)
         self.client_thread = Thread(target=start_client, args=[self.client])
         self.client_thread.daemon = True
         self.client_thread.start()

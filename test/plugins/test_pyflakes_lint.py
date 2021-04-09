@@ -1,7 +1,9 @@
-# Copyright 2017 Palantir Technologies, Inc.
-from pyls import lsp, uris
-from pyls.workspace import Document
-from pyls.plugins import pyflakes_lint
+# Copyright 2017-2020 Palantir Technologies, Inc.
+# Copyright 2021- Python Language Server Contributors.
+
+from pylsp import lsp, uris
+from pylsp.workspace import Document
+from pylsp.plugins import pyflakes_lint
 
 DOC_URI = uris.from_fs_path(__file__)
 DOC = """import sys
@@ -26,7 +28,7 @@ import sys
 
 def test_pyflakes(workspace):
     doc = Document(DOC_URI, workspace, DOC)
-    diags = pyflakes_lint.pyls_lint(doc)
+    diags = pyflakes_lint.pylsp_lint(doc)
 
     # One we're expecting is:
     msg = '\'sys\' imported but unused'
@@ -38,7 +40,7 @@ def test_pyflakes(workspace):
 
 def test_syntax_error_pyflakes(workspace):
     doc = Document(DOC_URI, workspace, DOC_SYNTAX_ERR)
-    diag = pyflakes_lint.pyls_lint(doc)[0]
+    diag = pyflakes_lint.pylsp_lint(doc)[0]
 
     assert diag['message'] == 'invalid syntax'
     assert diag['range']['start'] == {'line': 0, 'character': 12}
@@ -47,7 +49,7 @@ def test_syntax_error_pyflakes(workspace):
 
 def test_undefined_name_pyflakes(workspace):
     doc = Document(DOC_URI, workspace, DOC_UNDEFINED_NAME_ERR)
-    diag = pyflakes_lint.pyls_lint(doc)[0]
+    diag = pyflakes_lint.pylsp_lint(doc)[0]
 
     assert diag['message'] == 'undefined name \'b\''
     assert diag['range']['start'] == {'line': 0, 'character': 4}
@@ -56,7 +58,7 @@ def test_undefined_name_pyflakes(workspace):
 
 def test_unicode_encoding(workspace):
     doc = Document(DOC_URI, workspace, DOC_ENCODING)
-    diags = pyflakes_lint.pyls_lint(doc)
+    diags = pyflakes_lint.pylsp_lint(doc)
 
     assert len(diags) == 1
     assert diags[0]['message'] == '\'sys\' imported but unused'

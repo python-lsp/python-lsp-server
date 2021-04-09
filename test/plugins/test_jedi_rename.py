@@ -1,11 +1,13 @@
-# Copyright 2020 Palantir Technologies, Inc.
+# Copyright 2017-2020 Palantir Technologies, Inc.
+# Copyright 2021- Python Language Server Contributors.
+
 import os
 import sys
 
 import pytest
-from pyls import uris
-from pyls.plugins.jedi_rename import pyls_rename
-from pyls.workspace import Document
+from pylsp import uris
+from pylsp.plugins.jedi_rename import pylsp_rename
+from pylsp.workspace import Document
 
 LT_PY36 = sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 6)
 
@@ -38,7 +40,7 @@ def test_jedi_rename(tmp_workspace, config):  # pylint: disable=redefined-outer-
     DOC_URI = uris.from_fs_path(os.path.join(tmp_workspace.root_path, DOC_NAME))
     doc = Document(DOC_URI, tmp_workspace)
 
-    result = pyls_rename(config, tmp_workspace, doc, position, 'ShouldBeRenamed')
+    result = pylsp_rename(config, tmp_workspace, doc, position, 'ShouldBeRenamed')
     assert len(result.keys()) == 1
 
     changes = result.get('documentChanges')
