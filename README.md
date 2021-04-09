@@ -1,15 +1,15 @@
-# Python Language Server
+# Python LSP Server
 
 [![image](https://github.com/python-ls/python-ls/workflows/Linux%20tests/badge.svg)](https://github.com/python-ls/python-ls/actions?query=workflow%3A%22Linux+tests%22) [![image](https://github.com/python-ls/python-ls/workflows/Mac%20tests/badge.svg)](https://github.com/python-ls/python-ls/actions?query=workflow%3A%22Mac+tests%22) [![image](https://github.com/python-ls/python-ls/workflows/Windows%20tests/badge.svg)](https://github.com/python-ls/python-ls/actions?query=workflow%3A%22Windows+tests%22) [![image](https://img.shields.io/github/license/python-ls/python-ls.svg)](https://github.com/python-ls/python-ls/blob/master/LICENSE)
 
-A Python 2.7 and 3.5+ implementation of the [Language Server Protocol](https://github.com/Microsoft/language-server-protocol).
+A Python 3.6+ implementation of the [Language Server Protocol](https://github.com/Microsoft/language-server-protocol).
 
 ## Installation
 
 The base language server requires [Jedi](https://github.com/davidhalter/jedi) to provide Completions, Definitions, Hover, References, Signature Help, and Symbols:
 
 ```
-pip install python-language-server
+pip install python-lsp-server
 ```
 
 If the respective dependencies are found, the following optional providers will be enabled:
@@ -24,13 +24,13 @@ If the respective dependencies are found, the following optional providers will 
 Optional providers can be installed using the `extras` syntax. To install [YAPF](https://github.com/google/yapf) formatting for example:
 
 ```
-pip install 'python-language-server[yapf]'
+pip install 'python-lsp-server[yapf]'
 ```
 
 All optional providers can be installed using:
 
 ```
-pip install 'python-language-server[all]'
+pip install 'python-lsp-server[all]'
 ```
 
 If you get an error similar to `'install_requires' must be a string or list of strings` then please upgrade setuptools before trying again.
@@ -107,33 +107,6 @@ To run the test suite:
 ```
 pip install .[test] && pytest
 ```
-
-# Develop against VS Code
-
-The Python language server can be developed against a local instance of
-Visual Studio Code.
-
-Install [VSCode](https://code.visualstudio.com/download)
-
-```bash
-# Setup a virtual env
-virtualenv env
-. env/bin/activate
-
-# Install pylsp
-pip install .
-
-# Install the vscode-client extension
-cd vscode-client
-yarn install
-
-# Run VSCode which is configured to use pylsp
-# See the bottom of vscode-client/src/extension.ts for info
-yarn run vscode -- $PWD/../
-```
-
-Then to debug, click View -> Output and in the dropdown will be pylsp.
-To refresh VSCode, press `Cmd + r`
 
 ## License
 
