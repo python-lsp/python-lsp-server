@@ -12,7 +12,6 @@ from pylsp.python_ls import PythonLSPServer
 from pylsp.workspace import Workspace, Document
 
 
-
 DOC_URI = uris.from_fs_path(__file__)
 DOC = """import sys
 
