@@ -33,7 +33,6 @@ class _ClientServer:
             ParallelKind = Thread
         else:
             if sys.version_info[:2] >= (3, 8):
-                # pylint: disable=no-member
                 ParallelKind = multiprocessing.get_context("fork").Process
             else:
                 ParallelKind = multiprocessing.Process

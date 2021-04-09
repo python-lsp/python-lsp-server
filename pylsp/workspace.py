@@ -284,7 +284,6 @@ class Document:
 
     def get_enviroment(self, environment_path=None, env_vars=None):
         # TODO(gatesn): #339 - make better use of jedi environments, they seem pretty powerful
-        # pylint: disable=unexpected-keyword-arg
         if environment_path is None:
             environment = jedi.api.environment.get_cached_default_environment()
         else:
