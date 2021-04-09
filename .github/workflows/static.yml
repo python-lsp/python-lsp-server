@@ -28,7 +28,7 @@ jobs:
         with:
           # TODO: check with Python 3, but need to fix the
           # errors first
-          python-version: '3.7'
+          python-version: '3.6'
           architecture: 'x64'
       - run: python -m pip install --upgrade pip setuptools
       - run: pip install -e .[pylint,pycodestyle,pyflakes]
