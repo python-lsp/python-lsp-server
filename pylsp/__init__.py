@@ -2,7 +2,6 @@
 # Copyright 2021- Python Language Server Contributors.
 
 import os
-import sys
 
 PYLSP = 'pylsp'
 
