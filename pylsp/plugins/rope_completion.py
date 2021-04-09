@@ -64,7 +64,7 @@ def _sort_text(definition):
     if definition.name.startswith("_"):
         # It's a 'hidden' func, put it next last
         return 'z' + definition.name
-    elif definition.scope == 'builtin':
+    if definition.scope == 'builtin':
         return 'y' + definition.name
 
     # Else put it at the front

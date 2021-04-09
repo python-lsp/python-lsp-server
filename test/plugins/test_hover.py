@@ -48,6 +48,7 @@ def test_numpy_hover(workspace):
     assert contents in pylsp_hover(doc, numpy_hov_position_3)['contents'][0]
 
     # https://github.com/davidhalter/jedi/issues/1746
+    # pylint: disable=import-outside-toplevel
     import numpy as np
 
     if np.lib.NumpyVersion(np.__version__) < '1.20.0':

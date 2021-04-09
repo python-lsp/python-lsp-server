@@ -15,9 +15,9 @@ def pylsp_rename(config, workspace, document, position, new_name):  # pylint: di
     kwargs['new_name'] = new_name
     try:
         refactoring = document.jedi_script().rename(**kwargs)
-    except NotImplementedError:
+    except NotImplementedError as exc:
         raise Exception('No support for renaming in Python 2/3.5 with Jedi. '
-                        'Consider using the rope_rename plugin instead')
+                        'Consider using the rope_rename plugin instead') from exc
     log.debug('Finished rename: %s', refactoring.get_diff())
     changes = []
     for file_path, changed_file in refactoring.get_changed_files().items():

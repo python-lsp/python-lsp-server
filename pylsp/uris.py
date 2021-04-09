@@ -116,8 +116,6 @@ def _normalize_win_path(path):
         else:
             netloc = path[2:idx]
             path = path[idx:]
-    else:
-        path = path
 
     # Ensure that path starts with a slash
     # or that it is at least a slash

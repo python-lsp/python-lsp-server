@@ -2,8 +2,8 @@
 # Copyright 2021- Python Language Server Contributors.
 
 import os
-from mock import Mock
 from io import StringIO
+from mock import Mock
 import pytest
 
 from pylsp import uris

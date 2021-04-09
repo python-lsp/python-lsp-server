@@ -51,7 +51,7 @@ class PyCodeStyleDiagnosticReport(pycodestyle.BaseReport):
 
     def __init__(self, options):
         self.diagnostics = []
-        super(PyCodeStyleDiagnosticReport, self).__init__(options=options)
+        super().__init__(options=options)
 
     def error(self, line_number, offset, text, check):
         code = text[:4]

@@ -21,7 +21,7 @@ def start_client(client):
     client.start()
 
 
-class _ClientServer(object):
+class _ClientServer:
     """ A class to setup a client/server pair """
     def __init__(self, check_parent_process=False):
         # Client to Server pipe
@@ -33,7 +33,8 @@ class _ClientServer(object):
             ParallelKind = Thread
         else:
             if sys.version_info[:2] >= (3, 8):
-                ParallelKind = multiprocessing.get_context("fork").Process  # pylint: disable=no-member
+                # pylint: disable=no-member
+                ParallelKind = multiprocessing.get_context("fork").Process
             else:
                 ParallelKind = multiprocessing.Process
 

@@ -27,7 +27,7 @@ def pylsp_lint(document):
     return reporter.diagnostics
 
 
-class PyflakesDiagnosticReport(object):
+class PyflakesDiagnosticReport:
 
     def __init__(self, lines):
         self.lines = lines

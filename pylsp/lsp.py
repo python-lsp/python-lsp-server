@@ -7,7 +7,7 @@ https://github.com/Microsoft/language-server-protocol/blob/master/protocol.md
 """
 
 
-class CompletionItemKind(object):
+class CompletionItemKind:
     Text = 1
     Method = 2
     Function = 3
@@ -35,32 +35,32 @@ class CompletionItemKind(object):
     TypeParameter = 25
 
 
-class DocumentHighlightKind(object):
+class DocumentHighlightKind:
     Text = 1
     Read = 2
     Write = 3
 
 
-class DiagnosticSeverity(object):
+class DiagnosticSeverity:
     Error = 1
     Warning = 2
     Information = 3
     Hint = 4
 
 
-class InsertTextFormat(object):
+class InsertTextFormat:
     PlainText = 1
     Snippet = 2
 
 
-class MessageType(object):
+class MessageType:
     Error = 1
     Warning = 2
     Info = 3
     Log = 4
 
 
-class SymbolKind(object):
+class SymbolKind:
     File = 1
     Module = 2
     Namespace = 3
@@ -81,7 +81,7 @@ class SymbolKind(object):
     Array = 18
 
 
-class TextDocumentSyncKind(object):
+class TextDocumentSyncKind:
     NONE = 0
     FULL = 1
     INCREMENTAL = 2

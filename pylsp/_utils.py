@@ -23,8 +23,9 @@ def debounce(interval_s, keyed_by=None):
 
         @functools.wraps(func)
         def debounced(*args, **kwargs):
-            call_args = inspect.getcallargs(func, *args, **kwargs)
-            key = call_args[keyed_by] if keyed_by else None
+            sig = inspect.signature(func)
+            call_args = sig.bind(*args, **kwargs)
+            key = call_args.arguments[keyed_by] if keyed_by else None
 
             def run():
                 with lock:

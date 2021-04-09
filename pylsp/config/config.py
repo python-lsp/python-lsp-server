@@ -1,9 +1,10 @@
 # Copyright 2017-2020 Palantir Technologies, Inc.
 # Copyright 2021- Python Language Server Contributors.
+# pylint: disable=import-outside-toplevel
 
 import logging
-import pkg_resources
 from functools import lru_cache
+import pkg_resources
 
 import pluggy
 
@@ -15,8 +16,7 @@ log = logging.getLogger(__name__)
 DEFAULT_CONFIG_SOURCES = ['pycodestyle']
 
 
-class Config(object):
-
+class Config:
     def __init__(self, root_uri, init_opts, process_id, capabilities):
         self._root_path = uris.to_fs_path(root_uri)
         self._root_uri = root_uri

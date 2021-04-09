@@ -28,7 +28,7 @@ def lock(method):
     return wrapper
 
 
-class Workspace(object):
+class Workspace:
 
     M_PUBLISH_DIAGNOSTICS = 'textDocument/publishDiagnostics'
     M_APPLY_EDIT = 'workspace/applyEdit'
@@ -50,6 +50,7 @@ class Workspace(object):
         self.__rope_config = None
 
     def _rope_project_builder(self, rope_config):
+        # pylint: disable=import-outside-toplevel
         from rope.base.project import Project
 
         # TODO: we could keep track of dirty files and validate only those
@@ -128,7 +129,7 @@ class Workspace(object):
         )
 
 
-class Document(object):
+class Document:
 
     def __init__(self, uri, workspace, source=None, version=None, local=True, extra_sys_path=None,
                  rope_project_builder=None):
@@ -150,6 +151,7 @@ class Document(object):
         return str(self.uri)
 
     def _rope_resource(self, rope_config):
+        # pylint: disable=import-outside-toplevel
         from rope.base import libutils
         return libutils.path_to_resource(self._rope_project_builder(rope_config), self.path)
 
@@ -282,6 +284,7 @@ class Document(object):
 
     def get_enviroment(self, environment_path=None, env_vars=None):
         # TODO(gatesn): #339 - make better use of jedi environments, they seem pretty powerful
+        # pylint: disable=unexpected-keyword-arg
         if environment_path is None:
             environment = jedi.api.environment.get_cached_default_environment()
         else:
