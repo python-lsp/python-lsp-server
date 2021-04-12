@@ -3,8 +3,26 @@
 # Copyright 2017-2020 Palantir Technologies, Inc.
 # Copyright 2021- Python Language Server Contributors.
 
+import ast
+import os
 from setuptools import find_packages, setup
 from pylsp._version import __version__
+
+
+HERE = os.path.abspath(os.path.dirname(__file__))
+
+
+def get_version(module='pylsp'):
+    """Get version."""
+    with open(os.path.join(HERE, module, '_version.py'), 'r') as f:
+        data = f.read()
+    lines = data.split('\n')
+    for line in lines:
+        if line.startswith('VERSION_INFO'):
+            version_tuple = ast.literal_eval(line.split('=')[-1].strip())
+            version = '.'.join(map(str, version_tuple))
+            break
+    return version
 
 
 README = open('README.md', 'r').read()
@@ -17,7 +35,7 @@ install_requires = [
 
 setup(
     name='python-lsp-server',
-    version=__version__,
+    version=get_version(),
     description='Python Language Server for the Language Server Protocol',
     long_description=README,
     long_description_content_type='text/markdown',

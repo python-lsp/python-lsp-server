@@ -3,6 +3,7 @@
 
 import os
 import pluggy
+from ._version import __version__
 
 PYLSP = 'pylsp'
 IS_WIN = os.name == 'nt'
