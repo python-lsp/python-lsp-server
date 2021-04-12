@@ -10,3 +10,5 @@ IS_WIN = os.name == 'nt'
 
 hookspec = pluggy.HookspecMarker(PYLSP)
 hookimpl = pluggy.HookimplMarker(PYLSP)
+
+__all__ = [__version__]
