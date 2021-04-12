@@ -84,5 +84,5 @@ def test_flake8_executable_param(workspace):
         _name, doc = temp_document(DOC, workspace)
         flake8_lint.pylsp_lint(workspace, doc)
 
-        call_args = popen_mock.call_args.args[0]
+        (call_args,) = popen_mock.call_args[0]
         assert flake8_executable in call_args
