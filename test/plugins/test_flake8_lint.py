@@ -68,7 +68,7 @@ def test_flake8_config_param(workspace):
         workspace._config.update({'plugins': {'flake8': {'config': flake8_conf}}})
         _name, doc = temp_document(DOC, workspace)
         flake8_lint.pylsp_lint(workspace, doc)
-        call_args = popen_mock.call_args.args[0]
+        (call_args,) = popen_mock.call_args[0]
         assert 'flake8' in call_args
         assert '--config={}'.format(flake8_conf) in call_args
 
