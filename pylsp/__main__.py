@@ -11,7 +11,7 @@ try:
 except Exception:  # pylint: disable=broad-except
     import json
 
-from .python_ls import (PythonLSPServer, start_io_lang_server,
+from .python_lsp import (PythonLSPServer, start_io_lang_server,
                         start_tcp_lang_server)
 
 LOG_FORMAT = "%(asctime)s UTC - %(levelname)s - %(name)s - %(message)s"

@@ -3,22 +3,17 @@
 # Copyright 2017-2020 Palantir Technologies, Inc.
 # Copyright 2021- Python Language Server Contributors.
 
-import sys
 from setuptools import find_packages, setup
-from pylsp import __version__
+from pylsp._version import __version__
 
 
 README = open('README.md', 'r').read()
 
 install_requires = [
-        'configparser; python_version<"3.0"',
-        'future>=0.14.0; python_version<"3"',
-        'backports.functools_lru_cache; python_version<"3.2"',
         'jedi>=0.17.2,<0.19.0',
         'python-jsonrpc-server>=0.4.0',
         'pluggy',
-        'ujson<=2.0.3 ; platform_system!="Windows" and python_version<"3.0"',
-        'ujson>=3.0.0 ; python_version>"3"']
+        'ujson>=3.0.0']
 
 setup(
     name='python-lsp-server',
@@ -26,10 +21,11 @@ setup(
     description='Python Language Server for the Language Server Protocol',
     long_description=README,
     long_description_content_type='text/markdown',
-    url='https://github.com/python-ls/python-ls',
+    url='https://github.com/python-lsp/python-lsp-server',
     author='Python Language Server Contributors',
     packages=find_packages(exclude=['contrib', 'docs', 'test', 'test.*']),
     install_requires=install_requires,
+    python_requires='>= 3.6',
     extras_require={
         'all': [
             'autopep8',
@@ -40,7 +36,7 @@ setup(
             'pyflakes>=2.2.0,<2.3.0',
             # pylint >= 2.5.0 is required for working through stdin and only
             # available with python3
-            'pylint>=2.5.0' if sys.version_info.major >= 3 else 'pylint',
+            'pylint>=2.5.0',
             'rope>=0.10.5',
             'yapf',
         ],
@@ -51,13 +47,13 @@ setup(
         'pydocstyle': ['pydocstyle>=2.0.0'],
         'pyflakes': ['pyflakes>=2.2.0,<2.3.0'],
         'pylint': [
-            'pylint>=2.5.0' if sys.version_info.major >= 3 else 'pylint'],
+            'pylint>=2.5.0'
+        ],
         'rope': ['rope>0.10.5'],
         'yapf': ['yapf'],
-        'test': ['versioneer',
-                 'pylint>=2.5.0' if sys.version_info.major >= 3 else 'pylint',
-                 'pytest', 'mock', 'pytest-cov', 'coverage', 'numpy', 'pandas',
-                 'matplotlib', 'pyqt5;python_version>="3"', 'flaky'],
+        'test': ['pylint>=2.5.0',
+                 'pytest', 'pytest-cov', 'coverage', 'numpy', 'pandas',
+                 'matplotlib', 'pyqt5', 'flaky'],
     },
     entry_points={
         'console_scripts': [

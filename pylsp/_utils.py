@@ -5,8 +5,8 @@ import functools
 import inspect
 import logging
 import os
-import threading
 import pathlib
+import threading
 
 import jedi
 

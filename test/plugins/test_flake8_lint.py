@@ -3,7 +3,7 @@
 
 import tempfile
 import os
-from mock import patch
+from unittest.mock import patch
 from pylsp import lsp, uris
 from pylsp.plugins import flake8_lint
 from pylsp.workspace import Document

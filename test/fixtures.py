@@ -3,12 +3,12 @@
 
 import os
 from io import StringIO
-from mock import Mock
+from unittest.mock import Mock
 import pytest
 
 from pylsp import uris
 from pylsp.config.config import Config
-from pylsp.python_ls import PythonLSPServer
+from pylsp.python_lsp import PythonLSPServer
 from pylsp.workspace import Workspace, Document
 
 

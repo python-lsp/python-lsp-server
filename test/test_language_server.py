@@ -10,7 +10,7 @@ from threading import Thread
 from pyls_jsonrpc.exceptions import JsonRpcMethodNotFound
 import pytest
 
-from pylsp.python_ls import start_io_lang_server, PythonLSPServer
+from pylsp.python_lsp import start_io_lang_server, PythonLSPServer
 
 CALL_TIMEOUT = 10
 PY2 = sys.version_info[0] == 2
