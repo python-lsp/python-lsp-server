@@ -6,8 +6,6 @@
 import ast
 import os
 from setuptools import find_packages, setup
-from pylsp._version import __version__
-
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 
