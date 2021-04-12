@@ -26,10 +26,11 @@ def get_version(module='pylsp'):
 README = open('README.md', 'r').read()
 
 install_requires = [
-        'jedi>=0.17.2,<0.19.0',
-        'python-jsonrpc-server>=0.4.0',
-        'pluggy',
-        'ujson>=3.0.0']
+    'jedi>=0.17.2,<0.19.0',
+    'python-jsonrpc-server>=0.4.0',
+    'pluggy',
+    'ujson>=3.0.0'
+]
 
 setup(
     name='python-lsp-server',
@@ -41,7 +42,7 @@ setup(
     author='Python Language Server Contributors',
     packages=find_packages(exclude=['contrib', 'docs', 'test', 'test.*']),
     install_requires=install_requires,
-    python_requires='>= 3.6',
+    python_requires='>=3.6',
     extras_require={
         'all': [
             'autopep8',
@@ -50,8 +51,6 @@ setup(
             'pycodestyle>=2.6.0,<2.7.0',
             'pydocstyle>=2.0.0',
             'pyflakes>=2.2.0,<2.3.0',
-            # pylint >= 2.5.0 is required for working through stdin and only
-            # available with python3
             'pylint>=2.5.0',
             'rope>=0.10.5',
             'yapf',
@@ -62,14 +61,11 @@ setup(
         'pycodestyle': ['pycodestyle>=2.6.0,<2.7.0'],
         'pydocstyle': ['pydocstyle>=2.0.0'],
         'pyflakes': ['pyflakes>=2.2.0,<2.3.0'],
-        'pylint': [
-            'pylint>=2.5.0'
-        ],
+        'pylint': ['pylint>=2.5.0'],
         'rope': ['rope>0.10.5'],
         'yapf': ['yapf'],
-        'test': ['pylint>=2.5.0',
-                 'pytest', 'pytest-cov', 'coverage', 'numpy', 'pandas',
-                 'matplotlib', 'pyqt5', 'flaky'],
+        'test': ['pylint>=2.5.0', 'pytest', 'pytest-cov', 'coverage', 'numpy',
+                 'pandas', 'matplotlib', 'pyqt5', 'flaky'],
     },
     entry_points={
         'console_scripts': [
