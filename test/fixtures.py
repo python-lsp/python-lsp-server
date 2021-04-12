@@ -1,18 +1,16 @@
-# Copyright 2017 Palantir Technologies, Inc.
+# Copyright 2017-2020 Palantir Technologies, Inc.
+# Copyright 2021- Python Language Server Contributors.
+
 import os
-import sys
-from mock import Mock
+from io import StringIO
+from unittest.mock import Mock
 import pytest
 
-from pyls import uris
-from pyls.config.config import Config
-from pyls.python_ls import PythonLanguageServer
-from pyls.workspace import Workspace, Document
+from pylsp import uris
+from pylsp.config.config import Config
+from pylsp.python_lsp import PythonLSPServer
+from pylsp.workspace import Workspace, Document
 
-if sys.version_info[0] < 3:
-    from StringIO import StringIO
-else:
-    from io import StringIO
 
 DOC_URI = uris.from_fs_path(__file__)
 DOC = """import sys
@@ -23,9 +21,9 @@ def main():
 
 
 @pytest.fixture
-def pyls(tmpdir):
+def pylsp(tmpdir):
     """ Return an initialized python LS """
-    ls = PythonLanguageServer(StringIO, StringIO)
+    ls = PythonLSPServer(StringIO, StringIO)
 
     ls.m_initialize(
         processId=1,

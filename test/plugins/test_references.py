@@ -1,12 +1,13 @@
-# Copyright 2017 Palantir Technologies, Inc.
+# Copyright 2017-2020 Palantir Technologies, Inc.
+# Copyright 2021- Python Language Server Contributors.
+
 import os
 
 import pytest
 
-from pyls import uris
-from pyls.workspace import Document
-from pyls.plugins.references import pyls_references
-from pyls._utils import PY2
+from pylsp import uris
+from pylsp.workspace import Document
+from pylsp.plugins.references import pylsp_references
 
 
 DOC1_NAME = 'test1.py'
@@ -39,13 +40,13 @@ def test_references(tmp_workspace):  # pylint: disable=redefined-outer-name
     DOC1_URI = uris.from_fs_path(os.path.join(tmp_workspace.root_path, DOC1_NAME))
     doc1 = Document(DOC1_URI, tmp_workspace)
 
-    refs = pyls_references(doc1, position)
+    refs = pylsp_references(doc1, position)
 
     # Definition, the import and the instantiation
     assert len(refs) == 3
 
     # Briefly check excluding the definitions (also excludes imports, only counts uses)
-    no_def_refs = pyls_references(doc1, position, exclude_declaration=True)
+    no_def_refs = pylsp_references(doc1, position, exclude_declaration=True)
     assert len(no_def_refs) == 1
 
     # Make sure our definition is correctly located
@@ -63,15 +64,13 @@ def test_references(tmp_workspace):  # pylint: disable=redefined-outer-name
     assert doc2_usage_ref['range']['end'] == {'line': 3, 'character': 9}
 
 
-@pytest.mark.skipif(PY2, reason="Jedi sometimes fails while checking pylint "
-                                "example files in the modules path")
 def test_references_builtin(tmp_workspace):  # pylint: disable=redefined-outer-name
     # Over 'UnicodeError':
     position = {'line': 4, 'character': 7}
     doc2_uri = uris.from_fs_path(os.path.join(str(tmp_workspace.root_path), DOC2_NAME))
     doc2 = Document(doc2_uri, tmp_workspace)
 
-    refs = pyls_references(doc2, position)
+    refs = pylsp_references(doc2, position)
     assert len(refs) >= 1
 
     expected = {'start': {'line': 4, 'character': 7},

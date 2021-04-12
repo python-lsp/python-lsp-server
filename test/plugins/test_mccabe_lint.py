@@ -1,7 +1,9 @@
-# Copyright 2017 Palantir Technologies, Inc.
-from pyls import lsp, uris
-from pyls.workspace import Document
-from pyls.plugins import mccabe_lint
+# Copyright 2017-2020 Palantir Technologies, Inc.
+# Copyright 2021- Python Language Server Contributors.
+
+from pylsp import lsp, uris
+from pylsp.workspace import Document
+from pylsp.plugins import mccabe_lint
 
 DOC_URI = uris.from_fs_path(__file__)
 DOC = """def hello():
@@ -17,9 +19,9 @@ def test_mccabe(config, workspace):
     try:
         config.update({'plugins': {'mccabe': {'threshold': 1}}})
         doc = Document(DOC_URI, workspace, DOC)
-        diags = mccabe_lint.pyls_lint(config, doc)
+        diags = mccabe_lint.pylsp_lint(config, doc)
 
-        assert all([d['source'] == 'mccabe' for d in diags])
+        assert all(d['source'] == 'mccabe' for d in diags)
 
         # One we're expecting is:
         msg = 'Cyclomatic complexity too high: 1 (threshold 1)'
@@ -34,4 +36,4 @@ def test_mccabe(config, workspace):
 
 def test_mccabe_syntax_error(config, workspace):
     doc = Document(DOC_URI, workspace, DOC_SYNTAX_ERR)
-    assert mccabe_lint.pyls_lint(config, doc) is None
+    assert mccabe_lint.pylsp_lint(config, doc) is None

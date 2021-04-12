@@ -28,13 +28,13 @@ jobs:
         with:
           # TODO: check with Python 3, but need to fix the
           # errors first
-          python-version: '2.7'
+          python-version: '3.6'
           architecture: 'x64'
       - run: python -m pip install --upgrade pip setuptools
       - run: pip install -e .[pylint,pycodestyle,pyflakes]
       - name: Pylint checks
-        run: pylint pyls test
+        run: pylint pylsp test
       - name: Code style checks
-        run: pycodestyle pyls test
+        run: pycodestyle pylsp test
       - name: Pyflakes checks
-        run: pyflakes pyls test
+        run: pyflakes pylsp test

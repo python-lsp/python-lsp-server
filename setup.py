@@ -1,54 +1,48 @@
 #!/usr/bin/env python
-import sys
+
+# Copyright 2017-2020 Palantir Technologies, Inc.
+# Copyright 2021- Python Language Server Contributors.
+
+import ast
+import os
 from setuptools import find_packages, setup
-import versioneer
-import sys
+
+HERE = os.path.abspath(os.path.dirname(__file__))
+
+
+def get_version(module='pylsp'):
+    """Get version."""
+    with open(os.path.join(HERE, module, '_version.py'), 'r') as f:
+        data = f.read()
+    lines = data.split('\n')
+    for line in lines:
+        if line.startswith('VERSION_INFO'):
+            version_tuple = ast.literal_eval(line.split('=')[-1].strip())
+            version = '.'.join(map(str, version_tuple))
+            break
+    return version
+
 
 README = open('README.md', 'r').read()
 
 install_requires = [
-        'configparser; python_version<"3.0"',
-        'future>=0.14.0; python_version<"3"',
-        'backports.functools_lru_cache; python_version<"3.2"',
-        'jedi>=0.17.2,<0.19.0',
-        'python-jsonrpc-server>=0.4.0',
-        'pluggy',
-        'ujson<=2.0.3 ; platform_system!="Windows" and python_version<"3.0"',
-        'ujson>=3.0.0 ; python_version>"3"']
+    'jedi>=0.17.2,<0.19.0',
+    'python-jsonrpc-server>=0.4.0',
+    'pluggy',
+    'ujson>=3.0.0'
+]
 
 setup(
-    name='python-language-server',
-
-    # Versions should comply with PEP440.  For a discussion on single-sourcing
-    # the version across setup.py and the project code, see
-    # https://packaging.python.org/en/latest/single_source_version.html
-    version=versioneer.get_version(),
-    cmdclass=versioneer.get_cmdclass(),
-
+    name='python-lsp-server',
+    version=get_version(),
     description='Python Language Server for the Language Server Protocol',
-
     long_description=README,
     long_description_content_type='text/markdown',
-
-    # The project's main homepage.
-    url='https://github.com/python-ls/python-ls',
-
-    author='Palantir Technologies, Inc.',
-
-    # You can just specify the packages manually here if your project is
-    # simple. Or you can use find_packages().
+    url='https://github.com/python-lsp/python-lsp-server',
+    author='Python Language Server Contributors',
     packages=find_packages(exclude=['contrib', 'docs', 'test', 'test.*']),
-
-    # List run-time dependencies here.  These will be installed by pip when
-    # your project is installed. For an analysis of "install_requires" vs pip's
-    # requirements files see:
-    # https://packaging.python.org/en/latest/requirements.html
     install_requires=install_requires,
-
-    # List additional groups of dependencies here (e.g. development
-    # dependencies). You can install these using the following syntax,
-    # for example:
-    # $ pip install -e .[test]
+    python_requires='>=3.6',
     extras_require={
         'all': [
             'autopep8',
@@ -57,9 +51,7 @@ setup(
             'pycodestyle>=2.6.0,<2.7.0',
             'pydocstyle>=2.0.0',
             'pyflakes>=2.2.0,<2.3.0',
-            # pylint >= 2.5.0 is required for working through stdin and only
-            # available with python3
-            'pylint>=2.5.0' if sys.version_info.major >= 3 else 'pylint',
+            'pylint>=2.5.0',
             'rope>=0.10.5',
             'yapf',
         ],
@@ -69,44 +61,37 @@ setup(
         'pycodestyle': ['pycodestyle>=2.6.0,<2.7.0'],
         'pydocstyle': ['pydocstyle>=2.0.0'],
         'pyflakes': ['pyflakes>=2.2.0,<2.3.0'],
-        'pylint': [
-            'pylint>=2.5.0' if sys.version_info.major >= 3 else 'pylint'],
+        'pylint': ['pylint>=2.5.0'],
         'rope': ['rope>0.10.5'],
         'yapf': ['yapf'],
-        'test': ['versioneer',
-                 'pylint>=2.5.0' if sys.version_info.major >= 3 else 'pylint',
-                 'pytest', 'mock', 'pytest-cov', 'coverage', 'numpy', 'pandas',
-                 'matplotlib', 'pyqt5;python_version>="3"', 'flaky'],
+        'test': ['pylint>=2.5.0', 'pytest', 'pytest-cov', 'coverage', 'numpy',
+                 'pandas', 'matplotlib', 'pyqt5', 'flaky'],
     },
-
-    # To provide executable scripts, use entry points in preference to the
-    # "scripts" keyword. Entry points provide cross-platform support and allow
-    # pip to create the appropriate form of executable for the target platform.
     entry_points={
         'console_scripts': [
-            'pyls = pyls.__main__:main',
+            'pylsp = pylsp.__main__:main',
         ],
-        'pyls': [
-            'autopep8 = pyls.plugins.autopep8_format',
-            'folding = pyls.plugins.folding',
-            'flake8 = pyls.plugins.flake8_lint',
-            'jedi_completion = pyls.plugins.jedi_completion',
-            'jedi_definition = pyls.plugins.definition',
-            'jedi_hover = pyls.plugins.hover',
-            'jedi_highlight = pyls.plugins.highlight',
-            'jedi_references = pyls.plugins.references',
-            'jedi_rename = pyls.plugins.jedi_rename',
-            'jedi_signature_help = pyls.plugins.signature',
-            'jedi_symbols = pyls.plugins.symbols',
-            'mccabe = pyls.plugins.mccabe_lint',
-            'preload = pyls.plugins.preload_imports',
-            'pycodestyle = pyls.plugins.pycodestyle_lint',
-            'pydocstyle = pyls.plugins.pydocstyle_lint',
-            'pyflakes = pyls.plugins.pyflakes_lint',
-            'pylint = pyls.plugins.pylint_lint',
-            'rope_completion = pyls.plugins.rope_completion',
-            'rope_rename = pyls.plugins.rope_rename',
-            'yapf = pyls.plugins.yapf_format'
+        'pylsp': [
+            'autopep8 = pylsp.plugins.autopep8_format',
+            'folding = pylsp.plugins.folding',
+            'flake8 = pylsp.plugins.flake8_lint',
+            'jedi_completion = pylsp.plugins.jedi_completion',
+            'jedi_definition = pylsp.plugins.definition',
+            'jedi_hover = pylsp.plugins.hover',
+            'jedi_highlight = pylsp.plugins.highlight',
+            'jedi_references = pylsp.plugins.references',
+            'jedi_rename = pylsp.plugins.jedi_rename',
+            'jedi_signature_help = pylsp.plugins.signature',
+            'jedi_symbols = pylsp.plugins.symbols',
+            'mccabe = pylsp.plugins.mccabe_lint',
+            'preload = pylsp.plugins.preload_imports',
+            'pycodestyle = pylsp.plugins.pycodestyle_lint',
+            'pydocstyle = pylsp.plugins.pydocstyle_lint',
+            'pyflakes = pylsp.plugins.pyflakes_lint',
+            'pylint = pylsp.plugins.pylint_lint',
+            'rope_completion = pylsp.plugins.rope_completion',
+            'rope_rename = pylsp.plugins.rope_rename',
+            'yapf = pylsp.plugins.yapf_format'
         ]
     },
 )

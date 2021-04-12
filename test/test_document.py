@@ -1,6 +1,8 @@
-# Copyright 2017 Palantir Technologies, Inc.
+# Copyright 2017-2020 Palantir Technologies, Inc.
+# Copyright 2021- Python Language Server Contributors.
+
 from test.fixtures import DOC_URI, DOC
-from pyls.workspace import Document
+from pylsp.workspace import Document
 
 
 def test_document_props(doc):

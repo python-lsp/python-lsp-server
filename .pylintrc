@@ -25,5 +25,5 @@ reports = no
 [TYPECHECK]
 
 generated-members =
-    pyls_*
+    pylsp_*
     cache_clear

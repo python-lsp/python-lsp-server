@@ -1,7 +1,9 @@
-# Copyright 2017 Palantir Technologies, Inc.
+# Copyright 2017-2020 Palantir Technologies, Inc.
+# Copyright 2021- Python Language Server Contributors.
+
 from test import unix_only, windows_only
 import pytest
-from pyls import uris
+from pylsp import uris
 
 
 @unix_only
