@@ -27,7 +27,7 @@ README = open('README.md', 'r').read()
 
 install_requires = [
     'jedi>=0.17.2,<0.19.0',
-    'python-jsonrpc-server>=0.4.0',
+    'python-lsp-jsonrpc>=1.0.0',
     'pluggy',
     'ujson>=3.0.0'
 ]

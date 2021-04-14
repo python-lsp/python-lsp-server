@@ -7,9 +7,9 @@ import os
 import socketserver
 import threading
 
-from pyls_jsonrpc.dispatchers import MethodDispatcher
-from pyls_jsonrpc.endpoint import Endpoint
-from pyls_jsonrpc.streams import JsonRpcStreamReader, JsonRpcStreamWriter
+from pylsp_jsonrpc.dispatchers import MethodDispatcher
+from pylsp_jsonrpc.endpoint import Endpoint
+from pylsp_jsonrpc.streams import JsonRpcStreamReader, JsonRpcStreamWriter
 
 from . import lsp, _utils, uris
 from .config import config
