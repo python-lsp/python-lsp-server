@@ -64,41 +64,18 @@ Overall configuration is computed first from user configuration (in home directo
 To enable pydocstyle for linting docstrings add the following setting in your LSP configuration:
 `\` "pylsp.plugins.pydocstyle.enabled": true \``
 
-See [vscode-client/package.json](vscode-client/package.json) for the full set of supported configuration options.
-
 ## Language Server Features
 
-Auto Completion:
-
-![image](https://raw.githubusercontent.com/python-ls/python-ls/develop/resources/auto-complete.gif)
-
-Code Linting with pycodestyle and pyflakes:
-
-![image](https://raw.githubusercontent.com/python-ls/python-ls/develop/resources/linting.gif)
-
-Signature Help:
-
-![image](https://raw.githubusercontent.com/python-ls/python-ls/develop/resources/signature-help.gif)
-
-Go to definition:
-
-![image](https://raw.githubusercontent.com/python-ls/python-ls/develop/resources/goto-definition.gif)
-
-Hover:
-
-![image](https://raw.githubusercontent.com/python-ls/python-ls/develop/resources/hover.gif)
-
-Find References:
-
-![image](https://raw.githubusercontent.com/python-ls/python-ls/develop/resources/references.gif)
-
-Document Symbols:
-
-![image](https://raw.githubusercontent.com/python-ls/python-ls/develop/resources/document-symbols.gif)
-
-Document Formatting:
-
-![image](https://raw.githubusercontent.com/python-ls/python-ls/develop/resources/document-format.gif)
+* Auto Completion
+* Code Linting
+* Signature Help
+* Go to definition
+* Hover
+* Find References
+* Document Symbols
+* Document Formatting
+* Code folding
+* Multiple workspaces
 
 ## Development
 
