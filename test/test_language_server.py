@@ -7,7 +7,7 @@ import multiprocessing
 import sys
 from threading import Thread
 
-from pyls_jsonrpc.exceptions import JsonRpcMethodNotFound
+from pylsp_jsonrpc.exceptions import JsonRpcMethodNotFound
 import pytest
 
 from pylsp.python_lsp import start_io_lang_server, PythonLSPServer
