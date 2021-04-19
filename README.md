@@ -62,7 +62,7 @@ The default configuration source is pycodestyle. Change the `pylsp.configuration
 Overall configuration is computed first from user configuration (in home directory), overridden by configuration passed in by the language client, and then overriden by configuration discovered in the workspace.
 
 To enable pydocstyle for linting docstrings add the following setting in your LSP configuration:
-`\` "pylsp.plugins.pydocstyle.enabled": true \``
+`"pylsp.plugins.pydocstyle.enabled": true`
 
 ## Language Server Features
 
