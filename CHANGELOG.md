@@ -1,3 +1,19 @@
+## Version 1.0.1 (2021-04-22)
+
+### Issues Closed
+
+* [Issue 16](https://github.com/python-lsp/python-lsp-server/issues/16) - Release v1.0.1
+
+In this release 1 issue was closed.
+
+### Pull Requests Merged
+
+* [PR 15](https://github.com/python-lsp/python-lsp-server/pull/15) - PR: Update pyflakes and pycodestyle dependency versions, by [@andfoy](https://github.com/andfoy)
+* [PR 14](https://github.com/python-lsp/python-lsp-server/pull/14) - PR: Small fix in Readme, by [@yaegassy](https://github.com/yaegassy)
+
+In this release 2 pull requests were closed.
+
+
 ## Version 1.0.0 (2021/04/14)
 
 ### Issues Closed
