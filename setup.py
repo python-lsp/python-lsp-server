@@ -29,7 +29,8 @@ install_requires = [
     'jedi>=0.17.2,<0.19.0',
     'python-lsp-jsonrpc>=1.0.0',
     'pluggy',
-    'ujson>=3.0.0'
+    'ujson>=3.0.0',
+    'setuptools>=39.0.0'
 ]
 
 setup(
@@ -48,9 +49,9 @@ setup(
             'autopep8',
             'flake8>=3.8.0',
             'mccabe>=0.6.0,<0.7.0',
-            'pycodestyle>=2.6.0,<2.7.0',
+            'pycodestyle>=2.7.0',
             'pydocstyle>=2.0.0',
-            'pyflakes>=2.2.0,<2.3.0',
+            'pyflakes>=2.3.0,<2.4.0',
             'pylint>=2.5.0',
             'rope>=0.10.5',
             'yapf',
@@ -58,9 +59,9 @@ setup(
         'autopep8': ['autopep8'],
         'flake8': ['flake8>=3.8.0'],
         'mccabe': ['mccabe>=0.6.0,<0.7.0'],
-        'pycodestyle': ['pycodestyle>=2.6.0,<2.7.0'],
+        'pycodestyle': ['pycodestyle>=2.7.0'],
         'pydocstyle': ['pydocstyle>=2.0.0'],
-        'pyflakes': ['pyflakes>=2.2.0,<2.3.0'],
+        'pyflakes': ['pyflakes>=2.3.0,<2.4.0'],
         'pylint': ['pylint>=2.5.0'],
         'rope': ['rope>0.10.5'],
         'yapf': ['yapf'],
