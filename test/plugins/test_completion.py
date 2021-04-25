@@ -4,6 +4,9 @@
 import os
 import sys
 
+from pathlib import Path
+from typing import NamedTuple, Dict
+
 import pytest
 
 from pylsp import uris, lsp
@@ -48,6 +51,80 @@ def test_rope_import_completion(config, workspace):
     doc = Document(DOC_URI, workspace, DOC)
     items = pylsp_rope_completions(config, workspace, doc, com_position)
     assert items is None
+
+
+class TypeCase(NamedTuple):
+    document: str
+    position: dict
+    label: str
+    expected: lsp.CompletionItemKind
+
+
+TYPE_CASES: Dict[str, TypeCase] = {
+    'variable': TypeCase(
+        document='test = 1\ntes',
+        position={'line': 1, 'character': 3},
+        label='test',
+        expected=lsp.CompletionItemKind.Variable
+    ),
+    'function': TypeCase(
+        document='def test():\n    pass\ntes',
+        position={'line': 2, 'character': 3},
+        label='test()',
+        expected=lsp.CompletionItemKind.Function
+    ),
+    'keyword': TypeCase(
+        document='fro',
+        position={'line': 0, 'character': 3},
+        label='from',
+        expected=lsp.CompletionItemKind.Keyword
+    ),
+    'file': TypeCase(
+        document='"' + __file__[:-2].replace('"', '\\"') + '"',
+        position={'line': 0, 'character': len(__file__) - 2},
+        label=Path(__file__).name + '"',
+        expected=lsp.CompletionItemKind.File
+    ),
+    'module': TypeCase(
+        document='import statis',
+        position={'line': 0, 'character': 13},
+        label='statistics',
+        expected=lsp.CompletionItemKind.Module
+    ),
+    'class': TypeCase(
+        document='KeyErr',
+        position={'line': 0, 'character': 6},
+        label='KeyError',
+        expected=lsp.CompletionItemKind.Class
+    ),
+    'property': TypeCase(
+        document=(
+            'class A:\n'
+            '    @property\n'
+            '    def test(self):\n'
+            '        pass\n'
+            'A().tes'
+        ),
+        position={'line': 4, 'character': 5},
+        label='test',
+        expected=lsp.CompletionItemKind.Property
+    )
+}
+
+
+@pytest.mark.parametrize('case', list(TYPE_CASES.values()), ids=list(TYPE_CASES.keys()))
+def test_jedi_completion_type(case, config, workspace):
+    # pylint: disable=C0415
+    import jedi
+
+    # property support was introduced in 0.18
+    if case.expected == lsp.CompletionItemKind.Property and jedi.__version__.startswith('0.17'):
+        return
+
+    doc = Document(DOC_URI, workspace, case.document)
+    items = pylsp_jedi_completions(config, doc, case.position)
+    items = {i['label']: i for i in items}
+    assert items[case.label]['kind'] == case.expected
 
 
 def test_jedi_completion(config, workspace):
