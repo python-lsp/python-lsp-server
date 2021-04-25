@@ -13,6 +13,7 @@ from pylsp import uris, lsp
 from pylsp.workspace import Document
 from pylsp.plugins.jedi_completion import pylsp_completions as pylsp_jedi_completions
 from pylsp.plugins.rope_completion import pylsp_completions as pylsp_rope_completions
+from pylsp._utils import JEDI_VERSION
 
 
 PY2 = sys.version[0] == '2'
@@ -114,11 +115,8 @@ TYPE_CASES: Dict[str, TypeCase] = {
 
 @pytest.mark.parametrize('case', list(TYPE_CASES.values()), ids=list(TYPE_CASES.keys()))
 def test_jedi_completion_type(case, config, workspace):
-    # pylint: disable=C0415
-    import jedi
-
     # property support was introduced in 0.18
-    if case.expected == lsp.CompletionItemKind.Property and jedi.__version__.startswith('0.17'):
+    if case.expected == lsp.CompletionItemKind.Property and JEDI_VERSION.startswith('0.17'):
         return
 
     doc = Document(DOC_URI, workspace, case.document)
