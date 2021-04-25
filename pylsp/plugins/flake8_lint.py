@@ -5,7 +5,6 @@
 import logging
 import os.path
 import re
-from contextlib import ExitStack
 from subprocess import Popen, PIPE
 from pylsp import hookimpl, lsp
 
@@ -66,20 +65,16 @@ def run_flake8(flake8_executable, args, document):
         )
 
     log.debug("Calling %s with args: '%s'", flake8_executable, args)
-    with ExitStack() as stack:
-        try:
-            cmd = [flake8_executable]
-            cmd.extend(args)
-            p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)  # pylint: disable=consider-using-with
-            stack.enter_context(p)
-        except IOError:
-            log.debug("Can't execute %s. Trying with 'python -m flake8'", flake8_executable)
-            cmd = ['python', '-m', 'flake8']
-            cmd.extend(args)
-            p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)  # pylint: disable=consider-using-with
-            stack.enter_context(p)
-        # exit stack ensures that even if an exception happens, the process `p` will be properly terminated
-        (stdout, stderr) = p.communicate(document.source.encode())
+    try:
+        cmd = [flake8_executable]
+        cmd.extend(args)
+        p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)  # pylint: disable=consider-using-with
+    except IOError:
+        log.debug("Can't execute %s. Trying with 'python -m flake8'", flake8_executable)
+        cmd = ['python', '-m', 'flake8']
+        cmd.extend(args)
+        p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)  # pylint: disable=consider-using-with
+    (stdout, stderr) = p.communicate(document.source.encode())
     if stderr:
         log.error("Error while running flake8 '%s'", stderr.decode())
     return stdout.decode()
