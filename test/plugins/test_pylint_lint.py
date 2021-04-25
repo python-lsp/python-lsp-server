@@ -28,10 +28,9 @@ DOC_SYNTAX_ERR = """def hello()
 @contextlib.contextmanager
 def temp_document(doc_text, workspace):
     try:
-        temp_file = tempfile.NamedTemporaryFile(mode='w', delete=False)
-        name = temp_file.name
-        temp_file.write(doc_text)
-        temp_file.close()
+        with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
+            name = temp_file.name
+            temp_file.write(doc_text)
         yield Document(uris.from_fs_path(name), workspace)
     finally:
         os.remove(name)
