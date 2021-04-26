@@ -21,10 +21,9 @@ def using_const():
 
 
 def temp_document(doc_text, workspace):
-    temp_file = tempfile.NamedTemporaryFile(mode='w', delete=False)
-    name = temp_file.name
-    temp_file.write(doc_text)
-    temp_file.close()
+    with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
+        name = temp_file.name
+        temp_file.write(doc_text)
     doc = Document(uris.from_fs_path(name), workspace)
 
     return name, doc
