@@ -12,6 +12,7 @@ log = logging.getLogger(__name__)
 # most recently retrieved completion items, used for resolution
 _LAST_COMPLETIONS = {}
 
+
 @hookimpl
 def pylsp_settings():
     # Default rope_completion to disabled
@@ -30,6 +31,8 @@ def _resolve_completion(completion, data):
 
 @hookimpl
 def pylsp_completions(config, workspace, document, position):
+    # pylint: disable=too-many-locals
+    # pylint: disable=global-statement
     global _LAST_COMPLETIONS
 
     settings = config.plugin_settings('rope_completion', document_path=document.path)
@@ -79,7 +82,7 @@ def pylsp_completions(config, workspace, document, position):
 
 
 @hookimpl
-def pyls_completion_item_resolve(config, completion_item):
+def pylsp_completion_item_resolve(completion_item):
     """Resolve formatted completion for given non-resolved completion"""
     completion, data = _LAST_COMPLETIONS.get(completion_item['label'])
     return _resolve_completion(completion, data)

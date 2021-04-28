@@ -40,6 +40,8 @@ _LAST_COMPLETIONS = {}
 @hookimpl
 def pylsp_completions(config, document, position):
     """Get formatted completions for current code position"""
+    # pylint: disable=too-many-locals
+    # pylint: disable=global-statement
     global _LAST_COMPLETIONS
 
     settings = config.plugin_settings('jedi_completion', document_path=document.path)
@@ -84,7 +86,7 @@ def pylsp_completions(config, document, position):
 
 
 @hookimpl
-def pylsp_completion_item_resolve(config, completion_item):
+def pylsp_completion_item_resolve(completion_item):
     """Resolve formatted completion for given non-resolved completion"""
     completion, data = _LAST_COMPLETIONS.get(completion_item['label'])
     return _resolve_completion(completion, data)
