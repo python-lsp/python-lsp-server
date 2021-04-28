@@ -1,6 +1,7 @@
 # Copyright 2017-2020 Palantir Technologies, Inc.
 # Copyright 2021- Python Language Server Contributors.
 
+import math
 import os
 import sys
 
@@ -179,6 +180,24 @@ def test_jedi_completion_with_fuzzy_enabled(config, workspace):
     pylsp_jedi_completions(config, doc, {'line': 1, 'character': 1000})
 
 
+def test_jedi_completion_resolve_at_most(config, workspace):
+    # Over 'i' in os.path.isabs(...)
+    com_position = {'line': 1, 'character': 15}
+    doc = Document(DOC_URI, workspace, DOC)
+
+    # Do not resolve any labels
+    config.update({'plugins': {'jedi_completion': {'resolve_at_most_labels': 0}}})
+    items = pylsp_jedi_completions(config, doc, com_position)
+    labels = {i['label'] for i in items}
+    assert 'isabs' in labels
+
+    # Resolve all items
+    config.update({'plugins': {'jedi_completion': {'resolve_at_most_labels': math.inf}}})
+    items = pylsp_jedi_completions(config, doc, com_position)
+    labels = {i['label'] for i in items}
+    assert 'isabs(path)' in labels
+
+
 def test_rope_completion(config, workspace):
     # Over 'i' in os.path.isabs(...)
     com_position = {'line': 1, 'character': 15}
@@ -194,6 +213,7 @@ def test_jedi_completion_ordering(config, workspace):
     # Over the blank line
     com_position = {'line': 8, 'character': 0}
     doc = Document(DOC_URI, workspace, DOC)
+    config.update({'plugins': {'jedi_completion': {'resolve_at_most_labels': math.inf}}})
     completions = pylsp_jedi_completions(config, doc, com_position)
 
     items = {c['label']: c['sortText'] for c in completions}
