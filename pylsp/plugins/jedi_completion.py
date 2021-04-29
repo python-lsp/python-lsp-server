@@ -10,39 +10,21 @@ from pylsp import _utils, hookimpl, lsp
 
 log = logging.getLogger(__name__)
 
-# Map to the VSCode type
+# Map to the LSP type
+# > Valid values for type are ``module``, `` class ``, ``instance``, ``function``,
+# > ``param``, ``path``, ``keyword``, ``property`` and ``statement``.
+# see: https://jedi.readthedocs.io/en/latest/docs/api-classes.html#jedi.api.classes.BaseName.type
 _TYPE_MAP = {
-    'none': lsp.CompletionItemKind.Value,
-    'type': lsp.CompletionItemKind.Class,
-    'tuple': lsp.CompletionItemKind.Class,
-    'dict': lsp.CompletionItemKind.Class,
-    'dictionary': lsp.CompletionItemKind.Class,
-    'function': lsp.CompletionItemKind.Function,
-    'lambda': lsp.CompletionItemKind.Function,
-    'generator': lsp.CompletionItemKind.Function,
+    'module': lsp.CompletionItemKind.Module,
+    'namespace': lsp.CompletionItemKind.Module,    # to be added in Jedi 0.18+
     'class': lsp.CompletionItemKind.Class,
     'instance': lsp.CompletionItemKind.Reference,
-    'method': lsp.CompletionItemKind.Method,
-    'builtin': lsp.CompletionItemKind.Class,
-    'builtinfunction': lsp.CompletionItemKind.Function,
-    'module': lsp.CompletionItemKind.Module,
-    'file': lsp.CompletionItemKind.File,
-    'path': lsp.CompletionItemKind.Text,
-    'xrange': lsp.CompletionItemKind.Class,
-    'slice': lsp.CompletionItemKind.Class,
-    'traceback': lsp.CompletionItemKind.Class,
-    'frame': lsp.CompletionItemKind.Class,
-    'buffer': lsp.CompletionItemKind.Class,
-    'dictproxy': lsp.CompletionItemKind.Class,
-    'funcdef': lsp.CompletionItemKind.Function,
-    'property': lsp.CompletionItemKind.Property,
-    'import': lsp.CompletionItemKind.Module,
-    'keyword': lsp.CompletionItemKind.Keyword,
-    'constant': lsp.CompletionItemKind.Variable,
-    'variable': lsp.CompletionItemKind.Variable,
-    'value': lsp.CompletionItemKind.Value,
+    'function': lsp.CompletionItemKind.Function,
     'param': lsp.CompletionItemKind.Variable,
-    'statement': lsp.CompletionItemKind.Keyword,
+    'path': lsp.CompletionItemKind.File,
+    'keyword': lsp.CompletionItemKind.Keyword,
+    'property': lsp.CompletionItemKind.Property,    # added in Jedi 0.18
+    'statement': lsp.CompletionItemKind.Variable
 }
 
 # Types of parso nodes for which snippet is not included in the completion
