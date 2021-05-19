@@ -49,7 +49,7 @@ Installing these plugins will add extra functionality to the language server:
 - [python-lsp-black](https://github.com/python-lsp/python-lsp-black): code formatting using [Black](https://github.com/psf/black).
 - [pyls-memestra](https://github.com/QuantStack/pyls-memestra): detecting the use of deprecated APIs.
 
-Please see the above repositories for examples on how to write plugins for the Python Language Server. Please file an issue if you require assistance writing a plugin.
+Please see the above repositories for examples on how to write plugins for the Python LSP Server. Please file an issue if you require assistance writing a plugin.
 
 ## Configuration
 
@@ -65,7 +65,7 @@ Overall configuration is computed first from user configuration (in home directo
 To enable pydocstyle for linting docstrings add the following setting in your LSP configuration:
 `"pylsp.plugins.pydocstyle.enabled": true`
 
-## Language Server Features
+## LSP Server Features
 
 * Auto Completion
 * Code Linting
