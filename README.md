@@ -45,7 +45,7 @@ Installing these plugins will add extra functionality to the language server:
 
 - [pyls-flake8](https://github.com/emanspeaks/pyls-flake8/): Error checking using flake8.
 - [mypy-ls](https://github.com/Richardk2n/mypy-ls): MyPy type checking for Python 3.
-- [pyls-isort](https://github.com/paradoxxxzero/pyls-isort): [isort](https://github.com/PyCQA/isort) import sort code formatting.
+- [pyls-isort](https://github.com/paradoxxxzero/pyls-isort): code formatting using [isort](https://github.com/PyCQA/isort) (automatic import sorting).
 - [python-lsp-black](https://github.com/python-lsp/python-lsp-black): code formatting using [Black](https://github.com/psf/black).
 - [pyls-memestra](https://github.com/QuantStack/pyls-memestra): detecting the use of deprecated APIs.
 
