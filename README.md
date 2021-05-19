@@ -43,10 +43,11 @@ pip install -U setuptools
 
 Installing these plugins will add extra functionality to the language server:
 
-- [pyls-mypy](https://github.com/tomv564/pyls-mypy) Mypy type checking for Python 3
-- [pyls-isort](https://github.com/paradoxxxzero/pyls-isort) Isort import sort code formatting
-- [pyls-black](https://github.com/rupert/pyls-black) for code formatting using [Black](https://github.com/ambv/black)
-- [pyls-memestra](https://github.com/QuantStack/pyls-memestra) for detecting the use of deprecated APIs
+- [pyls-flake8](): Error checking using flake8.
+- [mypy-ls](https://github.com/Richardk2n/mypy-ls): MyPy type checking for Python 3.
+- [pyls-isort](https://github.com/paradoxxxzero/pyls-isort): [isort](https://github.com/PyCQA/isort) import sort code formatting.
+- [python-lsp-black](https://github.com/python-lsp/python-lsp-black): code formatting using [Black](https://github.com/psf/black).
+- [pyls-memestra](https://github.com/QuantStack/pyls-memestra): detecting the use of deprecated APIs.
 
 Please see the above repositories for examples on how to write plugins for the Python Language Server. Please file an issue if you require assistance writing a plugin.
 
