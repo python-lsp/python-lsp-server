@@ -43,12 +43,13 @@ pip install -U setuptools
 
 Installing these plugins will add extra functionality to the language server:
 
-- [pyls-mypy](https://github.com/tomv564/pyls-mypy) Mypy type checking for Python 3
-- [pyls-isort](https://github.com/paradoxxxzero/pyls-isort) Isort import sort code formatting
-- [pyls-black](https://github.com/rupert/pyls-black) for code formatting using [Black](https://github.com/ambv/black)
-- [pyls-memestra](https://github.com/QuantStack/pyls-memestra) for detecting the use of deprecated APIs
+- [pyls-flake8](https://github.com/emanspeaks/pyls-flake8/): Error checking using [flake8](https://flake8.pycqa.org/en/latest/).
+- [mypy-ls](https://github.com/Richardk2n/mypy-ls): [MyPy](http://mypy-lang.org/) type checking for Python 3.
+- [pyls-isort](https://github.com/paradoxxxzero/pyls-isort): code formatting using [isort](https://github.com/PyCQA/isort) (automatic import sorting).
+- [python-lsp-black](https://github.com/python-lsp/python-lsp-black): code formatting using [Black](https://github.com/psf/black).
+- [pyls-memestra](https://github.com/QuantStack/pyls-memestra): detecting the use of deprecated APIs.
 
-Please see the above repositories for examples on how to write plugins for the Python Language Server. Please file an issue if you require assistance writing a plugin.
+Please see the above repositories for examples on how to write plugins for the Python LSP Server. Please file an issue if you require assistance writing a plugin.
 
 ## Configuration
 
@@ -64,7 +65,7 @@ Overall configuration is computed first from user configuration (in home directo
 To enable pydocstyle for linting docstrings add the following setting in your LSP configuration:
 `"pylsp.plugins.pydocstyle.enabled": true`
 
-## Language Server Features
+## LSP Server Features
 
 * Auto Completion
 * Code Linting

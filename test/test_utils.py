@@ -9,7 +9,7 @@ from flaky import flaky
 from pylsp import _utils
 
 
-@flaky
+@flaky(max_runs=6, min_passes=1)
 def test_debounce():
     interval = 0.1
     obj = mock.Mock()
@@ -33,7 +33,7 @@ def test_debounce():
     assert len(obj.mock_calls) == 2
 
 
-@flaky
+@flaky(max_runs=6, min_passes=1)
 def test_debounce_keyed_by():
     interval = 0.1
     obj = mock.Mock()

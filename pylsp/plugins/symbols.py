@@ -40,7 +40,7 @@ def pylsp_document_symbols(config, document):
                     continue
         try:
             docismodule = os.path.samefile(document.path, d.module_path)
-        except AttributeError:
+        except TypeError:
             # Python 2 on Windows has no .samefile, but then these are
             # strings for sure
             docismodule = document.path == d.module_path
