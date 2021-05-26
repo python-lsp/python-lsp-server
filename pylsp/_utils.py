@@ -6,6 +6,7 @@ import inspect
 import logging
 import os
 import pathlib
+import re
 import threading
 
 import jedi
@@ -14,6 +15,7 @@ JEDI_VERSION = jedi.__version__
 
 log = logging.getLogger(__name__)
 
+EX_SNIPPET_RE = re.compile(r"\>\>\> .*(?:\r?\n(?!\r?\n).*)*")
 
 def debounce(interval_s, keyed_by=None):
     """Debounce calls to this function until interval_s seconds have passed."""
@@ -146,6 +148,9 @@ def format_docstring(contents):
     """
     contents = contents.replace('\t', u'\u00A0' * 4)
     contents = contents.replace('  ', u'\u00A0' * 2)
+    example_snippets = re.findall(EX_SNIPPET_RE, contents)
+    for snippet in example_snippets:
+        contents = contents.replace(snippet, f"```python\n{snippet}\n```")
     return contents
 
 
