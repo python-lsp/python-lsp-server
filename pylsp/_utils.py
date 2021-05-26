@@ -17,6 +17,7 @@ log = logging.getLogger(__name__)
 
 EX_SNIPPET_RE = re.compile(r"\>\>\> .*(?:\r?\n(?!\r?\n).*)*")
 
+
 def debounce(interval_s, keyed_by=None):
     """Debounce calls to this function until interval_s seconds have passed."""
     def wrapper(func):
