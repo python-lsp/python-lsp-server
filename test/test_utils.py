@@ -94,3 +94,82 @@ def test_clip_column():
     assert _utils.clip_column(2, ['123\n', '123'], 0) == 2
     assert _utils.clip_column(3, ['123\n', '123'], 0) == 3
     assert _utils.clip_column(4, ['123\n', '123'], 1) == 3
+
+
+def test_format_docstring():
+    teststr = """\
+Examples
+--------
+Abc
+
+>>> a = 'test'
+>>> b = 5
+>>> a
+test
+>>> b + 3
+8
+
+another
+
+>>> x = np.array([1, 2, 3])
+>>> y = np.array([4, 5, 6])
+>>> x + y
+array([5, 7, 9])
+
+"""
+    resultstr = _utils.format_docstring(teststr)
+    assert resultstr == """\
+Examples
+--------
+Abc
+
+```python
+>>> a = 'test'
+>>> b = 5
+>>> a
+test
+>>> b + 3
+8
+```
+
+another
+
+```python
+>>> x = np.array([1, 2, 3])
+>>> y = np.array([4, 5, 6])
+>>> x + y
+array([5, 7, 9])
+```
+
+"""
+
+
+def test_format_docstring_missing_newline():
+    teststr = """\
+Examples
+--------
+Abc
+
+>>> a = 'test'
+>>> b = 5
+>>> a
+test
+>>> b + 3
+8
+"""
+    resultstr = _utils.format_docstring(teststr)
+    assert resultstr == """\
+Examples
+--------
+Abc
+
+```python
+>>> a = 'test'
+>>> b = 5
+>>> a
+test
+>>> b + 3
+8
+```
+
+"""

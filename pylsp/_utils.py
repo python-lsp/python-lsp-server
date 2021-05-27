@@ -149,9 +149,19 @@ def format_docstring(contents):
     """
     contents = contents.replace('\t', u'\u00A0' * 4)
     contents = contents.replace('  ', u'\u00A0' * 2)
-    example_snippets = re.findall(EX_SNIPPET_RE, contents)
-    for snippet in example_snippets:
-        contents = contents.replace(snippet, f"```python\n{snippet}\n```")
+
+    # If examples exist in the docstring wrap them in backticks
+    if ">>>" in contents:
+        # add an additional newline just in case the end of the
+        # docstring doesn't end in a blank line.
+        if contents[-2:] != "\n\n":
+            contents = f"{contents}\n"
+        # search for the example block regex
+        example_snippets = re.findall(EX_SNIPPET_RE, contents)
+        # wrap the snippets that were found in backticks
+        for snippet in example_snippets:
+            contents = contents.replace(snippet, f"```python\n{snippet}\n```")
+
     return contents
 
 
