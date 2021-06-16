@@ -5,6 +5,7 @@ import argparse
 import logging
 import logging.config
 import sys
+import time
 
 try:
     import ujson as json
@@ -14,7 +15,8 @@ except Exception:  # pylint: disable=broad-except
 from .python_lsp import (PythonLSPServer, start_io_lang_server,
                          start_tcp_lang_server)
 
-LOG_FORMAT = "%(asctime)s UTC - %(levelname)s - %(name)s - %(message)s"
+LOG_FORMAT = "%(asctime)s {0} - %(levelname)s - %(name)s - %(message)s".format(
+    time.localtime().tm_zone)
 
 
 def add_arguments(parser):
