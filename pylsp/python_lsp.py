@@ -14,6 +14,7 @@ from pylsp_jsonrpc.streams import JsonRpcStreamReader, JsonRpcStreamWriter
 from . import lsp, _utils, uris
 from .config import config
 from .workspace import Workspace
+from ._version import __version__
 
 log = logging.getLogger(__name__)
 
@@ -225,7 +226,13 @@ class PythonLSPServer(MethodDispatcher):
             self.watching_thread.daemon = True
             self.watching_thread.start()
         # Get our capabilities
-        return {'capabilities': self.capabilities()}
+        return {
+            'capabilities': self.capabilities(),
+            'serverInfo': {
+                'name': 'pylsp',
+                'version': __version__,
+            },
+        }
 
     def m_initialized(self, **_kwargs):
         self._hook('pylsp_initialized')
