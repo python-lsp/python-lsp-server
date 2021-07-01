@@ -82,8 +82,8 @@ To enable pydocstyle for linting docstrings add the following setting in your LS
 
 To run the test suite:
 
-```
-pip install .[test] && pytest
+```sh
+pip install '.[test]' && pytest
 ```
 
 ## License
