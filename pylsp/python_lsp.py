@@ -251,7 +251,7 @@ class PythonLSPServer(MethodDispatcher):
         }
 
     def completion_item_resolve(self, completion_item):
-        return self._hook('pyls_completion_item_resolve', completion_item=completion_item)
+        return self._hook('pylsp_completion_item_resolve', completion_item=completion_item)
 
     def definitions(self, doc_uri, position):
         return flatten(self._hook('pylsp_definitions', doc_uri, position=position))
