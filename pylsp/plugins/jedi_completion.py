@@ -114,7 +114,7 @@ def use_snippets(document, position):
             break
     if '(' in act_lines[-1].strip():
         last_character = ')'
-    code = '\n'.join(act_lines).split(';')[-1].strip() + last_character
+    code = '\n'.join(act_lines).rsplit(';', maxsplit=1)[-1].strip() + last_character
     tokens = parso.parse(code)
     expr_type = tokens.children[0].type
     return (expr_type not in _IMPORTS and
