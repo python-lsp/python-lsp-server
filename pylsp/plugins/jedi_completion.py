@@ -68,6 +68,7 @@ def pylsp_completions(config, document, position):
         for c in completions
     ]
 
+    # TODO split up once other improvements are merged
     if include_class_objects:
         for c in completions:
             if c.type == 'class':
