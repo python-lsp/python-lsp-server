@@ -363,8 +363,7 @@ class PythonLSPServer(MethodDispatcher):
 
     def m_workspace__did_change_configuration(self, settings=None):
         self.config.update((settings or {}).get('pylsp', {}))
-        for workspace_uri in self.workspaces:
-            workspace = self.workspaces[workspace_uri]
+        for workspace in self.workspaces.values():
             workspace.update_config(settings)
             for doc_uri in workspace.documents:
                 self.lint(doc_uri, is_saved=False)
@@ -433,8 +432,7 @@ class PythonLSPServer(MethodDispatcher):
             # Only externally changed python files and lint configs may result in changed diagnostics.
             return
 
-        for workspace_uri in self.workspaces:
-            workspace = self.workspaces[workspace_uri]
+        for workspace in self.workspaces.values():
             for doc_uri in workspace.documents:
                 # Changes in doc_uri are already handled by m_text_document__did_save
                 if doc_uri not in changed_py_files:
