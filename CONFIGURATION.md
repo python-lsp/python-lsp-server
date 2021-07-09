@@ -3,7 +3,6 @@ This server can be configured using `workspace/didChangeConfiguration` method. E
 
 | **Configuration Key** | **Type** | **Description** | **Default** 
 |----|----|----|----|
-| `pylsp.executable` | `string` | Language server executable | `"pylsp"` |
 | `pylsp.configurationSources` | `array`  of unique `string` items | List of configuration sources to use. | `["pycodestyle"]` |
 | `pylsp.plugins.jedi.extra_paths` | `array`  | Define extra paths for jedi.Script. | `[]` |
 | `pylsp.plugins.jedi.env_vars` | `object` | Define environment variables for jedi.Script and Jedi.names. | `null` |

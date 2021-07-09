@@ -4,11 +4,6 @@
   "description": "This server can be configured using `workspace/didChangeConfiguration` method. Each configuration option is described below:",
   "type": "object",
   "properties": {
-    "pylsp.executable": {
-      "type": "string",
-      "default": "pylsp",
-      "description": "Language server executable"
-    },
     "pylsp.configurationSources": {
       "type": "array",
       "default": ["pycodestyle"],

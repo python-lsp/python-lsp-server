@@ -62,7 +62,7 @@ def convert_schema(schema: dict, source: str = None) -> str:
         )
 
     # ensure empty line at the end
-    lines.append('')
+    lines.append("")
 
     return "\n".join(lines)
 
