@@ -49,6 +49,11 @@
       "default": false,
       "description": "Enable fuzzy when requesting autocomplete."
     },
+    "pylsp.plugins.jedi_completion.eager": {
+      "type": "boolean",
+      "default": false,
+      "description": "Resolve documentation and detail eagerly."
+    },
     "pylsp.plugins.jedi_definition.enabled": {
       "type": "boolean",
       "default": true,
