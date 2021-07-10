@@ -9,9 +9,6 @@ from pylsp import hookimpl, lsp
 
 log = logging.getLogger(__name__)
 
-# most recently retrieved completion items, used for resolution
-_LAST_COMPLETIONS = {}
-
 
 @hookimpl
 def pylsp_settings():
@@ -32,8 +29,6 @@ def _resolve_completion(completion, data):
 @hookimpl
 def pylsp_completions(config, workspace, document, position):
     # pylint: disable=too-many-locals
-    # pylint: disable=global-statement
-    global _LAST_COMPLETIONS
 
     settings = config.plugin_settings('rope_completion', document_path=document.path)
     resolve_eagerly = settings.get('eager', False)
@@ -70,7 +65,8 @@ def pylsp_completions(config, workspace, document, position):
             item = _resolve_completion(item, d)
         new_definitions.append(item)
 
-    _LAST_COMPLETIONS = {
+    # most recently retrieved completion items, used for resolution
+    document.shared_data['LAST_ROPE_COMPLETIONS'] = {
         # label is the only required property; here it is assumed to be unique
         completion['label']: (completion, data)
         for completion, data in zip(new_definitions, definitions)
@@ -82,9 +78,9 @@ def pylsp_completions(config, workspace, document, position):
 
 
 @hookimpl
-def pylsp_completion_item_resolve(completion_item):
+def pylsp_completion_item_resolve(completion_item, document):
     """Resolve formatted completion for given non-resolved completion"""
-    completion, data = _LAST_COMPLETIONS.get(completion_item['label'])
+    completion, data = document.shared_data['LAST_ROPE_COMPLETIONS'].get(completion_item['label'])
     return _resolve_completion(completion, data)
 
 

@@ -158,7 +158,8 @@ def test_jedi_completion_item_resolve(config, workspace):
     assert 'detail' not in documented_hello_item
 
     resolved_documented_hello = pylsp_jedi_completion_item_resolve(
-        completion_item=documented_hello_item
+        completion_item=documented_hello_item,
+        document=doc
     )
     assert 'Sends a polite greeting' in resolved_documented_hello['documentation']
 
@@ -435,7 +436,7 @@ def test_jedi_completion_environment(workspace):
     completions = pylsp_jedi_completions(doc._config, doc, com_position)
     assert completions[0]['label'] == 'loghub'
 
-    resolved = pylsp_jedi_completion_item_resolve(completions[0])
+    resolved = pylsp_jedi_completion_item_resolve(completions[0], doc)
     assert 'changelog generator' in resolved['documentation'].lower()
 
 

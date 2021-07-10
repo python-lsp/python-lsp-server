@@ -33,22 +33,17 @@ _IMPORTS = ('import_name', 'import_from')
 # Types of parso node for errors
 _ERRORS = ('error_node', )
 
-# most recently retrieved completion items, used for resolution
-_LAST_COMPLETIONS = {}
-
 
 @hookimpl
 def pylsp_completions(config, document, position):
     """Get formatted completions for current code position"""
     # pylint: disable=too-many-locals
-    # pylint: disable=global-statement
-    global _LAST_COMPLETIONS
 
     settings = config.plugin_settings('jedi_completion', document_path=document.path)
     resolve_eagerly = settings.get('eager', False)
     code_position = _utils.position_to_jedi_linecolumn(document, position)
 
-    code_position["fuzzy"] = settings.get("fuzzy", False)
+    code_position['fuzzy'] = settings.get('fuzzy', False)
     completions = document.jedi_script(use_document_path=True).complete(**code_position)
 
     if not completions:
@@ -77,7 +72,13 @@ def pylsp_completions(config, document, position):
                 completion_dict['label'] += ' object'
                 ready_completions.append(completion_dict)
 
-    _LAST_COMPLETIONS = {
+    for completion_dict in ready_completions:
+        completion_dict['data'] = {
+            'doc_uri': document.uri
+        }
+
+    # most recently retrieved completion items, used for resolution
+    document.shared_data['LAST_JEDI_COMPLETIONS'] = {
         # label is the only required property; here it is assumed to be unique
         completion['label']: (completion, data)
         for completion, data in zip(ready_completions, completions)
@@ -87,9 +88,9 @@ def pylsp_completions(config, document, position):
 
 
 @hookimpl
-def pylsp_completion_item_resolve(completion_item):
+def pylsp_completion_item_resolve(completion_item, document):
     """Resolve formatted completion for given non-resolved completion"""
-    completion, data = _LAST_COMPLETIONS.get(completion_item['label'])
+    completion, data = document.shared_data['LAST_JEDI_COMPLETIONS'].get(completion_item['label'])
     return _resolve_completion(completion, data)
 
 
