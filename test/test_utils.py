@@ -3,7 +3,7 @@
 
 import time
 
-import unittest.mock as mock
+from unittest import mock
 from flaky import flaky
 
 from pylsp import _utils
