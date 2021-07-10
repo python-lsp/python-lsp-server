@@ -59,7 +59,10 @@ def pylsp_completions(config, workspace, document, position):
         item = {
             'label': d.name,
             'kind': _kind(d),
-            'sortText': _sort_text(d)
+            'sortText': _sort_text(d),
+            'data': {
+                'doc_uri': document.uri
+            }
         }
         if resolve_eagerly:
             item = _resolve_completion(item, d)
