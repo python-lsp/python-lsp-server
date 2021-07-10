@@ -2,8 +2,8 @@
 # Copyright 2021- Python Language Server Contributors.
 
 import time
-
 from unittest import mock
+
 from flaky import flaky
 
 from pylsp import _utils

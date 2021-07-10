@@ -60,10 +60,12 @@ Configuration is loaded from zero or more configuration sources.  Currently impl
 
 The default configuration source is pycodestyle. Change the `pylsp.configurationSources` setting to `['flake8']` in order to respect flake8 configuration instead.
 
-Overall configuration is computed first from user configuration (in home directory), overridden by configuration passed in by the language client, and then overriden by configuration discovered in the workspace.
+Overall configuration is computed first from user configuration (in home directory), overridden by configuration passed in by the language client, and then overridden by configuration discovered in the workspace.
 
 To enable pydocstyle for linting docstrings add the following setting in your LSP configuration:
 `"pylsp.plugins.pydocstyle.enabled": true`
+
+All configuration options are described in [`CONFIGURATION.md`](https://github.com/python-lsp/python-lsp-server/blob/develop/CONFIGURATION.md).
 
 ## LSP Server Features
 
@@ -84,6 +86,12 @@ To run the test suite:
 
 ```sh
 pip install '.[test]' && pytest
+```
+
+After adding configuration options to `schema.json`, refresh the `CONFIGURATION.md` file with
+
+```
+python scripts/jsonschema2md.py pylsp/config/schema.json CONFIGURATION.md
 ```
 
 ## License
