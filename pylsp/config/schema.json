@@ -56,7 +56,7 @@
     },
     "pylsp.plugins.jedi_completion.resolve_at_most_labels": {
       "type": "number",
-      "default": false,
+      "default": 25,
       "description": "How many labels (at most) should be resolved?"
     },
     "pylsp.plugins.jedi_completion.cache_labels_for": {
