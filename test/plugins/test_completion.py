@@ -149,6 +149,7 @@ def test_jedi_completion_item_resolve(config, workspace):
     # Over the blank line
     com_position = {'line': 8, 'character': 0}
     doc = Document(DOC_URI, workspace, DOC)
+    config.update({'plugins': {'jedi_completion': {'resolve_at_most_labels': math.inf}}})
     completions = pylsp_jedi_completions(config, doc, com_position)
 
     items = {c['label']: c for c in completions}
