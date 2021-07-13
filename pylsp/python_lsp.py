@@ -162,8 +162,8 @@ class PythonLSPServer(MethodDispatcher):
                 'resolveProvider': False,  # We may need to make this configurable
             },
             'completionProvider': {
-                'resolveProvider': False,  # We know everything ahead of time
-                'triggerCharacters': ['.']
+                'resolveProvider': True,  # We could know everything ahead of time, but this takes time to transfer
+                'triggerCharacters': ['.'],
             },
             'documentFormattingProvider': True,
             'documentHighlightProvider': True,
@@ -250,6 +250,10 @@ class PythonLSPServer(MethodDispatcher):
             'items': flatten(completions)
         }
 
+    def completion_item_resolve(self, completion_item):
+        doc_uri = completion_item.get('data', {}).get('doc_uri', None)
+        return self._hook('pylsp_completion_item_resolve', doc_uri, completion_item=completion_item)
+
     def definitions(self, doc_uri, position):
         return flatten(self._hook('pylsp_definitions', doc_uri, position=position))
 
@@ -295,6 +299,9 @@ class PythonLSPServer(MethodDispatcher):
 
     def folding(self, doc_uri):
         return flatten(self._hook('pylsp_folding_range', doc_uri))
+
+    def m_completion_item__resolve(self, **completionItem):
+        return self.completion_item_resolve(completionItem)
 
     def m_text_document__did_close(self, textDocument=None, **_kwargs):
         workspace = self._match_uri_to_workspace(textDocument['uri'])
