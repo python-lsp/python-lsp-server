@@ -54,6 +54,19 @@
       "default": false,
       "description": "Resolve documentation and detail eagerly."
     },
+    "pylsp.plugins.jedi_completion.resolve_at_most_labels": {
+      "type": "number",
+      "default": 25,
+      "description": "How many labels (at most) should be resolved?"
+    },
+    "pylsp.plugins.jedi_completion.cache_labels_for": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": ["pandas", "numpy", "tensorflow", "matplotlib"],
+      "description": "Modules for which the labels should be cached."
+    },
     "pylsp.plugins.jedi_definition.enabled": {
       "type": "boolean",
       "default": true,
@@ -257,6 +270,11 @@
       "type": "boolean",
       "default": true,
       "description": "Enable or disable the plugin."
+    },
+    "pylsp.plugins.rope_completion.eager": {
+      "type": "boolean",
+      "default": false,
+      "description": "Resolve documentation and detail eagerly."
     },
     "pylsp.plugins.yapf.enabled": {
       "type": "boolean",
