@@ -12,6 +12,7 @@ This server can be configured using `workspace/didChangeConfiguration` method. E
 | `pylsp.plugins.jedi_completion.include_class_objects` | `boolean` | Adds class objects as a separate completion item. | `true` |
 | `pylsp.plugins.jedi_completion.fuzzy` | `boolean` | Enable fuzzy when requesting autocomplete. | `false` |
 | `pylsp.plugins.jedi_completion.eager` | `boolean` | Resolve documentation and detail eagerly. | `false` |
+| `pylsp.plugins.jedi_completion.resolve_at_most_labels` | `number`  | How many labels (at most) should be resolved? | `false` |
 | `pylsp.plugins.jedi_definition.enabled` | `boolean` | Enable or disable the plugin. | `true` |
 | `pylsp.plugins.jedi_definition.follow_imports` | `boolean` | The goto call will follow imports. | `true` |
 | `pylsp.plugins.jedi_definition.follow_builtin_imports` | `boolean` | If follow_imports is True will decide if it follow builtin imports. | `true` |
@@ -44,6 +45,7 @@ This server can be configured using `workspace/didChangeConfiguration` method. E
 | `pylsp.plugins.pylint.args` | `array`  of non-unique `string` items | Arguments to pass to pylint. | `null` |
 | `pylsp.plugins.pylint.executable` | `string` | Executable to run pylint with. Enabling this will run pylint on unsaved files via stdin. Can slow down workflow. Only works with python3. | `null` |
 | `pylsp.plugins.rope_completion.enabled` | `boolean` | Enable or disable the plugin. | `true` |
+| `pylsp.plugins.rope_completion.eager` | `boolean` | Resolve documentation and detail eagerly. | `false` |
 | `pylsp.plugins.yapf.enabled` | `boolean` | Enable or disable the plugin. | `true` |
 | `pylsp.rope.extensionModules` | `string` | Builtin and c-extension modules that are allowed to be imported and inspected by rope. | `null` |
 | `pylsp.rope.ropeFolder` | `array`  of unique `string` items | The name of the folder in which rope stores project configurations and data.  Pass `null` for not using such a folder at all. | `null` |
