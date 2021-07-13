@@ -84,8 +84,8 @@ All configuration options are described in [`CONFIGURATION.md`](https://github.c
 
 To run the test suite:
 
-```
-pip install .[test] && pytest
+```sh
+pip install '.[test]' && pytest
 ```
 
 After adding configuration options to `schema.json`, refresh the `CONFIGURATION.md` file with

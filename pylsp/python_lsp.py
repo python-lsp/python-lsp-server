@@ -199,7 +199,8 @@ class PythonLSPServer(MethodDispatcher):
         log.info('Server capabilities: %s', server_capabilities)
         return server_capabilities
 
-    def m_initialize(self, processId=None, rootUri=None, rootPath=None, initializationOptions=None, **_kwargs):
+    def m_initialize(self, processId=None, rootUri=None, rootPath=None,
+                     initializationOptions=None, workspaceFolders=None, **_kwargs):
         log.debug('Language server initialized with %s %s %s %s', processId, rootUri, rootPath, initializationOptions)
         if rootUri is None:
             rootUri = uris.from_fs_path(rootPath) if rootPath is not None else ''
@@ -210,6 +211,19 @@ class PythonLSPServer(MethodDispatcher):
                                     processId, _kwargs.get('capabilities', {}))
         self.workspace = Workspace(rootUri, self._endpoint, self.config)
         self.workspaces[rootUri] = self.workspace
+        if workspaceFolders:
+            for folder in workspaceFolders:
+                uri = folder['uri']
+                if uri == rootUri:
+                    # Already created
+                    continue
+                workspace_config = config.Config(
+                    uri, self.config._init_opts,
+                    self.config._process_id, self.config._capabilities)
+                workspace_config.update(self.config._settings)
+                self.workspaces[uri] = Workspace(
+                    uri, self._endpoint, workspace_config)
+
         self._dispatchers = self._hook('pylsp_dispatchers')
         self._hook('pylsp_initialize')
 
