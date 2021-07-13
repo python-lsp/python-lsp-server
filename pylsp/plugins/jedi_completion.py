@@ -58,6 +58,9 @@ def pylsp_completions(config, document, position):
     should_include_class_objects = settings.get('include_class_objects', True)
 
     max_labels_resolve = settings.get('resolve_at_most_labels', 25)
+    modules_to_cache_labels_for = settings.get('cache_labels_for', None)
+    if modules_to_cache_labels_for is not None:
+        LABEL_RESOLVER.cached_modules = modules_to_cache_labels_for
 
     include_params = snippet_support and should_include_params and use_snippets(document, position)
     include_class_objects = snippet_support and should_include_class_objects and use_snippets(document, position)
@@ -242,6 +245,14 @@ class LabelResolver:
         self._clear_every = 2
         # see https://github.com/davidhalter/jedi/blob/master/jedi/inference/helpers.py#L194-L202
         self._cached_modules = {'pandas', 'numpy', 'tensorflow', 'matplotlib'}
+
+    @property
+    def cached_modules(self):
+        return self._cached_modules
+
+    @cached_modules.setter
+    def cached_modules(self, new_value):
+        self._cached_modules = set(new_value)
 
     def clear_outdated(self):
         now = self.time_key()

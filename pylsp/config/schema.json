@@ -59,6 +59,14 @@
       "default": false,
       "description": "How many labels (at most) should be resolved?"
     },
+    "pylsp.plugins.jedi_completion.cache_labels_for": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": ["pandas", "numpy", "tensorflow", "matplotlib"],
+      "description": "Modules for which the labels should be cached."
+    },
     "pylsp.plugins.jedi_definition.enabled": {
       "type": "boolean",
       "default": true,
