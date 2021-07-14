@@ -184,8 +184,11 @@ def _format_completion(d, include_params=True, resolve=False, resolve_label=Fals
         path = path.replace('/', '\\/')
         completion['insertText'] = path
 
-    sig = d.get_signatures()
-    if (include_params and sig and not is_exception_class(d.name)):
+    if include_params and not is_exception_class(d.name):
+        sig = d.get_signatures()
+        if not sig:
+            return completion
+
         positional_args = [param for param in sig[0].params
                            if '=' not in param.description and
                            param.name not in {'/', '*'}]
