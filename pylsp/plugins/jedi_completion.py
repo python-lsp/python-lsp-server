@@ -111,8 +111,7 @@ def pylsp_completion_item_resolve(completion_item, document):
     if shared_data:
         completion, data = shared_data
         return _resolve_completion(completion, data)
-    else:
-        return completion_item
+    return completion_item
 
 
 def is_exception_class(name):
