@@ -57,7 +57,7 @@
     "pylsp.plugins.flake8.perFileIgnores": {
       "type": "array",
       "default": null,
-      "description": "A pairing of filenames and violation codes that defines which violations to ignore in a particular file."
+      "description": "A pairing of filenames and violation codes that defines which violations to ignore in a particular file, for example: `[\"file_path.py:W305,W304\"]`)."
     },
     "pylsp.plugins.flake8.select": {
       "type": "array",
