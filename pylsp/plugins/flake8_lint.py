@@ -41,6 +41,7 @@ def pylsp_lint(workspace, document):
         'filename': settings.get('filename'),
         'hang-closing': settings.get('hangClosing'),
         'ignore': ignores or None,
+        'max-complexity': settings.get('maxComplexity'),
         'max-line-length': settings.get('maxLineLength'),
         'select': settings.get('select'),
     }

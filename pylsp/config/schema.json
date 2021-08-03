@@ -49,6 +49,11 @@
       "default": null,
       "description": "List of errors and warnings to ignore (or skip)."
     },
+    "pylsp.plugins.flake8.maxComplexity": {
+      "type": "integer",
+      "default": null,
+      "description": "Maximum allowed complexity threshold."
+    },
     "pylsp.plugins.flake8.maxLineLength": {
       "type": "integer",
       "default": null,
