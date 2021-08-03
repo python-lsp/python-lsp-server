@@ -26,6 +26,7 @@ OPTIONS = [
     ('filename', 'plugins.flake8.filename', list),
     ('hang-closing', 'plugins.flake8.hangClosing', bool),
     ('ignore', 'plugins.flake8.ignore', list),
+    ('max-complexity', 'plugins.flake8.maxComplexity', int),
     ('max-line-length', 'plugins.flake8.maxLineLength', int),
     ('select', 'plugins.flake8.select', list),
     ('per-file-ignores', 'plugins.flake8.perFileIgnores', list),
