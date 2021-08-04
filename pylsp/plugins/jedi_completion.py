@@ -165,6 +165,7 @@ def use_snippets(document, position):
 
 
 def _resolve_completion(completion, d):
+    # pylint: disable=broad-except
     completion['detail'] = _detail(d)
     try:
         docs = _utils.format_docstring(d.docstring())
