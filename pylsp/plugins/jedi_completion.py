@@ -166,7 +166,11 @@ def use_snippets(document, position):
 
 def _resolve_completion(completion, d):
     completion['detail'] = _detail(d)
-    completion['documentation'] = _utils.format_docstring(d.docstring())
+    try:
+        docs = _utils.format_docstring(d.docstring())
+    except Exception:
+        docs = ''
+    completion['documentation'] = docs
     return completion
 
 
