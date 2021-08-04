@@ -86,6 +86,7 @@ def test_initialize(client_server):  # pylint: disable=redefined-outer-name
     assert 'capabilities' in response
 
 
+@flaky(max_runs=10, min_passes=1)
 @pytest.mark.skipif(os.name == 'nt' or (sys.platform.startswith('linux') and PY3),
                     reason='Skipped on win and fails on linux >=3.6')
 def test_exit_with_parent_process_died(client_exited_server):  # pylint: disable=redefined-outer-name
