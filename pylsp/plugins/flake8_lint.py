@@ -7,11 +7,27 @@ import os.path
 import re
 from pathlib import PurePath
 from subprocess import PIPE, Popen
+import shutil
 
 from pylsp import hookimpl, lsp
 
 log = logging.getLogger(__name__)
 FIX_IGNORES_RE = re.compile(r'([^a-zA-Z0-9_,]*;.*(\W+||$))')
+
+
+def get_executable_abspath(executable: str) -> str:
+    if os.path.isabs(executable):
+        log.debug("Absolute path executable : %s", executable)
+        return executable
+
+    if "VIRTUAL_ENV" in os.environ:
+        executable = os.path.join(os.environ["VIRTUAL_ENV"], "bin", executable)
+        log.debug("Running in virtualenv, adjusting executable : %s", executable)
+        return executable
+
+    executable = shutil.which(executable) or executable
+    log.debug("Executable without absolute path, adjusting executable : %s", executable)
+    return executable
 
 
 @hookimpl
@@ -75,6 +91,7 @@ def run_flake8(flake8_executable, args, document):
             os.path.expanduser(os.path.expandvars(flake8_executable))
         )
 
+    flake8_executable = get_executable_abspath(flake8_executable)
     log.debug("Calling %s with args: '%s'", flake8_executable, args)
     try:
         cmd = [flake8_executable]
@@ -82,7 +99,8 @@ def run_flake8(flake8_executable, args, document):
         p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)  # pylint: disable=consider-using-with
     except IOError:
         log.debug("Can't execute %s. Trying with 'python -m flake8'", flake8_executable)
-        cmd = ['python', '-m', 'flake8']
+        python_executable = get_executable_abspath("python")
+        cmd = [python_executable, '-m', 'flake8']
         cmd.extend(args)
         p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)  # pylint: disable=consider-using-with
     (stdout, stderr) = p.communicate(document.source.encode())
