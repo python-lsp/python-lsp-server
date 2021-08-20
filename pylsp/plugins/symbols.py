@@ -16,6 +16,8 @@ def pylsp_document_symbols(config, document):
     # pylint: disable=too-many-nested-blocks
     # pylint: disable=too-many-locals
     # pylint: disable=too-many-branches
+    # pylint: disable=too-many-statements
+
     symbols_settings = config.plugin_settings('jedi_symbols')
     all_scopes = symbols_settings.get('all_scopes', True)
     add_import_symbols = symbols_settings.get('include_import_symbols', True)
@@ -23,6 +25,7 @@ def pylsp_document_symbols(config, document):
     symbols = []
     exclude = set({})
     redefinitions = {}
+
     while definitions != []:
         d = definitions.pop(0)
 
