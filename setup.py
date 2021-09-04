@@ -29,6 +29,7 @@ install_requires = [
     'jedi>=0.17.2,<0.19.0',
     'python-lsp-jsonrpc>=1.0.0',
     'pluggy',
+    'docstring-to-markdown',
     'ujson>=3.0.0',
     'setuptools>=39.0.0'
 ]
