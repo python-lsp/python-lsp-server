@@ -11,18 +11,12 @@ from jedi.api.classes import Completion
 log = logging.getLogger(__name__)
 
 
-def format_label(completion, sig):
-    if sig and completion.type in ('function', 'method'):
-        params = ', '.join(param.name for param in sig[0].params)
-        label = '{}({})'.format(completion.name, params)
-        return label
-    return completion.name
+# ---- Base class
+# -----------------------------------------------------------------------------
+class Resolver:
 
-
-class LabelResolver:
-
-    def __init__(self, format_label_callback, time_to_live=60 * 30):
-        self.format_label = format_label_callback
+    def __init__(self, callback, time_to_live=60 * 30):
+        self.callback = callback
         self._cache = {}
         self._time_to_live = time_to_live
         self._cache_ttl = defaultdict(set)
@@ -66,11 +60,11 @@ class LabelResolver:
                 if self.time_key() % self._clear_every == 0:
                     self.clear_outdated()
 
-                self._cache[key] = self.resolve_label(completion)
+                self._cache[key] = self.resolve(completion)
                 self._cache_ttl[self.time_key()].add(key)
             return self._cache[key]
 
-        return self.resolve_label(completion)
+        return self.resolve(completion)
 
     def _create_completion_id(self, completion: Completion):
         return (
@@ -79,10 +73,10 @@ class LabelResolver:
             self.time_key()
         )
 
-    def resolve_label(self, completion):
+    def resolve(self, completion):
         try:
             sig = completion.get_signatures()
-            return self.format_label(completion, sig)
+            return self.callback(completion, sig)
         except Exception as e:  # pylint: disable=broad-except
             log.warning(
                 'Something went wrong when resolving label for {completion}: {e}',
@@ -91,4 +85,14 @@ class LabelResolver:
             return ''
 
 
-LABEL_RESOLVER = LabelResolver(format_label)
+# ---- Label resolver
+# -----------------------------------------------------------------------------
+def format_label(completion, sig):
+    if sig and completion.type in ('function', 'method'):
+        params = ', '.join(param.name for param in sig[0].params)
+        label = '{}({})'.format(completion.name, params)
+        return label
+    return completion.name
+
+
+LABEL_RESOLVER = Resolver(format_label)
