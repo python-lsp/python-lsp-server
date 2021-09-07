@@ -318,6 +318,20 @@ def test_snippets_completion(config, workspace):
     assert completions[0]['insertTextFormat'] == lsp.InsertTextFormat.Snippet
 
 
+def test_snippets_completion_at_most(config, workspace):
+    doc_snippets = 'from collections import defaultdict \na=defaultdict'
+    doc = Document(DOC_URI, workspace, doc_snippets)
+    config.capabilities['textDocument'] = {
+        'completion': {'completionItem': {'snippetSupport': True}}}
+    config.update({'plugins': {'jedi_completion': {'include_params': True}}})
+    config.update({'plugins': {'jedi_completion': {'resolve_at_most': 0}}})
+
+    com_position = {'line': 1, 'character': len(doc_snippets)}
+    completions = pylsp_jedi_completions(config, doc, com_position)
+    assert completions[0]['insertText'] == 'defaultdict'
+    assert not completions[0].get('insertTextFormat', None)
+
+
 def test_completion_with_class_objects(config, workspace):
     doc_text = 'class FOOBAR(Object): pass\nFOOB'
     com_position = {'line': 1, 'character': 4}
