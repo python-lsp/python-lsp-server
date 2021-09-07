@@ -7,6 +7,8 @@ from time import time
 
 from jedi.api.classes import Completion
 
+from pylsp import lsp
+
 
 log = logging.getLogger(__name__)
 
@@ -15,8 +17,9 @@ log = logging.getLogger(__name__)
 # -----------------------------------------------------------------------------
 class Resolver:
 
-    def __init__(self, callback, time_to_live=60 * 30):
+    def __init__(self, callback, resolve_on_error, time_to_live=60 * 30):
         self.callback = callback
+        self.resolve_on_error = resolve_on_error
         self._cache = {}
         self._time_to_live = time_to_live
         self._cache_ttl = defaultdict(set)
@@ -82,7 +85,7 @@ class Resolver:
                 'Something went wrong when resolving label for {completion}: {e}',
                 completion=completion, e=e
             )
-            return ''
+            return self.resolve_on_error
 
 
 # ---- Label resolver
@@ -95,4 +98,38 @@ def format_label(completion, sig):
     return completion.name
 
 
-LABEL_RESOLVER = Resolver(format_label)
+LABEL_RESOLVER = Resolver(callback=format_label, resolve_on_error='')
+
+
+# ---- Snippets resolver
+# -----------------------------------------------------------------------------
+def format_snippet(completion, sig):
+    if not sig:
+        return {}
+
+    snippet_completion = {}
+
+    positional_args = [param for param in sig[0].params
+                       if '=' not in param.description and
+                       param.name not in {'/', '*'}]
+
+    if len(positional_args) > 1:
+        # For completions with params, we can generate a snippet instead
+        snippet_completion['insertTextFormat'] = lsp.InsertTextFormat.Snippet
+        snippet = completion.name + '('
+        for i, param in enumerate(positional_args):
+            snippet += '${%s:%s}' % (i + 1, param.name)
+            if i < len(positional_args) - 1:
+                snippet += ', '
+        snippet += ')$0'
+        snippet_completion['insertText'] = snippet
+    elif len(positional_args) == 1:
+        snippet_completion['insertTextFormat'] = lsp.InsertTextFormat.Snippet
+        snippet_completion['insertText'] = completion.name + '($0)'
+    else:
+        snippet_completion['insertText'] = completion.name + '()'
+
+    return snippet_completion
+
+
+SNIPPET_RESOLVER = Resolver(callback=format_snippet, resolve_on_error={})

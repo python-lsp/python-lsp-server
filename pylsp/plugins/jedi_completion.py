@@ -7,7 +7,7 @@ import os.path as osp
 import parso
 
 from pylsp import _utils, hookimpl, lsp
-from pylsp.plugins._resolvers import LABEL_RESOLVER
+from pylsp.plugins._resolvers import LABEL_RESOLVER, SNIPPET_RESOLVER
 
 log = logging.getLogger(__name__)
 
@@ -59,6 +59,7 @@ def pylsp_completions(config, document, position):
     modules_to_cache_labels_for = settings.get('cache_labels_for', None)
     if modules_to_cache_labels_for is not None:
         LABEL_RESOLVER.cached_modules = modules_to_cache_labels_for
+        SNIPPET_RESOLVER.cached_modules = modules_to_cache_labels_for
 
     include_params = snippet_support and should_include_params and use_snippets(document, position)
     include_class_objects = snippet_support and should_include_class_objects and use_snippets(document, position)
@@ -68,7 +69,7 @@ def pylsp_completions(config, document, position):
             c,
             include_params,
             resolve=resolve_eagerly,
-            resolve_label=(i < max_labels_resolve)
+            resolve_label_or_snippet=(i < max_labels_resolve)
         )
         for i, c in enumerate(completions)
     ]
@@ -81,7 +82,7 @@ def pylsp_completions(config, document, position):
                     c,
                     False,
                     resolve=resolve_eagerly,
-                    resolve_label=(i < max_labels_resolve)
+                    resolve_label_or_snippet=(i < max_labels_resolve)
                 )
                 completion_dict['kind'] = lsp.CompletionItemKind.TypeParameter
                 completion_dict['label'] += ' object'
@@ -173,9 +174,9 @@ def _resolve_completion(completion, d):
     return completion
 
 
-def _format_completion(d, include_params=True, resolve=False, resolve_label=False):
+def _format_completion(d, include_params=True, resolve=False, resolve_label_or_snippet=False):
     completion = {
-        'label': _label(d, resolve_label),
+        'label': _label(d, resolve_label_or_snippet),
         'kind': _TYPE_MAP.get(d.type),
         'sortText': _sort_text(d),
         'insertText': d.name
@@ -191,29 +192,8 @@ def _format_completion(d, include_params=True, resolve=False, resolve_label=Fals
         completion['insertText'] = path
 
     if include_params and not is_exception_class(d.name):
-        sig = d.get_signatures()
-        if not sig:
-            return completion
-
-        positional_args = [param for param in sig[0].params
-                           if '=' not in param.description and
-                           param.name not in {'/', '*'}]
-
-        if len(positional_args) > 1:
-            # For completions with params, we can generate a snippet instead
-            completion['insertTextFormat'] = lsp.InsertTextFormat.Snippet
-            snippet = d.name + '('
-            for i, param in enumerate(positional_args):
-                snippet += '${%s:%s}' % (i + 1, param.name)
-                if i < len(positional_args) - 1:
-                    snippet += ', '
-            snippet += ')$0'
-            completion['insertText'] = snippet
-        elif len(positional_args) == 1:
-            completion['insertTextFormat'] = lsp.InsertTextFormat.Snippet
-            completion['insertText'] = d.name + '($0)'
-        else:
-            completion['insertText'] = d.name + '()'
+        snippet = _snippet(d, resolve_label_or_snippet)
+        completion.update(snippet)
 
     return completion
 
@@ -225,6 +205,13 @@ def _label(definition, resolve=False):
     if sig:
         return sig
     return definition.name
+
+
+def _snippet(definition, resolve=False):
+    if not resolve:
+        return {}
+    snippet = SNIPPET_RESOLVER.get_or_create(definition)
+    return snippet
 
 
 def _detail(definition):
