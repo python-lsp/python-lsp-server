@@ -55,11 +55,11 @@ def pylsp_completions(config, document, position):
     should_include_params = settings.get('include_params')
     should_include_class_objects = settings.get('include_class_objects', True)
 
-    max_labels_resolve = settings.get('resolve_at_most_labels', 25)
-    modules_to_cache_labels_for = settings.get('cache_labels_for', None)
-    if modules_to_cache_labels_for is not None:
-        LABEL_RESOLVER.cached_modules = modules_to_cache_labels_for
-        SNIPPET_RESOLVER.cached_modules = modules_to_cache_labels_for
+    max_to_resolve = settings.get('resolve_at_most', 25)
+    modules_to_cache_for = settings.get('cache_for', None)
+    if modules_to_cache_for is not None:
+        LABEL_RESOLVER.cached_modules = modules_to_cache_for
+        SNIPPET_RESOLVER.cached_modules = modules_to_cache_for
 
     include_params = snippet_support and should_include_params and use_snippets(document, position)
     include_class_objects = snippet_support and should_include_class_objects and use_snippets(document, position)
@@ -69,7 +69,7 @@ def pylsp_completions(config, document, position):
             c,
             include_params,
             resolve=resolve_eagerly,
-            resolve_label_or_snippet=(i < max_labels_resolve)
+            resolve_label_or_snippet=(i < max_to_resolve)
         )
         for i, c in enumerate(completions)
     ]
@@ -82,7 +82,7 @@ def pylsp_completions(config, document, position):
                     c,
                     False,
                     resolve=resolve_eagerly,
-                    resolve_label_or_snippet=(i < max_labels_resolve)
+                    resolve_label_or_snippet=(i < max_to_resolve)
                 )
                 completion_dict['kind'] = lsp.CompletionItemKind.TypeParameter
                 completion_dict['label'] += ' object'
