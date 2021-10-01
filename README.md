@@ -49,7 +49,11 @@ Installing these plugins will add extra functionality to the language server:
 - [python-lsp-black](https://github.com/python-lsp/python-lsp-black): code formatting using [Black](https://github.com/psf/black).
 - [pyls-memestra](https://github.com/QuantStack/pyls-memestra): detecting the use of deprecated APIs.
 
-Please see the above repositories for examples on how to write plugins for the Python LSP Server. Please file an issue if you require assistance writing a plugin.
+Please see the above repositories for examples on how to write plugins for the Python LSP Server.
+
+[cookiecutter-pylsp-plugin](https://github.com/lieryan/cookiecutter-pylsp-plugin) is a [cookiecutter](https://cookiecutter.readthedocs.io/) template that sets up a basic plugin project for python-lsp-server. It documents how to write your own plugins.
+
+Please file an issue if you require assistance writing a plugin.
 
 ## Configuration
 
