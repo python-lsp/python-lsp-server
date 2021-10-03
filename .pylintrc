@@ -18,7 +18,6 @@ disable =
     too-many-instance-attributes,
     import-error,
     consider-using-f-string,
-    consider-using-in
 
 [REPORTS]
 
