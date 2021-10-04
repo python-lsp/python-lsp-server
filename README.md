@@ -52,7 +52,7 @@ Installing these plugins will add extra functionality to the language server:
 
 Please see the above repositories for examples on how to write plugins for the Python LSP Server.
 
-[cookiecutter-pylsp-plugin](https://github.com/lieryan/cookiecutter-pylsp-plugin) is a [cookiecutter](https://cookiecutter.readthedocs.io/) template for setting up a basic plugin project for python-lsp-server. It documents all the essentials you need to know to kick start your own plugin project.
+[cookiecutter-pylsp-plugin](https://github.com/python-lsp/cookiecutter-pylsp-plugin) is a [cookiecutter](https://cookiecutter.readthedocs.io/) template for setting up a basic plugin project for python-lsp-server. It documents all the essentials you need to know to kick start your own plugin project.
 
 Please file an issue if you require assistance writing a plugin.
 
