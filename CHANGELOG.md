@@ -1,7 +1,17 @@
 # History of changes
 
-## Version 1.2.2 (2021-09-01)
+## Version 1.2.3 (2021-10-04)
 
+### Pull Requests Merged
+
+* [PR 93](https://github.com/python-lsp/python-lsp-server/pull/93) - Document how to write python-lsp-server plugin + add pylsp-rope to Readme, by [@lieryan](https://github.com/lieryan)
+* [PR 88](https://github.com/python-lsp/python-lsp-server/pull/88) - Fix pylint test without pylsp installed, by [@jspricke](https://github.com/jspricke)
+
+In this release 2 pull requests were closed.
+
+----
+
+## Version 1.2.2 (2021-09-01)
 
 ### Pull Requests Merged
 
