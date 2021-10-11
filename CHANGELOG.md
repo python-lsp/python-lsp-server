@@ -1,5 +1,15 @@
 # History of changes
 
+## Version 1.2.4 (2021-10-11)
+
+### Pull Requests Merged
+
+* [PR 96](https://github.com/python-lsp/python-lsp-server/pull/96) - Pin flake8 to be less than version 4, by [@ccordoba12](https://github.com/ccordoba12)
+
+In this release 1 pull request was closed.
+
+----
+
 ## Version 1.2.3 (2021-10-04)
 
 ### Pull Requests Merged
