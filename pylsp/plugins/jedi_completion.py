@@ -69,15 +69,6 @@ def pylsp_completions(config, document, position):
     ready_completions = []
     for i, c in enumerate(completions):
 
-        if c.type == 'class' and include_class_objects:
-            completion_dict = _format_completion(
-                c, False, resolve=resolve_eagerly, resolve_label_or_snippet=(i < max_to_resolve)
-            )
-            completion_dict['kind'] = lsp.CompletionItemKind.TypeParameter
-            completion_dict['label'] += ' object'
-            completion_dict['data'] = {'doc_uri': document.uri}
-            ready_completions.append(completion_dict)
-
         ready_completions.append(
             {
                 **_format_completion(
@@ -89,6 +80,16 @@ def pylsp_completions(config, document, position):
                 'data': {'doc_uri': document.uri},
             }
         )
+
+        if c.type == 'class' and include_class_objects:
+            completion_dict = _format_completion(
+                c, False, resolve=resolve_eagerly, resolve_label_or_snippet=(i < max_to_resolve)
+            )
+            completion_dict['kind'] = lsp.CompletionItemKind.TypeParameter
+            completion_dict['label'] += ' object'
+            completion_dict['data'] = {'doc_uri': document.uri}
+            ready_completions.append(completion_dict)
+
 
     # most recently retrieved completion items, used for resolution
     document.shared_data['LAST_JEDI_COMPLETIONS'] = {
