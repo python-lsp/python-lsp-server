@@ -65,12 +65,17 @@ def pylsp_completions(config, document, position):
     include_class_objects = snippet_support and should_include_class_objects and use_snippets(document, position)
 
     ready_completions = [
-        _format_completion(
-            c,
-            include_params,
-            resolve=resolve_eagerly,
-            resolve_label_or_snippet=(i < max_to_resolve)
-        )
+        {
+            **_format_completion(
+                c,
+                include_params,
+                resolve=resolve_eagerly,
+                resolve_label_or_snippet=(i < max_to_resolve)
+            ),
+            'data': {
+                'doc_uri': document.uri
+            }
+        }
         for i, c in enumerate(completions)
     ]
 
@@ -86,12 +91,10 @@ def pylsp_completions(config, document, position):
                 )
                 completion_dict['kind'] = lsp.CompletionItemKind.TypeParameter
                 completion_dict['label'] += ' object'
+                completion_dict['data'] = {
+                    'doc_uri': document.uri
+                }
                 ready_completions.append(completion_dict)
-
-    for completion_dict in ready_completions:
-        completion_dict['data'] = {
-            'doc_uri': document.uri
-        }
 
     # most recently retrieved completion items, used for resolution
     document.shared_data['LAST_JEDI_COMPLETIONS'] = {
