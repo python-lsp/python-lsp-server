@@ -17,22 +17,22 @@ log = logging.getLogger(__name__)
 # see: https://jedi.readthedocs.io/en/latest/docs/api-classes.html#jedi.api.classes.BaseName.type
 _TYPE_MAP = {
     'module': lsp.CompletionItemKind.Module,
-    'namespace': lsp.CompletionItemKind.Module,  # to be added in Jedi 0.18+
+    'namespace': lsp.CompletionItemKind.Module,    # to be added in Jedi 0.18+
     'class': lsp.CompletionItemKind.Class,
     'instance': lsp.CompletionItemKind.Reference,
     'function': lsp.CompletionItemKind.Function,
     'param': lsp.CompletionItemKind.Variable,
     'path': lsp.CompletionItemKind.File,
     'keyword': lsp.CompletionItemKind.Keyword,
-    'property': lsp.CompletionItemKind.Property,  # added in Jedi 0.18
-    'statement': lsp.CompletionItemKind.Variable,
+    'property': lsp.CompletionItemKind.Property,    # added in Jedi 0.18
+    'statement': lsp.CompletionItemKind.Variable
 }
 
 # Types of parso nodes for which snippet is not included in the completion
 _IMPORTS = ('import_name', 'import_from')
 
 # Types of parso node for errors
-_ERRORS = ('error_node',)
+_ERRORS = ('error_node', )
 
 
 @hookimpl
@@ -62,34 +62,36 @@ def pylsp_completions(config, document, position):
         SNIPPET_RESOLVER.cached_modules = modules_to_cache_for
 
     include_params = snippet_support and should_include_params and use_snippets(document, position)
-    include_class_objects = (
-        snippet_support and should_include_class_objects and use_snippets(document, position)
-    )
+    include_class_objects = snippet_support and should_include_class_objects and use_snippets(document, position)
 
-    ready_completions = []
-    for i, c in enumerate(completions):
-
-        ready_completions.append(
-            {
-                **_format_completion(
-                    c,
-                    include_params,
-                    resolve=resolve_eagerly,
-                    resolve_label_or_snippet=(i < max_to_resolve),
-                ),
-                'data': {'doc_uri': document.uri},
-            }
+    ready_completions = [
+        _format_completion(
+            c,
+            include_params,
+            resolve=resolve_eagerly,
+            resolve_label_or_snippet=(i < max_to_resolve)
         )
+        for i, c in enumerate(completions)
+    ]
 
-        if c.type == 'class' and include_class_objects:
-            completion_dict = _format_completion(
-                c, False, resolve=resolve_eagerly, resolve_label_or_snippet=(i < max_to_resolve)
-            )
-            completion_dict['kind'] = lsp.CompletionItemKind.TypeParameter
-            completion_dict['label'] += ' object'
-            completion_dict['data'] = {'doc_uri': document.uri}
-            ready_completions.append(completion_dict)
+    # TODO split up once other improvements are merged
+    if include_class_objects:
+        for i, c in enumerate(completions):
+            if c.type == 'class':
+                completion_dict = _format_completion(
+                    c,
+                    False,
+                    resolve=resolve_eagerly,
+                    resolve_label_or_snippet=(i < max_to_resolve)
+                )
+                completion_dict['kind'] = lsp.CompletionItemKind.TypeParameter
+                completion_dict['label'] += ' object'
+                ready_completions.append(completion_dict)
 
+    for completion_dict in ready_completions:
+        completion_dict['data'] = {
+            'doc_uri': document.uri
+        }
 
     # most recently retrieved completion items, used for resolution
     document.shared_data['LAST_JEDI_COMPLETIONS'] = {
@@ -135,16 +137,14 @@ def use_snippets(document, position):
     """
     line = position['line']
     lines = document.source.split('\n', line)
-    act_lines = [lines[line][: position['character']]]
+    act_lines = [lines[line][:position['character']]]
     line -= 1
     last_character = ''
     while line > -1:
         act_line = lines[line]
-        if (
-            act_line.rstrip().endswith('\\')
-            or act_line.rstrip().endswith('(')
-            or act_line.rstrip().endswith(',')
-        ):
+        if (act_line.rstrip().endswith('\\') or
+                act_line.rstrip().endswith('(') or
+                act_line.rstrip().endswith(',')):
             act_lines.insert(0, act_line)
             line -= 1
             if act_line.rstrip().endswith('('):
@@ -159,7 +159,8 @@ def use_snippets(document, position):
     code = '\n'.join(act_lines).rsplit(';', maxsplit=1)[-1].strip() + last_character
     tokens = parso.parse(code)
     expr_type = tokens.children[0].type
-    return expr_type not in _IMPORTS and not (expr_type in _ERRORS and 'import' in code)
+    return (expr_type not in _IMPORTS and
+            not (expr_type in _ERRORS and 'import' in code))
 
 
 def _resolve_completion(completion, d):
@@ -178,7 +179,7 @@ def _format_completion(d, include_params=True, resolve=False, resolve_label_or_s
         'label': _label(d, resolve_label_or_snippet),
         'kind': _TYPE_MAP.get(d.type),
         'sortText': _sort_text(d),
-        'insertText': d.name,
+        'insertText': d.name
     }
 
     if resolve:
@@ -221,7 +222,7 @@ def _detail(definition):
 
 
 def _sort_text(definition):
-    """Ensure builtins appear at the bottom.
+    """ Ensure builtins appear at the bottom.
     Description is of format <type>: <module>.<item>
     """
 
