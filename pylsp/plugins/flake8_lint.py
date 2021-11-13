@@ -82,7 +82,7 @@ def run_flake8(flake8_executable, args, document):
         cmd.extend(args)
         p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
     except IOError:
-        log.debug("Can't execute %s. Trying with '" + sys.executable + " -m flake8'", flake8_executable)
+        log.debug("Can't execute %s. Trying with '%s -m flake8'", flake8_executable, sys.executable)
         cmd = [sys.executable, '-m', 'flake8']
         cmd.extend(args)
         p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)  # pylint: disable=consider-using-with
