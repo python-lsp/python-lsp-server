@@ -46,7 +46,7 @@ setup(
     python_requires='>=3.6',
     extras_require={
         'all': [
-            'autopep8',
+            'autopep8>=1.6.0,<1.7.0',
             'flake8>=4.0.0,<4.1.0',
             'mccabe>=0.6.0,<0.7.0',
             'pycodestyle>=2.8.0,<2.9.0',
@@ -56,7 +56,7 @@ setup(
             'rope>=0.10.5',
             'yapf',
         ],
-        'autopep8': ['autopep8'],
+        'autopep8': ['autopep8>=1.6.0,<1.7.0'],
         'flake8': ['flake8>=4.0.0,<4.1.0'],
         'mccabe': ['mccabe>=0.6.0,<0.7.0'],
         'pycodestyle': ['pycodestyle>=2.8.0,<2.9.0'],
