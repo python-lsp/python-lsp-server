@@ -1,5 +1,15 @@
 # History of changes
 
+## Version 1.3.1 (2021-11-22)
+
+### Pull Requests Merged
+
+* [PR 118](https://github.com/python-lsp/python-lsp-server/pull/118) - Fix tests for Jedi 0.18.1, by [@ccordoba12](https://github.com/ccordoba12)
+
+In this release 1 pull request was closed.
+
+----
+
 ## Version 1.3.0 (2021-11-22)
 
 ### New features
