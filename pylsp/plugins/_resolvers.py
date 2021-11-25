@@ -82,8 +82,9 @@ class Resolver:
             return self.callback(completion, sig)
         except Exception as e:  # pylint: disable=broad-except
             log.warning(
-                'Something went wrong when resolving label for {completion}: {e}',
-                completion=completion, e=e
+                'Something went wrong when resolving label for {completion}: {e}'.format(
+                    completion=completion, e=e
+                ),
             )
             return self.resolve_on_error
 
