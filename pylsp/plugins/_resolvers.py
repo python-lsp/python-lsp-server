@@ -81,9 +81,7 @@ class Resolver:
             sig = completion.get_signatures()
             return self.callback(completion, sig)
         except Exception as e:  # pylint: disable=broad-except
-            log.warning(
-                log.warning(f'Something went wrong when resolving label for {completion}: {e}')
-            )
+            log.warning(f'Something went wrong when resolving label for {completion}: {e}')
             return self.resolve_on_error
 
 
