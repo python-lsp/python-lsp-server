@@ -17,9 +17,10 @@ def pylsp_settings():
 
 
 def _resolve_completion(completion, data):
+    # pylint: disable=broad-except
     try:
         doc = data.get_doc()
-    except AttributeError:
+    except Exception:
         doc = ""
     completion['detail'] = '{0} {1}'.format(data.scope or "", data.name)
     completion['documentation'] = doc
