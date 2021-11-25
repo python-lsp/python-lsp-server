@@ -1,5 +1,21 @@
 # History of changes
 
+## Version 1.3.2 (2021-11-25)
+
+### Issues Closed
+
+* [Issue 121](https://github.com/python-lsp/python-lsp-server/issues/121) - Error on triggering completions in import context ([PR 122](https://github.com/python-lsp/python-lsp-server/pull/122) by [@ccordoba12](https://github.com/ccordoba12))
+
+In this release 1 issue was closed.
+
+### Pull Requests Merged
+
+* [PR 122](https://github.com/python-lsp/python-lsp-server/pull/122) - Fix formatting a log message, by [@ccordoba12](https://github.com/ccordoba12) ([121](https://github.com/python-lsp/python-lsp-server/issues/121))
+
+In this release 1 pull request was closed.
+
+----
+
 ## Version 1.3.1 (2021-11-22)
 
 ### Pull Requests Merged
