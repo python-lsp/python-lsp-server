@@ -66,7 +66,7 @@ setup(
         'rope': ['rope>0.10.5'],
         'yapf': ['yapf'],
         'test': ['pylint>=2.5.0', 'pytest', 'pytest-cov', 'coverage',
-                 'numpy', 'pandas', 'matplotlib', 'pyqt5', 'flaky'],
+                 'numpy', 'pandas', 'matplotlib', 'flaky'],
     },
     entry_points={
         'console_scripts': [
