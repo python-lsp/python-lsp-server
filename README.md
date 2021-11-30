@@ -21,6 +21,27 @@ If the respective dependencies are found, the following optional providers will 
 - [autopep8](https://github.com/hhatto/autopep8) for code formatting
 - [YAPF](https://github.com/google/yapf) for code formatting (preferred over autopep8)
 
+PYLSP can now be used in Web Sockets based configuration as follows:
+
+```
+pylsp --ws --host [host/ip] --port [port]
+```
+
+The following libraries are required for Web Sockets support:
+- [autobahn-twisted] (https://github.com/crossbario/autobahn-python) for PYLSP Web sockets using autobahn in twisted configuration. refer (https://autobahn.readthedocs.io/en/latest/installation.html) for more details
+
+you can install these dependencies with below command:
+
+```
+pip install autobahn[twisted,accelerate]>=21.11.1
+```
+
+or with this:
+
+```
+pip install 'python-lsp-server[autobahn-twisted]'
+```
+
 Optional providers can be installed using the `extras` syntax. To install [YAPF](https://github.com/google/yapf) formatting for example:
 
 ```
