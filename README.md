@@ -28,7 +28,7 @@ pylsp --ws --host [host/ip] --port [port]
 ```
 
 The following libraries are required for Web Sockets support:
-- [autobahn-twisted] (https://github.com/crossbario/autobahn-python) for PYLSP Web sockets using autobahn in twisted configuration. refer (https://autobahn.readthedocs.io/en/latest/installation.html) for more details
+- [autobahn-twisted](https://github.com/crossbario/autobahn-python) for PYLSP Web sockets using autobahn in twisted configuration. refer [Autobahn installation](https://autobahn.readthedocs.io/en/latest/installation.html) for more details
 
 you can install these dependencies with below command:
 
