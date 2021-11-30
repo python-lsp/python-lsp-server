@@ -91,6 +91,66 @@ def start_io_lang_server(rfile, wfile, check_parent_process, handler_class):
     server.start()
 
 
+def start_ws_lang_server(bind_addr, port, check_parent_process, handler_class):
+    if not issubclass(handler_class, PythonLSPServer):
+        raise ValueError('Handler class must be an instance of PythonLSPServer')
+
+    # imports needed only for websocket based server
+    from autobahn.twisted.websocket import WebSocketServerProtocol, WebSocketServerFactory
+    from twisted.internet import reactor
+    import ujson as json
+    
+    class MyServerProtocol(WebSocketServerProtocol):
+
+        def handler(self, message):
+            """Handler to send responses of  processed requests to respective web socket clients"""
+            try:
+                # we have to send bytes to the sendmessage method, So encoding to utf8
+                payload = json.dumps(message, ensure_ascii = False).encode('utf8')
+
+                # Binary payload support will be provided in future
+                self.sendMessage(payload, isBinary=False)
+            except Exception as e:  # pylint: disable=broad-except
+                log.exception("Failed to write message to output file %s, %s", payload, str(e))
+
+        def onConnect(self, request):
+            log.debug(f"new WS connection opened for {request.peer}")
+
+        def onOpen(self):
+            log.debug("Creating LSP object")
+            # Not using default stream reader and writer.
+            # Instead using a consumer based approach to handle processed requests
+            self._lsp = handler_class(rx=None, tx=None, consumer=self.handler, check_parent_process=check_parent_process)
+
+        def onMessage(self, payload, isBinary):
+            if isBinary:
+                # binary message support will be provided in future
+                # print(f"Binary message received: {len(payload)} bytes")
+                pass
+            else:
+                # we get payload as byte array and so decoding it to string using utf8
+                log.debug("consuming payload and feeding it LSP handler")
+                self._lsp.consume(json.loads(payload.decode('utf8')))
+
+        def onClose(self, wasClean, code, reason):
+            log.debug("shutting down and exiting LSP handler")
+            self._lsp.m_shutdown()
+            self._lsp.m_exit()
+            log.debug(f"WS connection closed due to : {reason}!")
+    
+    factory = WebSocketServerFactory()
+    factory.protocol = MyServerProtocol
+    # factory.setProtocolOptions(maxConnections=2) 
+
+    # This only supports IPv4 connections
+    reactor.listenTCP(port, factory)
+    
+    log.info(f"Starting Web Sockets server on port: {port}")
+
+    # runs forever
+    reactor.run()
+
+
 class PythonLSPServer(MethodDispatcher):
     """ Implementation of the Microsoft VSCode Language Server Protocol
     https://github.com/Microsoft/language-server-protocol/blob/master/versions/protocol-1-x.md
@@ -98,7 +158,7 @@ class PythonLSPServer(MethodDispatcher):
 
     # pylint: disable=too-many-public-methods,redefined-builtin
 
-    def __init__(self, rx, tx, check_parent_process=False):
+    def __init__(self, rx, tx, check_parent_process=False, consumer=None):
         self.workspace = None
         self.config = None
         self.root_uri = None
@@ -106,16 +166,35 @@ class PythonLSPServer(MethodDispatcher):
         self.workspaces = {}
         self.uri_workspace_mapper = {}
 
-        self._jsonrpc_stream_reader = JsonRpcStreamReader(rx)
-        self._jsonrpc_stream_writer = JsonRpcStreamWriter(tx)
         self._check_parent_process = check_parent_process
-        self._endpoint = Endpoint(self, self._jsonrpc_stream_writer.write, max_workers=MAX_WORKERS)
+        
+        if rx is not None:
+            self._jsonrpc_stream_reader = JsonRpcStreamReader(rx)
+        else:
+            self._jsonrpc_stream_reader = None
+        
+        if tx is not None:
+            self._jsonrpc_stream_writer = JsonRpcStreamWriter(tx)
+        else:
+            self._jsonrpc_stream_writer = None
+        
+        # if Consumer is None, It is assumed that the default streams based approach is being used
+        if consumer is None:
+            self._endpoint = Endpoint(self, self._jsonrpc_stream_writer.write, max_workers=MAX_WORKERS)
+        else:
+            self._endpoint = Endpoint(self, consumer, max_workers=MAX_WORKERS)
+        
         self._dispatchers = []
         self._shutdown = False
 
     def start(self):
         """Entry point for the server."""
         self._jsonrpc_stream_reader.listen(self._endpoint.consume)
+    
+    def consume(self, message):
+        """Entry point for consumer based server. Alternate to stream listeners"""
+        # assuming message will be JSON
+        self._endpoint.consume(message)
 
     def __getitem__(self, item):
         """Override getitem to fallback through multiple dispatchers."""
@@ -141,8 +220,10 @@ class PythonLSPServer(MethodDispatcher):
 
     def m_exit(self, **_kwargs):
         self._endpoint.shutdown()
-        self._jsonrpc_stream_reader.close()
-        self._jsonrpc_stream_writer.close()
+        if self._jsonrpc_stream_reader is not None:
+            self._jsonrpc_stream_reader.close()
+        if self._jsonrpc_stream_writer is not None:
+            self._jsonrpc_stream_writer.close()
 
     def _match_uri_to_workspace(self, uri):
         workspace_uri = _utils.match_uri_to_workspace(uri, self.workspaces)

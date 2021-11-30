@@ -55,6 +55,7 @@ setup(
             'pylint>=2.5.0',
             'rope>=0.10.5',
             'yapf',
+            'autobahn[twisted,accelerate]>=21.11.1'
         ],
         'autopep8': ['autopep8>=1.6.0,<1.7.0'],
         'flake8': ['flake8>=4.0.0,<4.1.0'],
@@ -65,6 +66,7 @@ setup(
         'pylint': ['pylint>=2.5.0'],
         'rope': ['rope>0.10.5'],
         'yapf': ['yapf'],
+        'autobahn-twisted': ['autobahn[twisted,accelerate]>=21.11.1'],
         'test': ['pylint>=2.5.0', 'pytest', 'pytest-cov', 'coverage',
                  'numpy', 'pandas', 'matplotlib', 'pyqt5', 'flaky'],
     },
