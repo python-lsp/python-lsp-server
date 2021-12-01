@@ -43,7 +43,7 @@ setup(
     author='Python Language Server Contributors',
     packages=find_packages(exclude=['contrib', 'docs', 'test', 'test.*']),
     install_requires=install_requires,
-    python_requires='>=3.6',
+    python_requires='>=3.7',
     extras_require={
         'all': [
             'autopep8>=1.6.0,<1.7.0',
