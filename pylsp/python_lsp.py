@@ -95,11 +95,15 @@ def start_ws_lang_server(bind_addr, port, check_parent_process, handler_class):
     if not issubclass(handler_class, PythonLSPServer):
         raise ValueError('Handler class must be an instance of PythonLSPServer')
 
+    #pylint: disable=wrong-import-position
+
     # imports needed only for websocket based server
     from autobahn.twisted.websocket import WebSocketServerProtocol, WebSocketServerFactory
     from twisted.internet import reactor
     import ujson as json
-    
+
+    #pylint: enable=wrong-import-position
+
     class MyServerProtocol(WebSocketServerProtocol):
 
         def handler(self, message):
@@ -113,14 +117,12 @@ def start_ws_lang_server(bind_addr, port, check_parent_process, handler_class):
             except Exception as e:  # pylint: disable=broad-except
                 log.exception("Failed to write message to output file %s, %s", payload, str(e))
 
-        def onConnect(self, request):
-            log.debug(f"new WS connection opened for {request.peer}")
-
         def onOpen(self):
             log.debug("Creating LSP object")
             # Not using default stream reader and writer.
             # Instead using a consumer based approach to handle processed requests
-            self._lsp = handler_class(rx=None, tx=None, consumer=self.handler, check_parent_process=check_parent_process)
+            self._lsp = handler_class(rx=None, tx=None, consumer=self.handler, 
+                check_parent_process=check_parent_process) # pylint: disable=attribute-defined-outside-init
 
         def onMessage(self, payload, isBinary):
             if isBinary:
@@ -132,15 +134,15 @@ def start_ws_lang_server(bind_addr, port, check_parent_process, handler_class):
                 log.debug("consuming payload and feeding it LSP handler")
                 self._lsp.consume(json.loads(payload.decode('utf8')))
 
-        def onClose(self, wasClean, code, reason):
+        def onClose(self, reason):
             log.debug("shutting down and exiting LSP handler")
             self._lsp.m_shutdown()
             self._lsp.m_exit()
             log.debug(f"WS connection closed due to : {reason}!")
     
-    factory = WebSocketServerFactory()
+    factory = WebSocketServerFactory(f"ws://{bind_addr}:{port}")
     factory.protocol = MyServerProtocol
-    # factory.setProtocolOptions(maxConnections=2) 
+    # factory.setProtocolOptions(maxConnections=2)
 
     # This only supports IPv4 connections
     reactor.listenTCP(port, factory)
