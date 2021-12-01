@@ -117,9 +117,9 @@ def start_ws_lang_server(bind_addr, port, check_parent_process, handler_class):
 
         def onOpen(self):
             log.debug("Creating LSP object")
-    
+
             # pylint: disable=attribute-defined-outside-init
-    
+
             # Not using default stream reader and writer.
             # Instead using a consumer based approach to handle processed requests
             self._lsp = handler_class(rx=None, tx=None, consumer=self.handler,
