@@ -78,7 +78,7 @@ def main():
                               PythonLSPServer)
     elif args.ws:
         start_ws_lang_server(args.host, args.port, args.check_parent_process,
-                              PythonLSPServer)
+                             PythonLSPServer)
     else:
         stdin, stdout = _binary_stdio()
         start_io_lang_server(stdin, stdout, args.check_parent_process,

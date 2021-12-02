@@ -108,7 +108,7 @@ def start_ws_lang_server(bind_addr, port, check_parent_process, handler_class):
             """Handler to send responses of  processed requests to respective web socket clients"""
             try:
                 # we have to send bytes to the sendmessage method, So encoding to utf8
-                payload = json.dumps(message, ensure_ascii = False).encode('utf8')
+                payload = json.dumps(message, ensure_ascii=False).encode('utf8')
 
                 # Binary payload support will be provided in future
                 self.sendMessage(payload, isBinary=False)
@@ -123,7 +123,7 @@ def start_ws_lang_server(bind_addr, port, check_parent_process, handler_class):
             # Not using default stream reader and writer.
             # Instead using a consumer based approach to handle processed requests
             self._lsp = handler_class(rx=None, tx=None, consumer=self.handler,
-                check_parent_process=check_parent_process)
+                                      check_parent_process=check_parent_process)
 
         def onMessage(self, payload, isBinary):
             if isBinary:
