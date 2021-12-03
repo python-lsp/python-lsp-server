@@ -135,11 +135,11 @@ def start_ws_lang_server(bind_addr, port, check_parent_process, handler_class):
                 log.debug("consuming payload and feeding it LSP handler")
                 self._lsp.consume(json.loads(payload.decode('utf8')))
 
-        def onClose(self, reason):
+        def onClose(self, wasClean, code, reason):
             log.debug("shutting down and exiting LSP handler")
             self._lsp.m_shutdown()
             self._lsp.m_exit()
-            log.debug(f"WS connection closed due to : {reason}!")
+            log.debug(f"WS connection closed: wasClean: {wasClean}, code: {code}, reason: {reason}!")
 
     factory = WebSocketServerFactory(f"ws://{bind_addr}:{port}")
     factory.protocol = MyServerProtocol
