@@ -98,9 +98,12 @@ def start_ws_lang_server(bind_addr, port, check_parent_process, handler_class):
     # pylint: disable=import-outside-toplevel
 
     # imports needed only for websocket based server
-    from autobahn.twisted.websocket import WebSocketServerProtocol, WebSocketServerFactory
-    from twisted.internet import reactor
-    import ujson as json
+    try:
+        from autobahn.twisted.websocket import WebSocketServerProtocol, WebSocketServerFactory
+        from twisted.internet import reactor
+        import ujson as json
+    except ImportError as e:
+        raise ImportError("websocket modules missing. Please run pip install 'python-lsp-server[websockets]") from e
 
     class MyServerProtocol(WebSocketServerProtocol):
 

@@ -66,7 +66,7 @@ setup(
         'pylint': ['pylint>=2.5.0'],
         'rope': ['rope>0.10.5'],
         'yapf': ['yapf'],
-        'autobahn-twisted': ['autobahn[twisted,accelerate]>=21.11.1'],
+        'websockets': ['autobahn[twisted,accelerate]>=21.11.1'],
         'test': ['pylint>=2.5.0', 'pytest', 'pytest-cov', 'coverage',
                  'numpy', 'pandas', 'matplotlib', 'pyqt5', 'flaky'],
     },
