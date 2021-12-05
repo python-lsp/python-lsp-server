@@ -146,7 +146,6 @@ def start_ws_lang_server(bind_addr, port, check_parent_process, handler_class):
 
     factory = WebSocketServerFactory(f"ws://{bind_addr}:{port}")
     factory.protocol = MyServerProtocol
-    # factory.setProtocolOptions(maxConnections=2)
 
     # This only supports IPv4 connections
     reactor.listenTCP(port, factory)
@@ -184,7 +183,7 @@ class PythonLSPServer(MethodDispatcher):
         else:
             self._jsonrpc_stream_writer = None
 
-        # if Consumer is None, It is assumed that the default streams based approach is being used
+        # if Consumer is None, it is assumed that the default streams-based approach is being used
         if consumer is None:
             self._endpoint = Endpoint(self, self._jsonrpc_stream_writer.write, max_workers=MAX_WORKERS)
         else:
