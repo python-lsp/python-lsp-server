@@ -20,7 +20,8 @@ def _resolve_completion(completion, data):
     # pylint: disable=broad-except
     try:
         doc = data.get_doc()
-    except Exception:
+    except Exception as e:
+        log.debug("Failed to resolve Rope completion: %s", e)
         doc = ""
     completion['detail'] = '{0} {1}'.format(data.scope or "", data.name)
     completion['documentation'] = doc
