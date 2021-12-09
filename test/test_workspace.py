@@ -293,3 +293,337 @@ def test_settings_of_added_workspace(pylsp, tmpdir):
     workspace1_object = pylsp.workspaces[workspace1['uri']]
     workspace1_jedi_settings = workspace1_object._config.plugin_settings('jedi')
     assert workspace1_jedi_settings == server_settings['pylsp']['plugins']['jedi']
+
+
+def test_apply_text_edits_insert(pylsp):
+    pylsp.workspace.put_document(DOC_URI, '012345678901234567890123456789')
+    test_doc = pylsp.workspace.get_document(DOC_URI)
+
+    assert test_doc.apply_text_edits([{
+        "range": {
+            "start": {
+                "line": 0,
+                "character": 0
+            },
+            "end": {
+                "line": 0,
+                "character": 0
+            }
+        },
+        "newText": "Hello"
+    }]) == 'Hello012345678901234567890123456789'
+    assert test_doc.apply_text_edits([{
+        "range": {
+            "start": {
+                "line": 0,
+                "character": 1
+            },
+            "end": {
+                "line": 0,
+                "character": 1
+            }
+        },
+        "newText": "Hello"
+    }]) == '0Hello12345678901234567890123456789'
+    assert test_doc.apply_text_edits([{
+        "range": {
+            "start": {
+                "line": 0,
+                "character": 1
+            },
+            "end": {
+                "line": 0,
+                "character": 1
+            }
+        },
+        "newText": "Hello"
+    }, {
+        "range": {
+            "start": {
+                "line": 0,
+                "character": 1
+            },
+            "end": {
+                "line": 0,
+                "character": 1
+            }
+        },
+        "newText": "World"
+    }]) == '0HelloWorld12345678901234567890123456789'
+    assert test_doc.apply_text_edits([{
+        "range": {
+            "start": {
+                "line": 0,
+                "character": 2
+            },
+            "end": {
+                "line": 0,
+                "character": 2
+            }
+        },
+        "newText": "One"
+    }, {
+        "range": {
+            "start": {
+                "line": 0,
+                "character": 1
+            },
+            "end": {
+                "line": 0,
+                "character": 1
+            }
+        },
+        "newText": "Hello"
+    }, {
+        "range": {
+            "start": {
+                "line": 0,
+                "character": 1
+            },
+            "end": {
+                "line": 0,
+                "character": 1
+            }
+        },
+        "newText": "World"
+    }, {
+        "range": {
+            "start": {
+                "line": 0,
+                "character": 2
+            },
+            "end": {
+                "line": 0,
+                "character": 2
+            }
+        },
+        "newText": "Two"
+    }, {
+        "range": {
+            "start": {
+                "line": 0,
+                "character": 2
+            },
+            "end": {
+                "line": 0,
+                "character": 2
+            }
+        },
+        "newText": "Three"
+    }]) == '0HelloWorld1OneTwoThree2345678901234567890123456789'
+
+def test_apply_text_edits_replace(pylsp):
+    pylsp.workspace.put_document(DOC_URI, '012345678901234567890123456789')
+    test_doc = pylsp.workspace.get_document(DOC_URI)
+
+    assert test_doc.apply_text_edits([{
+        "range": {
+            "start": {
+                "line": 0,
+                "character": 3
+            },
+            "end": {
+                "line": 0,
+                "character": 6
+            }
+        },
+        "newText": "Hello"
+    }]) == '012Hello678901234567890123456789'
+    assert test_doc.apply_text_edits([{
+        "range": {
+            "start": {
+                "line": 0,
+                "character": 3
+            },
+            "end": {
+                "line": 0,
+                "character": 6
+            }
+        },
+        "newText": "Hello"
+    }, {
+        "range": {
+            "start": {
+                "line": 0,
+                "character": 6
+            },
+            "end": {
+                "line": 0,
+                "character": 9
+            }
+        },
+        "newText": "World"
+    }]) == '012HelloWorld901234567890123456789'
+    assert test_doc.apply_text_edits([{
+        "range": {
+            "start": {
+                "line": 0,
+                "character": 3
+            },
+            "end": {
+                "line": 0,
+                "character": 6
+            }
+        },
+        "newText": "Hello"
+    }, {
+        "range": {
+            "start": {
+                "line": 0,
+                "character": 6
+            },
+            "end": {
+                "line": 0,
+                "character": 6
+            }
+        },
+        "newText": "World"
+    }]) == '012HelloWorld678901234567890123456789'
+    assert test_doc.apply_text_edits([{
+        "range": {
+            "start": {
+                "line": 0,
+                "character": 6
+            },
+            "end": {
+                "line": 0,
+                "character": 6
+            }
+        },
+        "newText": "World"
+    }, {
+        "range": {
+            "start": {
+                "line": 0,
+                "character": 3
+            },
+            "end": {
+                "line": 0,
+                "character": 6
+            }
+        },
+        "newText": "Hello"
+    }]) == '012HelloWorld678901234567890123456789'
+    assert test_doc.apply_text_edits([{
+        "range": {
+            "start": {
+                "line": 0,
+                "character": 3
+            },
+            "end": {
+                "line": 0,
+                "character": 3
+            }
+        },
+        "newText": "World"
+    }, {
+        "range": {
+            "start": {
+                "line": 0,
+                "character": 3
+            },
+            "end": {
+                "line": 0,
+                "character": 6
+            }
+        },
+        "newText": "Hello"
+    }]) == '012WorldHello678901234567890123456789'
+
+
+def test_apply_text_edits_overlap(pylsp):
+    pylsp.workspace.put_document(DOC_URI, '012345678901234567890123456789')
+    test_doc = pylsp.workspace.get_document(DOC_URI)
+
+    did_throw = False
+    try:
+        test_doc.apply_text_edits([{
+            "range": {
+                "start": {
+                    "line": 0,
+                    "character": 3
+                },
+                "end": {
+                    "line": 0,
+                    "character": 6
+                }
+            },
+            "newText": "Hello"
+        }, {
+            "range": {
+                "start": {
+                    "line": 0,
+                    "character": 3
+                },
+                "end": {
+                    "line": 0,
+                    "character": 3
+                }
+            },
+            "newText": "World"
+        }])
+    except Exception:
+        did_throw = True
+
+    assert did_throw
+
+    try:
+        test_doc.apply_text_edits([{
+            "range": {
+                "start": {
+                    "line": 0,
+                    "character": 3
+                },
+                "end": {
+                    "line": 0,
+                    "character": 6
+                }
+            },
+            "newText": "Hello"
+        }, {
+            "range": {
+                "start": {
+                    "line": 0,
+                    "character": 4
+                },
+                "end": {
+                    "line": 0,
+                    "character": 4
+                }
+            },
+            "newText": "World"
+        }])
+    except Exception:
+        did_throw = True
+
+    assert did_throw
+
+def test_apply_text_edits_multiline(pylsp):
+    pylsp.workspace.put_document(DOC_URI, '0\n1\n2\n3\n4')
+    test_doc = pylsp.workspace.get_document(DOC_URI)
+
+    assert test_doc.apply_text_edits([{
+        "range": {
+            "start": {
+                "line": 2,
+                "character": 0
+            },
+            "end": {
+                "line": 3,
+                "character": 0
+            }
+        },
+        "newText": "Hello"
+    }, {
+        "range": {
+            "start": {
+                "line": 1,
+                "character": 1
+            },
+            "end": {
+                "line": 1,
+                "character": 1
+            }
+        },
+        "newText": "World"
+    }]) == '0\n1World\nHello3\n4'
