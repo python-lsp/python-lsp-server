@@ -39,7 +39,7 @@ jobs:
       - name: Pyflakes checks
         run: pyflakes pylsp test
       - name: Validate JSON schema
-        run: jsonschema pylsp/config/schema.json
+        run: echo {} | jsonschema pylsp/config/schema.json
       - name: Ensure JSON schema and Markdown docs are in sync
         run: |
           python scripts/jsonschema2md.py pylsp/config/schema.json EXPECTED_CONFIGURATION.md
