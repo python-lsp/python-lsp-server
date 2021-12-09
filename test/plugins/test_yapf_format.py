@@ -25,8 +25,7 @@ def test_format(workspace):
     doc = Document(DOC_URI, workspace, DOC)
     res = pylsp_format_document(doc)
 
-    assert len(res) == 1
-    assert res[0]['newText'] == "A = ['h', 'w', 'a']\n\nB = ['h', 'w']\n"
+    assert doc.apply_text_edits(res) == "A = ['h', 'w', 'a']\n\nB = ['h', 'w']\n"
 
 
 def test_range_format(workspace):
@@ -38,10 +37,8 @@ def test_range_format(workspace):
     }
     res = pylsp_format_range(doc, def_range)
 
-    assert len(res) == 1
-
     # Make sure B is still badly formatted
-    assert res[0]['newText'] == "A = ['h', 'w', 'a']\n\nB = ['h',\n\n\n'w']\n"
+    assert doc.apply_text_edits(res) == "A = ['h', 'w', 'a']\n\nB = ['h',\n\n\n'w']\n"
 
 
 def test_no_change(workspace):
@@ -56,12 +53,13 @@ def test_config_file(tmpdir, workspace):
     src = tmpdir.join('test.py')
     doc = Document(uris.from_fs_path(src.strpath), workspace, DOC)
 
-    # A was split on multiple lines because of column_limit from config file
-    assert pylsp_format_document(doc)[0]['newText'] == "A = [\n    'h', 'w',\n    'a'\n]\n\nB = ['h', 'w']\n"
+    res = pylsp_format_document(doc)
 
+    # A was split on multiple lines because of column_limit from config file
+    assert doc.apply_text_edits(res) == "A = [\n    'h', 'w',\n    'a'\n]\n\nB = ['h', 'w']\n"
 
 def test_cr_line_endings(workspace):
     doc = Document(DOC_URI, workspace, 'import os;import sys\r\rdict(a=1)')
     res = pylsp_format_document(doc)
 
-    assert res[0]['newText'] == 'import os\rimport sys\r\rdict(a=1)\r'
+    assert doc.apply_text_edits(res) == 'import os\rimport sys\r\rdict(a=1)\r'

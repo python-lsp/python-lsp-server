@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 
 # Copyright 2017-2020 Palantir Technologies, Inc.

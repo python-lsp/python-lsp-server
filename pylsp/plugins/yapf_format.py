@@ -7,6 +7,8 @@ import os
 from yapf.yapflib import file_resources
 from yapf.yapflib.yapf_api import FormatCode
 
+import whatthepatch
+
 from pylsp import hookimpl
 from pylsp._utils import get_eol_chars
 
@@ -39,17 +41,16 @@ def pylsp_format_range(document, range):  # pylint: disable=redefined-builtin
 def _format(document, lines=None):
     # Yapf doesn't work with CR line endings, so we replace them by '\n'
     # and restore them below.
-    replace_cr = False
     source = document.source
     eol_chars = get_eol_chars(source)
     if eol_chars == '\r':
-        replace_cr = True
         source = source.replace('\r', '\n')
 
-    new_source, changed = FormatCode(
+    diff_txt, changed = FormatCode(
         source,
         lines=lines,
         filename=document.filename,
+        print_diff=True,
         style_config=file_resources.GetDefaultStyleForDir(
             os.path.dirname(document.path)
         )
@@ -58,16 +59,57 @@ def _format(document, lines=None):
     if not changed:
         return []
 
-    if replace_cr:
-        new_source = new_source.replace('\n', '\r')
+    patch_generator = whatthepatch.parse_patch(diff_txt)
+    diff = next(patch_generator)
+    patch_generator.close()
 
-    # I'm too lazy at the moment to parse diffs into TextEdit items
-    # So let's just return the entire file...
-    return [{
-        'range': {
-            'start': {'line': 0, 'character': 0},
-            # End char 0 of the line after our document
-            'end': {'line': len(document.lines), 'character': 0}
-        },
-        'newText': new_source
-    }]
+    # To keep things simple our text edits will be line based
+    # and uncompacted
+    textEdits = []
+    # keep track of line number since additions
+    # don't include the line number it's being added
+    # to in diffs. lsp is 0-indexed so we'll start with -1
+    prev_line_no = -1
+    for change in diff.changes:
+        if change.old and change.new:
+            # no change
+            # diffs are 1-indexed
+            prev_line_no = change.old - 1
+        elif change.new:
+            # addition
+            textEdits.append({
+                'range': {
+                    'start': {
+                        'line': prev_line_no + 1,
+                        'character': 0
+                    },
+                    'end': {
+                        'line': prev_line_no + 1,
+                        'character': 0
+                    }
+                },
+                'newText': change.line + eol_chars
+            })
+        elif change.old:
+            # remove
+            lsp_line_no = change.old - 1
+            textEdits.append({
+                'range': {
+                    'start': {
+                        'line': lsp_line_no,
+                        'character': 0
+                    },
+                    'end': {
+                        # From LSP spec:
+                        # If you want to specify a range that contains a line
+                        # including the line ending character(s) then use an
+                        # end position denoting the start of the next line.
+                        'line': lsp_line_no + 1,
+                        'character': 0
+                    }
+                },
+                'newText': ''
+            })
+            prev_line_no = lsp_line_no
+
+    return textEdits
