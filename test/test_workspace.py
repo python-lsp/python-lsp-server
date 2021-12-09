@@ -4,7 +4,7 @@ import pathlib
 
 import pytest
 from pylsp import uris
-
+from pylsp.workspace import apply_text_edits
 
 DOC_URI = uris.from_fs_path(__file__)
 
@@ -299,7 +299,7 @@ def test_apply_text_edits_insert(pylsp):
     pylsp.workspace.put_document(DOC_URI, '012345678901234567890123456789')
     test_doc = pylsp.workspace.get_document(DOC_URI)
 
-    assert test_doc.apply_text_edits([{
+    assert apply_text_edits(test_doc, [{
         "range": {
             "start": {
                 "line": 0,
@@ -312,7 +312,7 @@ def test_apply_text_edits_insert(pylsp):
         },
         "newText": "Hello"
     }]) == 'Hello012345678901234567890123456789'
-    assert test_doc.apply_text_edits([{
+    assert apply_text_edits(test_doc, [{
         "range": {
             "start": {
                 "line": 0,
@@ -325,7 +325,7 @@ def test_apply_text_edits_insert(pylsp):
         },
         "newText": "Hello"
     }]) == '0Hello12345678901234567890123456789'
-    assert test_doc.apply_text_edits([{
+    assert apply_text_edits(test_doc, [{
         "range": {
             "start": {
                 "line": 0,
@@ -350,7 +350,7 @@ def test_apply_text_edits_insert(pylsp):
         },
         "newText": "World"
     }]) == '0HelloWorld12345678901234567890123456789'
-    assert test_doc.apply_text_edits([{
+    assert apply_text_edits(test_doc, [{
         "range": {
             "start": {
                 "line": 0,
@@ -416,7 +416,7 @@ def test_apply_text_edits_replace(pylsp):
     pylsp.workspace.put_document(DOC_URI, '012345678901234567890123456789')
     test_doc = pylsp.workspace.get_document(DOC_URI)
 
-    assert test_doc.apply_text_edits([{
+    assert apply_text_edits(test_doc, [{
         "range": {
             "start": {
                 "line": 0,
@@ -429,7 +429,7 @@ def test_apply_text_edits_replace(pylsp):
         },
         "newText": "Hello"
     }]) == '012Hello678901234567890123456789'
-    assert test_doc.apply_text_edits([{
+    assert apply_text_edits(test_doc, [{
         "range": {
             "start": {
                 "line": 0,
@@ -454,7 +454,7 @@ def test_apply_text_edits_replace(pylsp):
         },
         "newText": "World"
     }]) == '012HelloWorld901234567890123456789'
-    assert test_doc.apply_text_edits([{
+    assert apply_text_edits(test_doc, [{
         "range": {
             "start": {
                 "line": 0,
@@ -479,7 +479,7 @@ def test_apply_text_edits_replace(pylsp):
         },
         "newText": "World"
     }]) == '012HelloWorld678901234567890123456789'
-    assert test_doc.apply_text_edits([{
+    assert apply_text_edits(test_doc, [{
         "range": {
             "start": {
                 "line": 0,
@@ -504,7 +504,7 @@ def test_apply_text_edits_replace(pylsp):
         },
         "newText": "Hello"
     }]) == '012HelloWorld678901234567890123456789'
-    assert test_doc.apply_text_edits([{
+    assert apply_text_edits(test_doc, [{
         "range": {
             "start": {
                 "line": 0,
@@ -537,7 +537,7 @@ def test_apply_text_edits_overlap(pylsp):
 
     did_throw = False
     try:
-        test_doc.apply_text_edits([{
+        apply_text_edits(test_doc, [{
             "range": {
                 "start": {
                     "line": 0,
@@ -568,7 +568,7 @@ def test_apply_text_edits_overlap(pylsp):
     assert did_throw
 
     try:
-        test_doc.apply_text_edits([{
+        apply_text_edits(test_doc, [{
             "range": {
                 "start": {
                     "line": 0,
@@ -602,7 +602,7 @@ def test_apply_text_edits_multiline(pylsp):
     pylsp.workspace.put_document(DOC_URI, '0\n1\n2\n3\n4')
     test_doc = pylsp.workspace.get_document(DOC_URI)
 
-    assert test_doc.apply_text_edits([{
+    assert apply_text_edits(test_doc, [{
         "range": {
             "start": {
                 "line": 2,

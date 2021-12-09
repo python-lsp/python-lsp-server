@@ -188,6 +188,25 @@ def merge_sort_text_edits(text_edits):
         right_idx += 1
     return text_edits
 
+def apply_text_edits(doc, text_edits):
+    text = doc.source
+    sorted_edits = merge_sort_text_edits(list(map(get_well_formatted_edit,text_edits)))
+    last_modified_offset = 0
+    spans = []
+    for e in sorted_edits:
+        start_offset = doc.offset_at_position(e['range']['start'])
+        if start_offset < last_modified_offset:
+            raise Exception('overlapping edit')
+        elif start_offset > last_modified_offset:
+            spans.append(text[last_modified_offset:start_offset])
+        
+        if len(e['newText']):
+            spans.append(e['newText'])
+        last_modified_offset = doc.offset_at_position(e['range']['end'])
+
+    spans.append(text[last_modified_offset:])
+    return ''.join(spans)
+
 class Document:
 
     def __init__(self, uri, workspace, source=None, version=None, local=True, extra_sys_path=None,
@@ -273,27 +292,7 @@ class Document:
             if i == end_line:
                 new.write(line[end_col:])
 
-        self._source = new.getvalue()
-
-    @lock
-    def apply_text_edits(self, text_edits):
-        text = self._source
-        sorted_edits = merge_sort_text_edits(list(map(get_well_formatted_edit,text_edits)))
-        last_modified_offset = 0
-        spans = []
-        for e in sorted_edits:
-            start_offset = self.offset_at_position(e['range']['start'])
-            if start_offset < last_modified_offset:
-                raise Exception('overlapping edit')
-            elif start_offset > last_modified_offset:
-                spans.append(text[last_modified_offset:start_offset])
-            
-            if len(e['newText']):
-                spans.append(e['newText'])
-            last_modified_offset = self.offset_at_position(e['range']['end'])
-
-        spans.append(text[last_modified_offset:])
-        return ''.join(spans)
+        self._source = new.getvalue()   
 
     def offset_at_position(self, position):
         """Return the byte-offset pointed at by the given position."""
