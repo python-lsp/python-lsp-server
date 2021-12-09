@@ -292,7 +292,7 @@ class Document:
             if i == end_line:
                 new.write(line[end_col:])
 
-        self._source = new.getvalue()   
+        self._source = new.getvalue()
 
     def offset_at_position(self, position):
         """Return the byte-offset pointed at by the given position."""
