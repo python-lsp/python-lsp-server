@@ -14,12 +14,12 @@ log = logging.getLogger(__name__)
 
 
 @hookimpl
-def pylsp_format_document(document):
-    return _format(document)
+def pylsp_format_document(document, options=None):
+    return _format(document, options=options)
 
 
 @hookimpl
-def pylsp_format_range(document, range):  # pylint: disable=redefined-builtin
+def pylsp_format_range(document, range, options=None):  # pylint: disable=redefined-builtin
     # First we 'round' the range up/down to full lines only
     range['start']['character'] = 0
     range['end']['line'] += 1
@@ -33,10 +33,10 @@ def pylsp_format_range(document, range):  # pylint: disable=redefined-builtin
 
     # Add 1 for 1-indexing vs LSP's 0-indexing
     lines = [(range['start']['line'] + 1, range['end']['line'] + 1)]
-    return _format(document, lines=lines)
+    return _format(document, lines=lines, options=None)
 
 
-def _format(document, lines=None):
+def _format(document, lines=None, options=None):
     # Yapf doesn't work with CR line endings, so we replace them by '\n'
     # and restore them below.
     replace_cr = False
