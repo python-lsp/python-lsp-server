@@ -10,12 +10,12 @@ from pylsp import hookimpl
 log = logging.getLogger(__name__)
 
 
-@hookimpl
+@hookimpl(tryfirst=True)  # Prefer YAPF over autopep8
 def pylsp_format_document(document):
     return _format(document)
 
 
-@hookimpl
+@hookimpl(tryfirst=True)  # Prefer YAPF over autopep8
 def pylsp_format_range(document, range):  # pylint: disable=redefined-builtin
     # First we 'round' the range up/down to full lines only
     range['start']['character'] = 0
