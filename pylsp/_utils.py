@@ -148,8 +148,8 @@ def escape_markdown(contents: str) -> str:
     # escape markdown syntax
     contents = re.sub(r'([\\*_#[\]])', r'\\\1', contents)
     # preserve white space characters
-    contents = contents.replace('\t', u'\u00A0' * 4)
-    contents = contents.replace('  ', u'\u00A0' * 2)
+    contents = contents.replace('\t', '\u00A0' * 4)
+    contents = contents.replace('  ', '\u00A0' * 2)
     return contents
 
 

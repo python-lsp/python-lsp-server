@@ -23,7 +23,8 @@ def _resolve_completion(completion, data, markup_kind):
             data.get_doc(),
             markup_kind=markup_kind
         )
-    except Exception:
+    except Exception as e:
+        log.debug("Failed to resolve Rope completion: %s", e)
         doc = ""
     completion['detail'] = '{0} {1}'.format(data.scope or "", data.name)
     completion['documentation'] = doc
@@ -92,14 +93,17 @@ def pylsp_completions(config, workspace, document, position):
 @hookimpl
 def pylsp_completion_item_resolve(config, completion_item, document):
     """Resolve formatted completion for given non-resolved completion"""
-    completion, data = document.shared_data['LAST_ROPE_COMPLETIONS'].get(completion_item['label'])
+    shared_data = document.shared_data['LAST_ROPE_COMPLETIONS'].get(completion_item['label'])
 
     completion_capabilities = config.capabilities.get('textDocument', {}).get('completion', {})
     item_capabilities = completion_capabilities.get('completionItem', {})
     supported_markup_kinds = item_capabilities.get('documentationFormat', ['markdown'])
     preferred_markup_kind = _utils.choose_markup_kind(supported_markup_kinds)
 
-    return _resolve_completion(completion, data, preferred_markup_kind)
+    if shared_data:
+        completion, data = shared_data
+        return _resolve_completion(completion, data, preferred_markup_kind)
+    return completion_item
 
 
 def _sort_text(definition):

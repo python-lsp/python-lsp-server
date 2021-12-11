@@ -4,6 +4,7 @@
 
 import contextlib
 import os
+import sys
 import tempfile
 
 from test import py2_only, py3_only, IS_PY3
@@ -37,7 +38,7 @@ def temp_document(doc_text, workspace):
 
 
 def write_temp_doc(document, contents):
-    with open(document.path, 'w') as temp_file:
+    with open(document.path, 'w', encoding='utf-8') as temp_file:
         temp_file.write(contents)
 
 
@@ -71,7 +72,10 @@ def test_syntax_error_pylint_py3(config, workspace):
     with temp_document(DOC_SYNTAX_ERR, workspace) as doc:
         diag = pylint_lint.pylsp_lint(config, doc, True)[0]
 
-        assert diag['message'].startswith('[syntax-error] invalid syntax')
+        if sys.version_info[:2] >= (3, 10):
+            assert diag['message'].count("[syntax-error] expected ':'")
+        else:
+            assert diag['message'].startswith('[syntax-error] invalid syntax')
         # Pylint doesn't give column numbers for invalid syntax.
         assert diag['range']['start'] == {'line': 0, 'character': 12}
         assert diag['severity'] == lsp.DiagnosticSeverity.Error
@@ -80,7 +84,10 @@ def test_syntax_error_pylint_py3(config, workspace):
         config.plugin_settings('pylint')['executable'] = 'pylint'
         diag = pylint_lint.pylsp_lint(config, doc, True)[0]
 
-        assert diag['message'].startswith('invalid syntax')
+        if sys.version_info[:2] >= (3, 10):
+            assert diag['message'].count("expected ':'")
+        else:
+            assert diag['message'].startswith('invalid syntax')
         # Pylint doesn't give column numbers for invalid syntax.
         assert diag['range']['start'] == {'line': 0, 'character': 12}
         assert diag['severity'] == lsp.DiagnosticSeverity.Error
