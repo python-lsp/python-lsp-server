@@ -67,16 +67,16 @@ def pylsp_completions(config, document, position):
     ready_completions = [
         {
             **_format_completion(
-                c,
+                definition,
                 include_params,
                 resolve=resolve_eagerly,
-                resolve_label_or_snippet=(i < max_to_resolve)
+                resolve_label_or_snippet=(idx < max_to_resolve)
             ),
             'data': {
                 'doc_uri': document.uri
             }
         }
-        for i, c in enumerate(completions)
+        for idx, definition in enumerate(completions)
     ]
 
     # TODO split up once other improvements are merged
