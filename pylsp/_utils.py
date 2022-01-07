@@ -12,6 +12,9 @@ import jedi
 
 JEDI_VERSION = jedi.__version__
 
+# Eol chars accepted by the LSP protocol
+EOL_CHARS = ['\r\n', '\r', '\n']
+
 log = logging.getLogger(__name__)
 
 
@@ -220,3 +223,13 @@ else:
             return e.errno == errno.EPERM
         else:
             return True
+
+
+def get_eol_chars(text):
+    """Get EOL chars used in text."""
+    for eol_chars in EOL_CHARS:
+        if text.find(eol_chars) > -1:
+            break
+    else:
+        return None
+    return eol_chars
