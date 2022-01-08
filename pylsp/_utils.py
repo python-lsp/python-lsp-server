@@ -225,11 +225,13 @@ else:
             return True
 
 
+import re
+
+EOL_REGEX = re.compile(f'({"|".join(EOL_CHARS)})')
+
 def get_eol_chars(text):
     """Get EOL chars used in text."""
-    for eol_chars in EOL_CHARS:
-        if text.find(eol_chars) > -1:
-            break
-    else:
-        return None
-    return eol_chars
+    match = EOL_REGEX.search(text)
+    if match:
+        return match.group(0)
+    return None
