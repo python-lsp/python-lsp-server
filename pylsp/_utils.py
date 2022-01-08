@@ -6,6 +6,7 @@ import inspect
 import logging
 import os
 import pathlib
+import re
 import threading
 
 import jedi
@@ -14,6 +15,7 @@ JEDI_VERSION = jedi.__version__
 
 # Eol chars accepted by the LSP protocol
 EOL_CHARS = ['\r\n', '\r', '\n']
+EOL_REGEX = re.compile(f'({"|".join(EOL_CHARS)})')
 
 log = logging.getLogger(__name__)
 
@@ -224,10 +226,6 @@ else:
         else:
             return True
 
-
-import re
-
-EOL_REGEX = re.compile(f'({"|".join(EOL_CHARS)})')
 
 def get_eol_chars(text):
     """Get EOL chars used in text."""
