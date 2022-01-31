@@ -50,7 +50,7 @@ class Config:
         for entry_point in pkg_resources.iter_entry_points(PYLSP):
             try:
                 entry_point.load()
-            except (ImportError, pkg_resources.DistributionNotFound) as e:
+            except Exception as e:
                 log.warning("Failed to load %s entry point '%s': %s", PYLSP, entry_point.name, e)
                 self._pm.set_blocked(entry_point.name)
 
