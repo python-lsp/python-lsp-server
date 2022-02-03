@@ -25,13 +25,13 @@ If the respective dependencies are found, the following optional providers will 
 Optional providers can be installed using the `extras` syntax. To install [YAPF](https://github.com/google/yapf) formatting for example:
 
 ```
-pip install 'python-lsp-server[yapf]'
+pip install "python-lsp-server[yapf]"
 ```
 
 All optional providers can be installed using:
 
 ```
-pip install 'python-lsp-server[all]'
+pip install "python-lsp-server[all]"
 ```
 
 If you get an error similar to `'install_requires' must be a string or list of strings` then please upgrade setuptools before trying again.
@@ -91,7 +91,7 @@ All configuration options are described in [`CONFIGURATION.md`](https://github.c
 To run the test suite:
 
 ```sh
-pip install '.[test]' && pytest
+pip install ".[test]" && pytest
 ```
 
 After adding configuration options to `schema.json`, refresh the `CONFIGURATION.md` file with
