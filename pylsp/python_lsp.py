@@ -6,6 +6,7 @@ import logging
 import os
 import socketserver
 import threading
+import ujson as json
 
 from pylsp_jsonrpc.dispatchers import MethodDispatcher
 from pylsp_jsonrpc.endpoint import Endpoint
@@ -101,7 +102,6 @@ def start_ws_lang_server(bind_addr, port, check_parent_process, handler_class):
     try:
         from autobahn.twisted.websocket import WebSocketServerProtocol, WebSocketServerFactory
         from twisted.internet import reactor
-        import ujson as json
     except ImportError as e:
         raise ImportError("websocket modules missing. Please run pip install 'python-lsp-server[websockets]") from e
 
@@ -183,7 +183,7 @@ class PythonLSPServer(MethodDispatcher):
         else:
             self._jsonrpc_stream_writer = None
 
-        # if Consumer is None, it is assumed that the default streams-based approach is being used
+        # if consumer is None, it is assumed that the default streams-based approach is being used
         if consumer is None:
             self._endpoint = Endpoint(self, self._jsonrpc_stream_writer.write, max_workers=MAX_WORKERS)
         else:
