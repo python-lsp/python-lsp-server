@@ -3,7 +3,7 @@
 
 from pylsp import uris
 from pylsp.plugins.yapf_format import pylsp_format_document, pylsp_format_range
-from pylsp.workspace import Document
+from pylsp.workspace import Document, apply_text_edits
 
 DOC_URI = uris.from_fs_path(__file__)
 DOC = """A = [
@@ -25,7 +25,7 @@ def test_format(workspace):
     doc = Document(DOC_URI, workspace, DOC)
     res = pylsp_format_document(doc)
 
-    assert doc.apply_text_edits(res) == "A = ['h', 'w', 'a']\n\nB = ['h', 'w']\n"
+    assert apply_text_edits(res) == "A = ['h', 'w', 'a']\n\nB = ['h', 'w']\n"
 
 
 def test_range_format(workspace):
@@ -38,7 +38,7 @@ def test_range_format(workspace):
     res = pylsp_format_range(doc, def_range)
 
     # Make sure B is still badly formatted
-    assert doc.apply_text_edits(res) == "A = ['h', 'w', 'a']\n\nB = ['h',\n\n\n'w']\n"
+    assert apply_text_edits(res) == "A = ['h', 'w', 'a']\n\nB = ['h',\n\n\n'w']\n"
 
 
 def test_no_change(workspace):
@@ -56,10 +56,10 @@ def test_config_file(tmpdir, workspace):
     res = pylsp_format_document(doc)
 
     # A was split on multiple lines because of column_limit from config file
-    assert doc.apply_text_edits(res) == "A = [\n    'h', 'w',\n    'a'\n]\n\nB = ['h', 'w']\n"
+    assert apply_text_edits(res) == "A = [\n    'h', 'w',\n    'a'\n]\n\nB = ['h', 'w']\n"
 
 def test_cr_line_endings(workspace):
     doc = Document(DOC_URI, workspace, 'import os;import sys\r\rdict(a=1)')
     res = pylsp_format_document(doc)
 
-    assert doc.apply_text_edits(res) == 'import os\rimport sys\r\rdict(a=1)\r'
+    assert apply_text_edits(res) == 'import os\rimport sys\r\rdict(a=1)\r'
