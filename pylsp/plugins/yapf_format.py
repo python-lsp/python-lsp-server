@@ -4,7 +4,7 @@
 import logging
 import os
 
-from yapf.yapflib import file_resources
+from yapf.yapflib import file_resources, style
 from yapf.yapflib.yapf_api import FormatCode
 
 from pylsp import hookimpl
