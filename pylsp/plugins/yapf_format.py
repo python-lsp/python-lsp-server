@@ -33,7 +33,7 @@ def pylsp_format_range(document, range, options=None):  # pylint: disable=redefi
 
     # Add 1 for 1-indexing vs LSP's 0-indexing
     lines = [(range['start']['line'] + 1, range['end']['line'] + 1)]
-    return _format(document, lines=lines, options=None)
+    return _format(document, lines=lines, options=options)
 
 
 def _format(document, lines=None, options=None):
