@@ -59,14 +59,14 @@ Please file an issue if you require assistance writing a plugin.
 
 ## Configuration
 
-Like all language servers, configuration can be passed from the client (i.e. the editor/IDE or other tool). The details of how this is done depend on the editor or plugin that you are using to communicate with python-lsp-server. The configuration options available at that level are documented in [`CONFIGURATION.md`](https://github.com/python-lsp/python-lsp-server/blob/develop/CONFIGURATION.md).
+Like all language servers, configuration can be passed from the client that talks to this server (i.e. your editor/IDE or other tool that has the same purpose). The details of how this is done depend on the editor or plugin that you are using to communicate with `python-lsp-server`. The configuration options available at that level are documented in [`CONFIGURATION.md`](https://github.com/python-lsp/python-lsp-server/blob/develop/CONFIGURATION.md).
 
-python-lsp-server depends on other tools, like flake8 and pycodestyle. These tools can be configured via settings passed from the client (as above), or alternatively from other configuration sources. The following sources are available:
+`python-lsp-server` depends on other tools, like flake8 and pycodestyle. These tools can be configured via settings passed from the client (as above), or alternatively from other configuration sources. The following sources are available:
 
 - `pycodestyle`: discovered in `~/.config/pycodestyle`, `setup.cfg`, `tox.ini` and `pycodestyle.cfg`.
 - `flake8`: discovered in `~/.config/flake8`, `setup.cfg`, `tox.ini` and `flake8.cfg`
 
-The default configuration source is `pycodestyle`. Change the `pylsp.configurationSources` setting (in the value passed in from your client) to `['flake8']` in order to respect flake8 configuration instead.
+The default configuration source is `pycodestyle`. Change the `pylsp.configurationSources` setting (in the value passed in from your client) to `['flake8']` in order to use the flake8 configuration instead.
 
 The configuration options available in these config files (`setup.cfg` etc) are documented in the relevant tools:
 
