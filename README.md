@@ -22,6 +22,8 @@ If the respective dependencies are found, the following optional providers will 
 - [pydocstyle](https://github.com/PyCQA/pydocstyle) linter for docstring style checking (disabled by default)
 - [autopep8](https://github.com/hhatto/autopep8) for code formatting
 - [YAPF](https://github.com/google/yapf) for code formatting (preferred over autopep8)
+- [flake8](https://github.com/pycqa/flake8) for error checking (disabled by default)
+- [pylint](https://github.com/PyCQA/pylint) for code linting (disabled by default)
 
 Optional providers can be installed using the `extras` syntax. To install [YAPF](https://github.com/google/yapf) formatting for example:
 
