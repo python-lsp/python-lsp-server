@@ -13,13 +13,13 @@ log = logging.getLogger(__name__)
 
 
 @hookimpl(tryfirst=True)  # Prefer autopep8 over YAPF
-def pylsp_format_document(config, document, _options=None):
+def pylsp_format_document(config, document, options=None):
     log.info("Formatting document %s with autopep8", document)
     return _format(config, document)
 
 
 @hookimpl(tryfirst=True)  # Prefer autopep8 over YAPF
-def pylsp_format_range(config, document, range, _options=None):  # pylint: disable=redefined-builtin
+def pylsp_format_range(config, document, range, options=None):  # pylint: disable=redefined-builtin
     log.info("Formatting document %s in range %s with autopep8", document, range)
 
     # First we 'round' the range up/down to full lines only

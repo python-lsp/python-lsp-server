@@ -21,7 +21,9 @@ B = ['h',
 """
 
 GOOD_DOC = """A = ['hello', 'world']\n"""
-
+FOUR_SPACE_DOC = """def hello():
+    pass
+"""
 
 def test_format(workspace):
     doc = Document(DOC_URI, workspace, DOC)
@@ -69,9 +71,6 @@ def test_line_endings(workspace, newline):
 
     assert res[0]['newText'] == f'import os{newline}import sys{2 * newline}dict(a=1){newline}'
 
-FOUR_SPACE_DOC = """def hello():
-    pass
-"""
 
 def test_format_with_tab_size_option(workspace):
     doc = Document(DOC_URI, workspace, FOUR_SPACE_DOC)
