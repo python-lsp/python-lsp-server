@@ -21,6 +21,9 @@ B = ['h',
 """
 
 GOOD_DOC = """A = ['hello', 'world']\n"""
+FOUR_SPACE_DOC = """def hello():
+    pass
+"""
 
 
 def test_format(workspace):
@@ -68,3 +71,27 @@ def test_line_endings(workspace, newline):
     res = pylsp_format_document(doc)
 
     assert res[0]['newText'] == f'import os{newline}import sys{2 * newline}dict(a=1){newline}'
+
+
+def test_format_with_tab_size_option(workspace):
+    doc = Document(DOC_URI, workspace, FOUR_SPACE_DOC)
+    res = pylsp_format_document(doc, {"tabSize": "8"})
+
+    assert len(res) == 1
+    assert res[0]['newText'] == FOUR_SPACE_DOC.replace("    ", "        ")
+
+
+def test_format_with_insert_spaces_option(workspace):
+    doc = Document(DOC_URI, workspace, FOUR_SPACE_DOC)
+    res = pylsp_format_document(doc, {"insertSpaces": False})
+
+    assert len(res) == 1
+    assert res[0]['newText'] == FOUR_SPACE_DOC.replace("    ", "\t")
+
+
+def test_format_with_yapf_specific_option(workspace):
+    doc = Document(DOC_URI, workspace, FOUR_SPACE_DOC)
+    res = pylsp_format_document(doc, {"USE_TABS": True})
+
+    assert len(res) == 1
+    assert res[0]['newText'] == FOUR_SPACE_DOC.replace("    ", "\t")
