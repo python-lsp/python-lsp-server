@@ -363,11 +363,11 @@ class PythonLSPServer(MethodDispatcher):
     def execute_command(self, command, arguments):
         return self._hook('pylsp_execute_command', command=command, arguments=arguments)
 
-    def format_document(self, doc_uri):
-        return self._hook('pylsp_format_document', doc_uri)
+    def format_document(self, doc_uri, options):
+        return self._hook('pylsp_format_document', doc_uri, options=options)
 
-    def format_range(self, doc_uri, range):
-        return self._hook('pylsp_format_range', doc_uri, range=range)
+    def format_range(self, doc_uri, range, options):
+        return self._hook('pylsp_format_range', doc_uri, range=range, options=options)
 
     def highlight(self, doc_uri, position):
         return flatten(self._hook('pylsp_document_highlight', doc_uri, position=position)) or None
@@ -448,9 +448,8 @@ class PythonLSPServer(MethodDispatcher):
     def m_text_document__document_symbol(self, textDocument=None, **_kwargs):
         return self.document_symbols(textDocument['uri'])
 
-    def m_text_document__formatting(self, textDocument=None, _options=None, **_kwargs):
-        # For now we're ignoring formatting options.
-        return self.format_document(textDocument['uri'])
+    def m_text_document__formatting(self, textDocument=None, options=None, **_kwargs):
+        return self.format_document(textDocument['uri'], options)
 
     def m_text_document__rename(self, textDocument=None, position=None, newName=None, **_kwargs):
         return self.rename(textDocument['uri'], position, newName)
@@ -458,9 +457,8 @@ class PythonLSPServer(MethodDispatcher):
     def m_text_document__folding_range(self, textDocument=None, **_kwargs):
         return self.folding(textDocument['uri'])
 
-    def m_text_document__range_formatting(self, textDocument=None, range=None, _options=None, **_kwargs):
-        # Again, we'll ignore formatting options for now.
-        return self.format_range(textDocument['uri'], range)
+    def m_text_document__range_formatting(self, textDocument=None, range=None, options=None, **_kwargs):
+        return self.format_range(textDocument['uri'], range, options)
 
     def m_text_document__references(self, textDocument=None, position=None, context=None, **_kwargs):
         exclude_declaration = not context['includeDeclaration']
