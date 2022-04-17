@@ -32,6 +32,7 @@ def pylsp_completions(config: Config, workspace: Workspace, document, position):
     autoimport.generate_modules_cache()
     suggestions = deduplicate(autoimport.search_module(word))
     suggestions.extend(deduplicate(autoimport.search_name(word)))
+    autoimport.close()
     results = []
     for import_statement, name, source, itemkind in suggestions:
         item = {
@@ -42,7 +43,6 @@ def pylsp_completions(config: Config, workspace: Workspace, document, position):
             "documentation": _document(import_statement),
         }
         results.append(item)
-    autoimport.close()
     return results
 
 
@@ -57,7 +57,7 @@ def _sort_import(
     full_statement_score = 2 * (len(full_statement) - import_length)
     suggested_name_score = 5 * (len(suggested_name) - len(desired_name))
     source_score = 20 * source
-    return source_score + suggested_name_score + full_statement_score
+    return reversed(str(source_score + suggested_name_score + full_statement_score))
 
 
 @hookimpl
@@ -66,4 +66,5 @@ def pylsp_initialize(config: Config, workspace: Workspace):
     rope_project = workspace._rope_project_builder(rope_config)
     autoimport = AutoImport(rope_project, memory=False)
     autoimport.generate_modules_cache()
+    autoimport.generate_cache()
     autoimport.close()
