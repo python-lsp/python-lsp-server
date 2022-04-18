@@ -56,7 +56,10 @@ class Workspace:
         # TODO: we could keep track of dirty files and validate only those
         if self.__rope is None or self.__rope_config != rope_config:
             rope_folder = rope_config.get('ropeFolder')
-            self.__rope = Project(self._root_path, ropefolder=rope_folder)
+            if rope_folder:
+                self.__rope = Project(self._root_path, ropefolder=rope_folder)
+            else:
+                self.__rope = Project(self._root_path)
             self.__rope.prefs.set('extension_modules', rope_config.get('extensionModules', []))
             self.__rope.prefs.set('ignore_syntax_errors', True)
             self.__rope.prefs.set('ignore_bad_imports', True)
