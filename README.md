@@ -95,7 +95,7 @@ As an example, to change the list of errors that pycodestyle will ignore, assumi
 Python LSP Server can communicate over WebSockets when configured as follows:
 
 ```
-pylsp --ws --host [host/ip] --port [port]
+pylsp --ws --port [port]
 ```
 
 The following libraries are required for Web Sockets support:
