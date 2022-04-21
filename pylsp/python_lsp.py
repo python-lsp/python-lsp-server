@@ -92,68 +92,57 @@ def start_io_lang_server(rfile, wfile, check_parent_process, handler_class):
     server.start()
 
 
-def start_ws_lang_server(bind_addr, port, check_parent_process, handler_class):
+def start_ws_lang_server(port, check_parent_process, handler_class):
     if not issubclass(handler_class, PythonLSPServer):
         raise ValueError('Handler class must be an instance of PythonLSPServer')
 
     # pylint: disable=import-outside-toplevel
 
-    # imports needed only for websocket based server
+    # imports needed only for websockets based server
     try:
-        from autobahn.twisted.websocket import WebSocketServerProtocol, WebSocketServerFactory
-        from twisted.internet import reactor
+        import asyncio
+        from concurrent.futures import ThreadPoolExecutor
+        import websockets
     except ImportError as e:
         raise ImportError("websocket modules missing. Please run pip install 'python-lsp-server[websockets]") from e
 
-    class MyServerProtocol(WebSocketServerProtocol):
 
-        def handler(self, message):
-            """Handler to send responses of  processed requests to respective web socket clients"""
-            try:
-                # we have to send bytes to the sendmessage method, So encoding to utf8
-                payload = json.dumps(message, ensure_ascii=False).encode('utf8')
+    async def pylsp_ws(websocket):
+        log.debug("Creating LSP object")
 
-                # Binary payload support will be provided in future
-                self.sendMessage(payload, isBinary=False)
-            except Exception as e:  # pylint: disable=broad-except
-                log.exception("Failed to write message to output file %s, %s", payload, str(e))
+        # creating a partial function and suppling the websocket connection
+        response_handler = partial(send_message, websocket = websocket)
 
-        def onOpen(self):
-            log.debug("Creating LSP object")
-
-            # pylint: disable=attribute-defined-outside-init
-
-            # Not using default stream reader and writer.
-            # Instead using a consumer based approach to handle processed requests
-            self._lsp = handler_class(rx=None, tx=None, consumer=self.handler,
+        # Not using default stream reader and writer.
+        # Instead using a consumer based approach to handle processed requests
+        pylsp_handler = handler_class(rx=None, tx=None, consumer=response_handler,
                                       check_parent_process=check_parent_process)
 
-        def onMessage(self, payload, isBinary):
-            if isBinary:
-                # binary message support will be provided in future
-                # print(f"Binary message received: {len(payload)} bytes")
-                pass
-            else:
-                # we get payload as byte array and so decoding it to string using utf8
+        tpool = ThreadPoolExecutor(max_workers=5)
+        loop = asyncio.get_running_loop()
+
+        async for message in websocket:
+            try:
                 log.debug("consuming payload and feeding it LSP handler")
-                self._lsp.consume(json.loads(payload.decode('utf8')))
+                request = json.loads(message)
+                loop.run_in_executor(tpool, pylsp_handler.consume, request)
+            except Exception as e:  # pylint: disable=broad-except
+                log.exception("Failed to process request %s, %s", message, str(e))
+    
+    def send_message(message, websocket):
+        """Handler to send responses of  processed requests to respective web socket clients"""
+        try:
+            payload = json.dumps(message, ensure_ascii=False)
+            asyncio.run(websocket.send(payload))
+        except Exception as e:  # pylint: disable=broad-except
+            log.exception("Failed to write message %s, %s", message, str(e))
 
-        def onClose(self, wasClean, code, reason):
-            log.debug("shutting down and exiting LSP handler")
-            self._lsp.m_shutdown()
-            self._lsp.m_exit()
-            log.debug(f"WS connection closed: wasClean: {wasClean}, code: {code}, reason: {reason}!")
-
-    factory = WebSocketServerFactory(f"ws://{bind_addr}:{port}")
-    factory.protocol = MyServerProtocol
-
-    # This only supports IPv4 connections
-    reactor.listenTCP(port, factory)
-
-    log.info(f"Starting Web Sockets server on port: {port}")
-
-    # runs forever
-    reactor.run()
+    async def run_server():
+        async with websockets.serve(pylsp_ws, port=port):
+            # runs forever
+            await asyncio.Future()
+    
+    asyncio.run(run_server())
 
 
 class PythonLSPServer(MethodDispatcher):

@@ -77,7 +77,7 @@ def main():
         start_tcp_lang_server(args.host, args.port, args.check_parent_process,
                               PythonLSPServer)
     elif args.ws:
-        start_ws_lang_server(args.host, args.port, args.check_parent_process,
+        start_ws_lang_server(args.port, args.check_parent_process,
                              PythonLSPServer)
     else:
         stdin, stdout = _binary_stdio()

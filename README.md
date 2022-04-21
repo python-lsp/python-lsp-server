@@ -99,7 +99,7 @@ pylsp --ws --host [host/ip] --port [port]
 ```
 
 The following libraries are required for Web Sockets support:
-- [autobahn-python](https://github.com/crossbario/autobahn-python) for Python LSP Server Web sockets using autobahn with twisted configuration. refer [Autobahn installation](https://autobahn.readthedocs.io/en/latest/installation.html) for more details
+- [websockets](https://websockets.readthedocs.io/en/stable/) for Python LSP Server Web sockets using websockets library. refer [Websockets installation](https://websockets.readthedocs.io/en/stable/intro/index.html#installation) for more details
 
 you can install these dependencies with below command:
 
