@@ -106,12 +106,11 @@ def start_ws_lang_server(port, check_parent_process, handler_class):
     except ImportError as e:
         raise ImportError("websocket modules missing. Please run pip install 'python-lsp-server[websockets]") from e
 
-
     async def pylsp_ws(websocket):
         log.debug("Creating LSP object")
 
         # creating a partial function and suppling the websocket connection
-        response_handler = partial(send_message, websocket = websocket)
+        response_handler = partial(send_message, websocket=websocket)
 
         # Not using default stream reader and writer.
         # Instead using a consumer based approach to handle processed requests
