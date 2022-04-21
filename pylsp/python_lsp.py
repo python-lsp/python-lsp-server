@@ -128,7 +128,7 @@ def start_ws_lang_server(port, check_parent_process, handler_class):
                 loop.run_in_executor(tpool, pylsp_handler.consume, request)
             except Exception as e:  # pylint: disable=broad-except
                 log.exception("Failed to process request %s, %s", message, str(e))
-    
+
     def send_message(message, websocket):
         """Handler to send responses of  processed requests to respective web socket clients"""
         try:
@@ -141,7 +141,7 @@ def start_ws_lang_server(port, check_parent_process, handler_class):
         async with websockets.serve(pylsp_ws, port=port):
             # runs forever
             await asyncio.Future()
-    
+
     asyncio.run(run_server())
 
 
