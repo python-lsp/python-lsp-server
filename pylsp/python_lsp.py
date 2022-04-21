@@ -122,7 +122,7 @@ def start_ws_lang_server(port, check_parent_process, handler_class):
 
         async for message in websocket:
             try:
-                log.debug("consuming payload and feeding it LSP handler")
+                log.debug("consuming payload and feeding it to LSP handler")
                 request = json.loads(message)
                 loop.run_in_executor(tpool, pylsp_handler.consume, request)
             except Exception as e:  # pylint: disable=broad-except
