@@ -1,10 +1,11 @@
 import logging
 from collections import OrderedDict
-from typing import Generator, List
+from typing import Generator, List, Set
 
 import parso
 from parso.python import tree
 from parso.tree import NodeOrLeaf
+from rope.base.resources import Resource
 from rope.contrib.autoimport import AutoImport
 
 from pylsp import hookimpl
@@ -91,6 +92,34 @@ def _process_statements(suggestions: List, doc_uri: str, word: str) -> Generator
         }
 
 
+def _get_names_from_import(node: tree.Import) -> Generator[str, None, None]:
+    if not node.is_star_import():
+        for name in node.children:
+            if isinstance(name, tree.PythonNode):
+                for sub_name in name.children:
+                    if isinstance(sub_name, tree.Name):
+                        yield sub_name.value
+            elif isinstance(name, tree.Name):
+                yield name.value
+
+
+def get_names(file: str) -> Generator[str, None, None]:
+    """Gets all names to ignore from the current file."""
+    expr = parso.parse(file)
+    for item in expr.children:
+        if isinstance(item, tree.PythonNode):
+            for child in item.children:
+                if isinstance(child, (tree.ImportFrom, tree.ExprStmt)):
+                    for name in child.get_defined_names():
+                        yield name.value
+                elif isinstance(child, tree.Import):
+                    for name in _get_names_from_import(child):
+                        yield name
+
+        if isinstance(item, (tree.Function, tree.Class)):
+            yield item.name.value
+
+
 @hookimpl
 def pylsp_completions(
     config: Config, workspace: Workspace, document: Document, position
@@ -103,10 +132,10 @@ def pylsp_completions(
     word = word_node.value
     rope_config = config.settings(document_path=document.path).get("rope", {})
     rope_project = workspace._rope_project_builder(rope_config)
+    ignored_names: Set[str] = set(get_names(document.source))
     autoimport = AutoImport(rope_project, memory=False)
     # TODO: update cache
-    suggestions = deduplicate(autoimport.search_module(word))
-    suggestions.extend(deduplicate(autoimport.search_name(word)))
+    suggestions = list(autoimport.search_full(word, ignored_names=ignored_names))
     autoimport.close()
     return list(_process_statements(suggestions, document.uri, word))
 
@@ -135,4 +164,14 @@ def pylsp_initialize(config: Config, workspace: Workspace):
     autoimport = AutoImport(rope_project, memory=False)
     autoimport.generate_modules_cache()
     autoimport.generate_cache()
+    autoimport.close()
+
+
+@hookimpl
+def pylsp_document_did_save(config: Config, workspace: Workspace, document: Document):
+    rope_config = config.settings().get("rope", {})
+    rope_doucment: Resource = document._rope_resource(rope_config)
+    rope_project = workspace._rope_project_builder(rope_config)
+    autoimport = AutoImport(rope_project, memory=False)
+    autoimport.generate_cache(resources=[rope_doucment])
     autoimport.close()
