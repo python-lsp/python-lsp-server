@@ -106,42 +106,41 @@ def start_ws_lang_server(port, check_parent_process, handler_class):
     except ImportError as e:
         raise ImportError("websocket modules missing. Please run pip install 'python-lsp-server[websockets]") from e
 
-    async def pylsp_ws(websocket):
-        log.debug("Creating LSP object")
+    with ThreadPoolExecutor(max_workers=10) as tpool:
+        async def pylsp_ws(websocket):
+            log.debug("Creating LSP object")
 
-        # creating a partial function and suppling the websocket connection
-        response_handler = partial(send_message, websocket=websocket)
+            # creating a partial function and suppling the websocket connection
+            response_handler = partial(send_message, websocket=websocket)
 
-        # Not using default stream reader and writer.
-        # Instead using a consumer based approach to handle processed requests
-        pylsp_handler = handler_class(rx=None, tx=None, consumer=response_handler,
-                                      check_parent_process=check_parent_process)
+            # Not using default stream reader and writer.
+            # Instead using a consumer based approach to handle processed requests
+            pylsp_handler = handler_class(rx=None, tx=None, consumer=response_handler,
+                                          check_parent_process=check_parent_process)
 
-        tpool = ThreadPoolExecutor(max_workers=5)
-        loop = asyncio.get_running_loop()
+            async for message in websocket:
+                try:
+                    log.debug("consuming payload and feeding it to LSP handler")
+                    request = json.loads(message)
+                    loop = asyncio.get_running_loop()
+                    await loop.run_in_executor(tpool, pylsp_handler.consume, request)
+                except Exception as e:  # pylint: disable=broad-except
+                    log.exception("Failed to process request %s, %s", message, str(e))
 
-        async for message in websocket:
+        def send_message(message, websocket):
+            """Handler to send responses of  processed requests to respective web socket clients"""
             try:
-                log.debug("consuming payload and feeding it to LSP handler")
-                request = json.loads(message)
-                loop.run_in_executor(tpool, pylsp_handler.consume, request)
+                payload = json.dumps(message, ensure_ascii=False)
+                asyncio.run(websocket.send(payload))
             except Exception as e:  # pylint: disable=broad-except
-                log.exception("Failed to process request %s, %s", message, str(e))
+                log.exception("Failed to write message %s, %s", message, str(e))
 
-    def send_message(message, websocket):
-        """Handler to send responses of  processed requests to respective web socket clients"""
-        try:
-            payload = json.dumps(message, ensure_ascii=False)
-            asyncio.run(websocket.send(payload))
-        except Exception as e:  # pylint: disable=broad-except
-            log.exception("Failed to write message %s, %s", message, str(e))
+        async def run_server():
+            async with websockets.serve(pylsp_ws, port=port):
+                # runs forever
+                await asyncio.Future()
 
-    async def run_server():
-        async with websockets.serve(pylsp_ws, port=port):
-            # runs forever
-            await asyncio.Future()
-
-    asyncio.run(run_server())
+        asyncio.run(run_server())
 
 
 class PythonLSPServer(MethodDispatcher):
