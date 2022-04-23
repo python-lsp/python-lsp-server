@@ -1,5 +1,6 @@
 import logging
 from collections import OrderedDict
+from functools import lru_cache
 from typing import Generator, List, Set
 
 import parso
@@ -32,6 +33,13 @@ def should_insert(expr: tree.BaseNode, word_node: tree.Leaf) -> bool:
         if isinstance(first_child, tree.EndMarker):
             if "#" in first_child.prefix:
                 return False
+        if first_child == word_node:
+            return True
+        if isinstance(first_child, tree.Import):
+            return False
+        if len(expr.children) > 1:
+            if expr.children[1].type == "trailer":
+                return False
         if isinstance(
             first_child,
             (
@@ -39,14 +47,28 @@ def should_insert(expr: tree.BaseNode, word_node: tree.Leaf) -> bool:
                 tree.PythonErrorLeaf,
             ),
         ):
-            if first_child.value in ("import", "from") and first_child != word_node:
+            if first_child.value in ("import", "from"):
                 return False
-        if isinstance(first_child, (tree.PythonErrorNode)):
+        if isinstance(first_child, (tree.PythonErrorNode, tree.PythonNode)):
             return should_insert(first_child, word_node)
         if isinstance(first_child, tree.Keyword):
             if first_child.value == "def":
                 return _should_import_function(word_node, expr)
+            if first_child.value == "class":
+                return _should_import_class(word_node, expr)
     return True
+
+
+def _should_import_class(word_node: tree.Leaf, expr: tree.BaseNode) -> bool:
+    prev_node = None
+    for node in expr.children:
+        if isinstance(node, tree.Name):
+            if isinstance(prev_node, tree.Operator):
+                if node == word_node and prev_node.value == "(":
+                    return True
+        prev_node = node
+
+    return False
 
 
 def _should_import_function(word_node: tree.Leaf, expr: tree.BaseNode) -> bool:
@@ -103,6 +125,7 @@ def _get_names_from_import(node: tree.Import) -> Generator[str, None, None]:
                 yield name.value
 
 
+@lru_cache(maxsize=100)
 def get_names(file: str) -> Generator[str, None, None]:
     """Gets all names to ignore from the current file."""
     expr = parso.parse(file)
@@ -154,11 +177,12 @@ def _sort_import(
     score: int = source_score + suggested_name_score + full_statement_score
     # Since we are using ints, we need to pad them.
     # We also want to prioritize autoimport behind everything since its the last priority.
-    return "zz" + str(score).rjust(10, "0")
+    return "zzzzz" + str(score).rjust(10, "0")
 
 
 @hookimpl
 def pylsp_initialize(config: Config, workspace: Workspace):
+    """Initialize AutoImport. Generates the cache for local and global items."""
     rope_config = config.settings().get("rope", {})
     rope_project = workspace._rope_project_builder(rope_config)
     autoimport = AutoImport(rope_project, memory=False)
@@ -169,9 +193,11 @@ def pylsp_initialize(config: Config, workspace: Workspace):
 
 @hookimpl
 def pylsp_document_did_save(config: Config, workspace: Workspace, document: Document):
+    """Update the names associated with this document. Doesn't work because this hook isn't called."""
     rope_config = config.settings().get("rope", {})
     rope_doucment: Resource = document._rope_resource(rope_config)
     rope_project = workspace._rope_project_builder(rope_config)
     autoimport = AutoImport(rope_project, memory=False)
     autoimport.generate_cache(resources=[rope_doucment])
+    autoimport.generate_modules_cache()
     autoimport.close()

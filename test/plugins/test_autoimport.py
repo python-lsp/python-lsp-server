@@ -3,16 +3,18 @@ from typing import Dict, List
 import pytest
 
 from pylsp import lsp, uris
+from pylsp.config.config import Config
 from pylsp.plugins.rope_autoimport import _sort_import, get_names
 from pylsp.plugins.rope_autoimport import (
     pylsp_completions as pylsp_autoimport_completions,
 )
+from pylsp.workspace import Workspace
 
 DOC_URI = uris.from_fs_path(__file__)
 
 
 @pytest.fixture
-def completions(config, workspace, request):
+def completions(config: Config, workspace: Workspace, request):
     document, position = request.param
     com_position = {"line": 0, "character": position}
     workspace.put_document(DOC_URI, source=document)
@@ -41,10 +43,34 @@ def test_autoimport_import(completions):
     assert len(completions) == 0
 
 
+@pytest.mark.parametrize("completions", [("""import test\n""", 10)], indirect=True)
+def test_autoimport_import_with_name(completions):
+    assert len(completions) == 0
+
+
 @pytest.mark.parametrize("completions", [("""def func(s""", 10)], indirect=True)
 def test_autoimport_function(completions):
 
     assert len(completions) == 0
+
+
+@pytest.mark.parametrize("completions", [("""class Test""", 10)], indirect=True)
+def test_autoimport_class(completions):
+    assert len(completions) == 0
+
+
+@pytest.mark.parametrize(
+    "completions", [("""class Test(NamedTupl):""", 20)], indirect=True
+)
+def test_autoimport_class_complete(completions):
+    assert len(completions) > 0
+
+
+@pytest.mark.parametrize(
+    "completions", [("""class Test(NamedTupl""", 20)], indirect=True
+)
+def test_autoimport_class_incomplete(completions):
+    assert len(completions) > 0
 
 
 @pytest.mark.parametrize("completions", [("""def func(s:Lis""", 12)], indirect=True)
@@ -79,8 +105,35 @@ def test_autoimport_defined_name(config, workspace):
     assert not check_dict({"label": "List"}, completions)
 
 
+# This test won't work because pylsp cannot detect changes correctly.
+# def test_autoimport_update_module(config: Config, workspace: Workspace):
+#     document = "SomethingYouShouldntWrite = 1"
+#     document2 = """SomethingYouShouldntWrit"""
+#     com_position = {
+#         "line": 0,
+#         "character": 3,
+#     }
+#     DOC2_URI = uris.from_fs_path(workspace.root_path + "/document1.py")
+#     workspace.put_document(DOC_URI, source=document)
+#     doc = workspace.get_document(DOC_URI)
+#     completions = pylsp_autoimport_completions(config, workspace, doc, com_position)
+#     assert len(completions) == 0
+#     workspace.put_document(DOC2_URI, source=document2)
+#     assert check_dict({"label": "SomethingYouShouldntWrite"}, completions)
+#     workspace.put_document(DOC2_URI, source="")
+#     completions = pylsp_autoimport_completions(config, workspace, doc, com_position)
+#     assert len(completions) == 0
+#     workspace.rm_document(DOC_URI)
+
+
 @pytest.mark.parametrize("completions", [("""str.""", 4)], indirect=True)
 def test_autoimport_dot(completions):
+
+    assert len(completions) == 0
+
+
+@pytest.mark.parametrize("completions", [("""str.metho\n""", 9)], indirect=True)
+def test_autoimport_dot_partial(completions):
 
     assert len(completions) == 0
 
