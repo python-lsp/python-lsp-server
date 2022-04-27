@@ -4,7 +4,7 @@ import pytest
 
 from pylsp import lsp, uris
 from pylsp.config.config import Config
-from pylsp.plugins.rope_autoimport import _sort_import, get_names
+from pylsp.plugins.rope_autoimport import _get_score, get_names
 from pylsp.plugins.rope_autoimport import (
     pylsp_completions as pylsp_autoimport_completions,
 )
@@ -41,6 +41,17 @@ def test_autoimport_completion(completions):
 @pytest.mark.parametrize("completions", [("""import """, 7)], indirect=True)
 def test_autoimport_import(completions):
     assert len(completions) == 0
+
+
+@pytest.mark.parametrize("completions", [("""pathlib""", 2)], indirect=True)
+def test_autoimport_pathlib(completions):
+    assert completions[0]["label"] == "pathlib"
+
+    start = {"line": 0, "character": 0}
+    edit_range = {"start": start, "end": start}
+    assert completions[0]["additionalTextEdits"] == [
+        {"range": edit_range, "newText": "import pathlib\n"}
+    ]
 
 
 @pytest.mark.parametrize("completions", [("""import test\n""", 10)], indirect=True)
@@ -105,22 +116,36 @@ def test_autoimport_defined_name(config, workspace):
     assert not check_dict({"label": "List"}, completions)
 
 
-# This test won't work because pylsp cannot detect changes correctly.
+# This test has several large issues.
+# 1. Pylsp does not call the hook pylsp_document_did_save from what I can tell
+# 2. autoimport relies on its sources being written to disk. This makes testing harder
+# 3. the hook doesn't handle removed files
+# 4. The testing framework cannot access the actual autoimport object so it cannot clear the cache
 # def test_autoimport_update_module(config: Config, workspace: Workspace):
-#     document = "SomethingYouShouldntWrite = 1"
-#     document2 = """SomethingYouShouldntWrit"""
+#     document2 = "SomethingYouShouldntWrite = 1"
+#     document = """SomethingYouShouldntWrit"""
 #     com_position = {
 #         "line": 0,
 #         "character": 3,
 #     }
-#     DOC2_URI = uris.from_fs_path(workspace.root_path + "/document1.py")
+#     doc2_path = workspace.root_path + "/test_file_no_one_should_write_to.py"
+#     if os.path.exists(doc2_path):
+#         os.remove(doc2_path)
+#     DOC2_URI = uris.from_fs_path(doc2_path)
 #     workspace.put_document(DOC_URI, source=document)
 #     doc = workspace.get_document(DOC_URI)
 #     completions = pylsp_autoimport_completions(config, workspace, doc, com_position)
 #     assert len(completions) == 0
+#     with open(doc2_path, "w") as f:
+#         f.write(document2)
 #     workspace.put_document(DOC2_URI, source=document2)
+#     doc2 = workspace.get_document(DOC2_URI)
+#     pylsp_document_did_save(config, workspace, doc2)
 #     assert check_dict({"label": "SomethingYouShouldntWrite"}, completions)
-#     workspace.put_document(DOC2_URI, source="")
+#     workspace.put_document(DOC2_URI, source="\n")
+#     doc2 = workspace.get_document(DOC2_URI)
+#     os.remove(doc2_path)
+#     pylsp_document_did_save(config, workspace, doc2)
 #     completions = pylsp_autoimport_completions(config, workspace, doc, com_position)
 #     assert len(completions) == 0
 #     workspace.rm_document(DOC_URI)
@@ -160,24 +185,24 @@ def test_autoimport_from_(completions):
 
 
 def test_sort_sources():
-    result1 = _sort_import(1, "import pathlib", "pathlib", "pathli")
-    result2 = _sort_import(2, "import pathlib", "pathlib", "pathli")
+    result1 = _get_score(1, "import pathlib", "pathlib", "pathli")
+    result2 = _get_score(2, "import pathlib", "pathlib", "pathli")
     assert result1 < result2
 
 
 def test_sort_statements():
-    result1 = _sort_import(
+    result1 = _get_score(
         2, "from importlib_metadata import pathlib", "pathlib", "pathli"
     )
-    result2 = _sort_import(2, "import pathlib", "pathlib", "pathli")
+    result2 = _get_score(2, "import pathlib", "pathlib", "pathli")
     assert result1 > result2
 
 
 def test_sort_both():
-    result1 = _sort_import(
+    result1 = _get_score(
         3, "from importlib_metadata import pathlib", "pathlib", "pathli"
     )
-    result2 = _sort_import(2, "import pathlib", "pathlib", "pathli")
+    result2 = _get_score(2, "import pathlib", "pathlib", "pathli")
     assert result1 > result2
 
 
@@ -187,7 +212,7 @@ def test_get_names():
     import blah, bleh
     hello = "str"
     a, b = 1, 2
-    def someone(): 
+    def someone():
         soemthing
     class sfa:
         sfiosifo
