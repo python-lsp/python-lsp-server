@@ -5,12 +5,13 @@ import pytest
 from pylsp import lsp, uris
 from pylsp.config.config import Config
 from pylsp.plugins.rope_autoimport import _get_score, get_names
-from pylsp.plugins.rope_autoimport import (
-    pylsp_completions as pylsp_autoimport_completions,
-)
+from pylsp.plugins.rope_autoimport import \
+    pylsp_completions as pylsp_autoimport_completions
 from pylsp.workspace import Workspace
 
 DOC_URI = uris.from_fs_path(__file__)
+
+# pylint: disable=redefined-outer-name
 
 
 @pytest.fixture
