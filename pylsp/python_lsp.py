@@ -274,6 +274,9 @@ class PythonLSPServer(MethodDispatcher):
     def document_symbols(self, doc_uri):
         return flatten(self._hook('pylsp_document_symbols', doc_uri))
 
+    def document_did_save(self, doc_uri):
+        return self._hook("pylsp_document_did_save", doc_uri)
+
     def execute_command(self, command, arguments):
         return self._hook('pylsp_execute_command', command=command, arguments=arguments)
 
@@ -340,6 +343,7 @@ class PythonLSPServer(MethodDispatcher):
 
     def m_text_document__did_save(self, textDocument=None, **_kwargs):
         self.lint(textDocument['uri'], is_saved=True)
+        self.document_did_save(textDocument['uri'])
 
     def m_text_document__code_action(self, textDocument=None, range=None, context=None, **_kwargs):
         return self.code_actions(textDocument['uri'], range, context)

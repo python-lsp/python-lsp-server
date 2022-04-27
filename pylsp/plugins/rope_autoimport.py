@@ -16,6 +16,8 @@ from pylsp.workspace import Document, Workspace
 log = logging.getLogger(__name__)
 
 
+_score_pow = 5
+_score_max = 10 ** _score_pow
 @hookimpl
 def pylsp_settings():
     # Default rope_completion to disabled
@@ -105,7 +107,7 @@ def _process_statements(suggestions: List, doc_uri: str, word: str) -> Generator
         edit_range = {"start": start, "end": start}
         edit = {"range": edit_range, "newText": import_statement + "\n"}
         score = _get_score(source, import_statement, name, word)
-        if score > 1000:
+        if score > _score_max:
             continue
         yield {
             "label": name,
@@ -171,7 +173,7 @@ def pylsp_completions(
     )
     if len(results) > 25:
         results = results[:25]
-    return  results
+    return results
 
 
 def _document(import_statement: str) -> str:
@@ -182,19 +184,18 @@ def _get_score(
     source: int, full_statement: str, suggested_name: str, desired_name
 ) -> int:
     import_length = len("import")
-    full_statement_score = (len(full_statement) - import_length) ** 2
+    full_statement_score = (len(full_statement) - import_length)
     suggested_name_score = ((len(suggested_name) - len(desired_name))) ** 2
     source_score = 20 * source
-    return source_score + suggested_name_score + full_statement_score
+    return  suggested_name_score + full_statement_score + source_score
 
 
 def _sort_import(score: int) -> str:
-    pow = 5
-    score = max(min(score, (10**pow) - 1), 0)
+    score = max(min(score, (_score_max) - 1), 0)
     # Since we are using ints, we need to pad them.
     # We also want to prioritize autoimport behind everything since its the last priority.
     # The minimum is to prevent score from overflowing the pad
-    return "[z" + str(score).rjust(pow, "0")
+    return "[z" + str(score).rjust(_score_pow, "0")
 
 
 @hookimpl
@@ -210,7 +211,7 @@ def pylsp_initialize(config: Config, workspace: Workspace):
 
 @hookimpl
 def pylsp_document_did_save(config: Config, workspace: Workspace, document: Document):
-    """Update the names associated with this document. Doesn't work because this hook isn't called."""
+    """Update the names associated with this document."""
     rope_config = config.settings().get("rope", {})
     rope_doucment: Resource = document._rope_resource(rope_config)
     rope_project = workspace._rope_project_builder(rope_config)

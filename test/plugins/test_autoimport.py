@@ -117,10 +117,9 @@ def test_autoimport_defined_name(config, workspace):
 
 
 # This test has several large issues.
-# 1. Pylsp does not call the hook pylsp_document_did_save from what I can tell
-# 2. autoimport relies on its sources being written to disk. This makes testing harder
-# 3. the hook doesn't handle removed files
-# 4. The testing framework cannot access the actual autoimport object so it cannot clear the cache
+# 1. autoimport relies on its sources being written to disk. This makes testing harder
+# 2. the hook doesn't handle removed files
+# 3. The testing framework cannot access the actual autoimport object so it cannot clear the cache
 # def test_autoimport_update_module(config: Config, workspace: Workspace):
 #     document2 = "SomethingYouShouldntWrite = 1"
 #     document = """SomethingYouShouldntWrit"""
