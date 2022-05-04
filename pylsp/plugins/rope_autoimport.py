@@ -7,7 +7,7 @@ import parso
 from parso.python import tree
 from parso.tree import NodeOrLeaf
 from rope.base.resources import Resource
-from rope.contrib.autoimport import AutoImport
+from rope.contrib.autoimport.sqlite import AutoImport
 
 from pylsp import hookimpl
 from pylsp.config.config import Config
