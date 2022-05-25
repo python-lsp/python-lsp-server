@@ -1,10 +1,11 @@
 from typing import Dict, List
 
+import parso
 import pytest
 
 from pylsp import lsp, uris
 from pylsp.config.config import Config
-from pylsp.plugins.rope_autoimport import _get_score, get_names
+from pylsp.plugins.rope_autoimport import _get_score, _should_insert, get_names
 from pylsp.plugins.rope_autoimport import \
     pylsp_completions as pylsp_autoimport_completions
 from pylsp.workspace import Workspace
@@ -22,6 +23,12 @@ def completions(config: Config, workspace: Workspace, request):
     doc = workspace.get_document(DOC_URI)
     yield pylsp_autoimport_completions(config, workspace, doc, com_position)
     workspace.rm_document(DOC_URI)
+
+
+def should_insert(phrase: str, position: int):
+    expr = parso.parse(phrase)
+    word_node = expr.get_leaf_for_position((1, position))
+    return _should_insert(expr, word_node)
 
 
 def check_dict(query: Dict, results: List[Dict]) -> bool:
@@ -151,37 +158,25 @@ def test_autoimport_defined_name(config, workspace):
 #     workspace.rm_document(DOC_URI)
 
 
-@pytest.mark.parametrize("completions", [("""str.""", 4)], indirect=True)
-def test_autoimport_dot(completions):
+class test_should_insert:
+    def test_dot(completions):
 
-    assert len(completions) == 0
+        assert not should_insert("""str.""", 4)
 
+    def test_dot_partial(completions):
 
-@pytest.mark.parametrize("completions", [("""str.metho\n""", 9)], indirect=True)
-def test_autoimport_dot_partial(completions):
+        assert not should_insert("""str.metho\n""", 9)
 
-    assert len(completions) == 0
+    def test_comment(completions):
+        assert not should_insert("""#""", 1)
 
+    def test_comment_indent(completions):
 
-@pytest.mark.parametrize("completions", [("""#""", 1)], indirect=True)
-def test_autoimport_comment(completions):
-    assert len(completions) == 0
+        assert not should_insert("""    # """, 5)
 
-
-@pytest.mark.parametrize("completions", [("""    # """, 5)], indirect=True)
-def test_autoimport_comment_indent(completions):
-
-    assert len(completions) == 0
-
-
-@pytest.mark.parametrize("completions", [("""from """, 5)], indirect=True)
-def test_autoimport_from(completions):
-    assert len(completions) == 0
-
-
-@pytest.mark.parametrize("completions", [("""from """, 4)], indirect=True)
-def test_autoimport_from_(completions):
-    assert len(completions) > 0
+    def test_from(completions):
+        assert not should_insert("""from """, 5)
+        assert should_insert("""from """, 4)
 
 
 def test_sort_sources():
