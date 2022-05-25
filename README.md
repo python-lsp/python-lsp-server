@@ -95,6 +95,7 @@ As an example, to change the list of errors that pycodestyle will ignore, assumi
 ## LSP Server Features
 
 * Auto Completion
+* [Autoimport](docs/autoimport.md)
 * Code Linting
 * Signature Help
 * Go to definition

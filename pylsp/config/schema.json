@@ -337,7 +337,7 @@
       "description": "Enable or disable the plugin."
     },"pylsp.plugins.rope_autoimport.enabled": {
       "type": "boolean",
-      "default": true,
+      "default": false,
       "description": "Enable or disable the plugin."
     },
     "pylsp.plugins.rope_completion.eager": {

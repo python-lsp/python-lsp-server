@@ -1,7 +1,6 @@
 import logging
-from collections import OrderedDict
 from functools import lru_cache
-from typing import Generator, List, Set
+from typing import Any, Dict, Generator, List, Set
 
 import parso
 from parso.python import tree
@@ -21,17 +20,12 @@ _score_max = 10**_score_pow
 
 
 @hookimpl
-def pylsp_settings():
+def pylsp_settings() -> Dict[str, Dict[str, Dict[str, Any]]]:
     # Default rope_completion to disabled
-    return {"plugins": {"rope_autoimport": {"enabled": True}}}
+    return {"plugins": {"rope_autoimport": {"enabled": False}}}
 
 
-def deduplicate(input_list):
-    """Remove duplicates from list."""
-    return list(OrderedDict.fromkeys(input_list))
-
-
-def should_insert(expr: tree.BaseNode, word_node: tree.Leaf) -> bool:
+def _should_insert(expr: tree.BaseNode, word_node: tree.Leaf) -> bool:
     """
     Check if we should insert the word_node on the given expr.
 
@@ -52,11 +46,11 @@ def should_insert(expr: tree.BaseNode, word_node: tree.Leaf) -> bool:
     if isinstance(first_child, (tree.PythonErrorNode, tree.PythonNode)):
         # The tree will often include error nodes like this to indicate errors
         # we want to ignore errors since the code is being written
-        return should_insert(first_child, word_node)
-    return handle_first_child(first_child, expr, word_node)
+        return _should_insert(first_child, word_node)
+    return _handle_first_child(first_child, expr, word_node)
 
 
-def handle_first_child(
+def _handle_first_child(
     first_child: NodeOrLeaf, expr: tree.BaseNode, word_node: tree.Leaf
 ) -> bool:
     """Check if we suggest imports given the following first child."""
@@ -117,7 +111,7 @@ def _process_statements(
     word: str,
     autoimport: AutoImport,
     document: Document,
-) -> Generator:
+) -> Generator[Dict[str, Any], None, None]:
     for import_statement, name, source, itemkind in suggestions:
         insert_line = autoimport.find_insertion_line(document.source) - 1
         start = {"line": insert_line, "character": 0}
@@ -173,7 +167,7 @@ def pylsp_completions(
     line = document.lines[position["line"]]
     expr = parso.parse(line)
     word_node = expr.get_leaf_for_position((1, position["character"]))
-    if not should_insert(expr, word_node):
+    if not _should_insert(expr, word_node):
         return []
     word = word_node.value
     rope_config = config.settings(document_path=document.path).get("rope", {})
@@ -236,5 +230,5 @@ def pylsp_document_did_save(config: Config, workspace: Workspace, document: Docu
     autoimport = AutoImport(rope_project, memory=False)
     autoimport.generate_cache(resources=[rope_doucment])
     # Might as well using saving the document as an indicator to regenerate the module cache
-    autoimport.generate_modules_cache() 
+    autoimport.generate_modules_cache()
     autoimport.close()
