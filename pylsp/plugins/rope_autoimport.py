@@ -6,6 +6,7 @@ import parso
 from parso.python import tree
 from parso.tree import NodeOrLeaf
 from rope.base.resources import Resource
+from rope.contrib.autoimport.defs import SearchResult
 from rope.contrib.autoimport.sqlite import AutoImport
 
 from pylsp import hookimpl
@@ -106,7 +107,7 @@ def _handle_argument(node: NodeOrLeaf, word_node: tree.Leaf):
 
 
 def _process_statements(
-    suggestions: List,
+    suggestions: List[SearchResult],
     doc_uri: str,
     word: str,
     autoimport: AutoImport,
