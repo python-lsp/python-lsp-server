@@ -157,7 +157,7 @@ class Workspace:
         )
 
     def close(self):
-        if self._rope_autoimport is not None:
+        if self.__rope_autoimport is not None:
             self.__rope_autoimport.close()
 
 

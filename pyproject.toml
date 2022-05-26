@@ -98,3 +98,7 @@ write_to_template = "__version__ = \"{version}\"\n"  # VERSION_INFO is populated
 [tool.pytest.ini_options]
 testpaths = ["test"]
 addopts = "--cov-report html --cov-report term --junitxml=pytest.xml --cov pylsp --cov test"
+
+[tool.coverage.run]
+concurrency = ["multiprocessing", "thread"]
+

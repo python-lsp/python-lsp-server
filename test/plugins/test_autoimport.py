@@ -25,7 +25,6 @@ def completions(config: Config, workspace: Workspace, request):
     doc = workspace.get_document(DOC_URI)
     yield pylsp_autoimport_completions(config, workspace, doc, com_position)
     workspace.rm_document(DOC_URI)
-    workspace.close()
 
 
 def should_insert(phrase: str, position: int):

@@ -137,11 +137,11 @@ class PythonLSPServer(MethodDispatcher):
         raise KeyError()
 
     def m_shutdown(self, **_kwargs):
+        for workspace in self.workspaces.values():
+            workspace.close()
         self._shutdown = True
 
     def m_exit(self, **_kwargs):
-        for workspace in self.workspaces:
-            workspace.close()
         self._endpoint.shutdown()
         self._jsonrpc_stream_reader.close()
         self._jsonrpc_stream_writer.close()
