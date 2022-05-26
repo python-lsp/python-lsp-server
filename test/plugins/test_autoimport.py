@@ -8,21 +8,24 @@ from pylsp.config.config import Config
 from pylsp.plugins.rope_autoimport import _get_score, _should_insert, get_names
 from pylsp.plugins.rope_autoimport import \
     pylsp_completions as pylsp_autoimport_completions
+from pylsp.plugins.rope_autoimport import pylsp_initialize
 from pylsp.workspace import Workspace
 
 DOC_URI = uris.from_fs_path(__file__)
 
+
 # pylint: disable=redefined-outer-name
-
-
 @pytest.fixture
 def completions(config: Config, workspace: Workspace, request):
+    config.update({"rope_autoimport": {"memory": True, "enabled": True}})
+    pylsp_initialize(config, workspace)
     document, position = request.param
     com_position = {"line": 0, "character": position}
     workspace.put_document(DOC_URI, source=document)
     doc = workspace.get_document(DOC_URI)
     yield pylsp_autoimport_completions(config, workspace, doc, com_position)
     workspace.rm_document(DOC_URI)
+    workspace.close()
 
 
 def should_insert(phrase: str, position: int):
@@ -42,8 +45,10 @@ def check_dict(query: Dict, results: List[Dict]) -> bool:
 def test_autoimport_completion(completions):
     assert completions
     assert check_dict(
-        {"label": "pathlib", "kind": lsp.CompletionItemKind.Module}, completions
-    )
+        {
+            "label": "pathlib",
+            "kind": lsp.CompletionItemKind.Module
+        }, completions)
 
 
 @pytest.mark.parametrize("completions", [("""import """, 7)], indirect=True)
@@ -57,58 +62,62 @@ def test_autoimport_pathlib(completions):
 
     start = {"line": 0, "character": 0}
     edit_range = {"start": start, "end": start}
-    assert completions[0]["additionalTextEdits"] == [
-        {"range": edit_range, "newText": "import pathlib\n"}
-    ]
+    assert completions[0]["additionalTextEdits"] == [{
+        "range":
+        edit_range,
+        "newText":
+        "import pathlib\n"
+    }]
 
 
-@pytest.mark.parametrize("completions", [("""import test\n""", 10)], indirect=True)
+@pytest.mark.parametrize("completions", [("""import test\n""", 10)],
+                         indirect=True)
 def test_autoimport_import_with_name(completions):
     assert len(completions) == 0
 
 
-@pytest.mark.parametrize("completions", [("""def func(s""", 10)], indirect=True)
+@pytest.mark.parametrize("completions", [("""def func(s""", 10)],
+                         indirect=True)
 def test_autoimport_function(completions):
 
     assert len(completions) == 0
 
 
-@pytest.mark.parametrize("completions", [("""class Test""", 10)], indirect=True)
+@pytest.mark.parametrize("completions", [("""class Test""", 10)],
+                         indirect=True)
 def test_autoimport_class(completions):
     assert len(completions) == 0
 
 
-@pytest.mark.parametrize(
-    "completions", [("""class Test(NamedTupl):""", 20)], indirect=True
-)
+@pytest.mark.parametrize("completions", [("""class Test(NamedTupl):""", 20)],
+                         indirect=True)
 def test_autoimport_class_complete(completions):
     assert len(completions) > 0
 
 
-@pytest.mark.parametrize(
-    "completions", [("""class Test(NamedTupl""", 20)], indirect=True
-)
+@pytest.mark.parametrize("completions", [("""class Test(NamedTupl""", 20)],
+                         indirect=True)
 def test_autoimport_class_incomplete(completions):
     assert len(completions) > 0
 
 
-@pytest.mark.parametrize("completions", [("""def func(s:Lis""", 12)], indirect=True)
+@pytest.mark.parametrize("completions", [("""def func(s:Lis""", 12)],
+                         indirect=True)
 def test_autoimport_function_typing(completions):
     assert len(completions) > 0
     assert check_dict({"label": "List"}, completions)
 
 
-@pytest.mark.parametrize(
-    "completions", [("""def func(s : Lis ):""", 16)], indirect=True
-)
+@pytest.mark.parametrize("completions", [("""def func(s : Lis ):""", 16)],
+                         indirect=True)
 def test_autoimport_function_typing_complete(completions):
     assert len(completions) > 0
     assert check_dict({"label": "List"}, completions)
 
 
-@pytest.mark.parametrize(
-    "completions", [("""def func(s : Lis ) -> Generat:""", 29)], indirect=True
-)
+@pytest.mark.parametrize("completions",
+                         [("""def func(s : Lis ) -> Generat:""", 29)],
+                         indirect=True)
 def test_autoimport_function_typing_return(completions):
     assert len(completions) > 0
     assert check_dict({"label": "Generator"}, completions)
@@ -119,7 +128,8 @@ def test_autoimport_defined_name(config, workspace):
     com_position = {"line": 1, "character": 3}
     workspace.put_document(DOC_URI, source=document)
     doc = workspace.get_document(DOC_URI)
-    completions = pylsp_autoimport_completions(config, workspace, doc, com_position)
+    completions = pylsp_autoimport_completions(config, workspace, doc,
+                                               com_position)
     workspace.rm_document(DOC_URI)
     assert not check_dict({"label": "List"}, completions)
 
@@ -158,23 +168,25 @@ def test_autoimport_defined_name(config, workspace):
 #     workspace.rm_document(DOC_URI)
 
 
+# pylint: disable=no-self-use
 class test_should_insert:
-    def test_dot(completions):
+
+    def test_dot(self):
 
         assert not should_insert("""str.""", 4)
 
-    def test_dot_partial(completions):
+    def test_dot_partial(self):
 
         assert not should_insert("""str.metho\n""", 9)
 
-    def test_comment(completions):
+    def test_comment(self):
         assert not should_insert("""#""", 1)
 
-    def test_comment_indent(completions):
+    def test_comment_indent(self):
 
         assert not should_insert("""    # """, 5)
 
-    def test_from(completions):
+    def test_from(self):
         assert not should_insert("""from """, 5)
         assert should_insert("""from """, 4)
 
@@ -186,17 +198,15 @@ def test_sort_sources():
 
 
 def test_sort_statements():
-    result1 = _get_score(
-        2, "from importlib_metadata import pathlib", "pathlib", "pathli"
-    )
+    result1 = _get_score(2, "from importlib_metadata import pathlib",
+                         "pathlib", "pathli")
     result2 = _get_score(2, "import pathlib", "pathlib", "pathli")
     assert result1 > result2
 
 
 def test_sort_both():
-    result1 = _get_score(
-        3, "from importlib_metadata import pathlib", "pathlib", "pathli"
-    )
+    result1 = _get_score(3, "from importlib_metadata import pathlib",
+                         "pathlib", "pathli")
     result2 = _get_score(2, "import pathlib", "pathlib", "pathli")
     assert result1 > result2
 
@@ -213,4 +223,5 @@ def test_get_names():
         sfiosifo
     """
     results = set(get_names(source))
-    assert results == set(["blah", "bleh", "e", "hello", "someone", "sfa", "a", "b"])
+    assert results == set(
+        ["blah", "bleh", "e", "hello", "someone", "sfa", "a", "b"])

@@ -15,7 +15,6 @@ from pylsp.workspace import Document, Workspace
 
 log = logging.getLogger(__name__)
 
-
 _score_pow = 5
 _score_max = 10**_score_pow
 
@@ -23,7 +22,7 @@ _score_max = 10**_score_pow
 @hookimpl
 def pylsp_settings() -> Dict[str, Dict[str, Dict[str, Any]]]:
     # Default rope_completion to disabled
-    return {"plugins": {"rope_autoimport": {"enabled": False}}}
+    return {"plugins": {"rope_autoimport": {"enabled": False, "memory": True}}}
 
 
 def _should_insert(expr: tree.BaseNode, word_node: tree.Leaf) -> bool:
@@ -51,9 +50,8 @@ def _should_insert(expr: tree.BaseNode, word_node: tree.Leaf) -> bool:
     return _handle_first_child(first_child, expr, word_node)
 
 
-def _handle_first_child(
-    first_child: NodeOrLeaf, expr: tree.BaseNode, word_node: tree.Leaf
-) -> bool:
+def _handle_first_child(first_child: NodeOrLeaf, expr: tree.BaseNode,
+                        word_node: tree.Leaf) -> bool:
     """Check if we suggest imports given the following first child."""
     if isinstance(first_child, tree.Import):
         return False
@@ -125,7 +123,9 @@ def _process_statements(
             "label": name,
             "kind": itemkind,
             "sortText": _sort_import(score),
-            "data": {"doc_uri": doc_uri},
+            "data": {
+                "doc_uri": doc_uri
+            },
             "detail": _document(import_statement),
             "additionalTextEdits": [edit],
         }
@@ -161,9 +161,8 @@ def get_names(file: str) -> Generator[str, None, None]:
 
 
 @hookimpl
-def pylsp_completions(
-    config: Config, workspace: Workspace, document: Document, position
-):
+def pylsp_completions(config: Config, workspace: Workspace, document: Document,
+                      position):
     """Get autoimport suggestions."""
     line = document.lines[position["line"]]
     expr = parso.parse(line)
@@ -171,18 +170,18 @@ def pylsp_completions(
     if not _should_insert(expr, word_node):
         return []
     word = word_node.value
+    log.debug(f"autoimport: searching for word: {word}")
     rope_config = config.settings(document_path=document.path).get("rope", {})
-    rope_project = workspace._rope_project_builder(rope_config)
     ignored_names: Set[str] = set(get_names(document.source))
-    autoimport = AutoImport(rope_project, memory=False)
-    suggestions = list(autoimport.search_full(word, ignored_names=ignored_names))
-    autoimport.close()
+    autoimport = workspace._rope_autoimport(rope_config)
+    suggestions = list(
+        autoimport.search_full(word, ignored_names=ignored_names))
     results = list(
         sorted(
-            _process_statements(suggestions, document.uri, word, autoimport, document),
+            _process_statements(suggestions, document.uri, word, autoimport,
+                                document),
             key=lambda statement: statement["sortText"],
-        )
-    )
+        ))
     max_size = 100
     if len(results) > max_size:
         results = results[:max_size]
@@ -193,12 +192,11 @@ def _document(import_statement: str) -> str:
     return "__autoimport__\n" + import_statement
 
 
-def _get_score(
-    source: int, full_statement: str, suggested_name: str, desired_name
-) -> int:
+def _get_score(source: int, full_statement: str, suggested_name: str,
+               desired_name) -> int:
     import_length = len("import")
     full_statement_score = len(full_statement) - import_length
-    suggested_name_score = ((len(suggested_name) - len(desired_name))) ** 2
+    suggested_name_score = ((len(suggested_name) - len(desired_name)))**2
     source_score = 20 * source
     return suggested_name_score + full_statement_score + source_score
 
@@ -214,22 +212,20 @@ def _sort_import(score: int) -> str:
 @hookimpl
 def pylsp_initialize(config: Config, workspace: Workspace):
     """Initialize AutoImport. Generates the cache for local and global items."""
+    memory: bool = config.settings().get("rope_autoimport", {})["memory"]
     rope_config = config.settings().get("rope", {})
-    rope_project = workspace._rope_project_builder(rope_config)
-    autoimport = AutoImport(rope_project, memory=False)
+    autoimport = workspace._rope_autoimport(rope_config, memory)
     autoimport.generate_modules_cache()
     autoimport.generate_cache()
-    autoimport.close()
 
 
 @hookimpl
-def pylsp_document_did_save(config: Config, workspace: Workspace, document: Document):
+def pylsp_document_did_save(config: Config, workspace: Workspace,
+                            document: Document):
     """Update the names associated with this document."""
     rope_config = config.settings().get("rope", {})
     rope_doucment: Resource = document._rope_resource(rope_config)
-    rope_project = workspace._rope_project_builder(rope_config)
-    autoimport = AutoImport(rope_project, memory=False)
+    autoimport = workspace._rope_autoimport(rope_config)
     autoimport.generate_cache(resources=[rope_doucment])
     # Might as well using saving the document as an indicator to regenerate the module cache
     autoimport.generate_modules_cache()
-    autoimport.close()

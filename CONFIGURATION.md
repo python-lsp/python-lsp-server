@@ -59,6 +59,7 @@ This server can be configured using `workspace/didChangeConfiguration` method. E
 | `pylsp.plugins.pylint.args` | `array`  of non-unique `string` items | Arguments to pass to pylint. | `null` |
 | `pylsp.plugins.pylint.executable` | `string` | Executable to run pylint with. Enabling this will run pylint on unsaved files via stdin. Can slow down workflow. Only works with python3. | `null` |
 | `pylsp.plugins.rope_autoimport.enabled` | `boolean` | Enable or disable the plugin. | `false` |
+| `pylsp.plugins.rope_autoimport.memory` | `boolean` | Make the autoimport database memory only. Drastically increases startup time. | `false` |
 | `pylsp.plugins.rope_completion.enabled` | `boolean` | Enable or disable the plugin. | `false` |
 | `pylsp.plugins.rope_completion.eager` | `boolean` | Resolve documentation and detail eagerly. | `false` |
 | `pylsp.plugins.yapf.enabled` | `boolean` | Enable or disable the plugin. | `true` |

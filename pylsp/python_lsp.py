@@ -140,6 +140,8 @@ class PythonLSPServer(MethodDispatcher):
         self._shutdown = True
 
     def m_exit(self, **_kwargs):
+        for workspace in self.workspaces:
+            workspace.close()
         self._endpoint.shutdown()
         self._jsonrpc_stream_reader.close()
         self._jsonrpc_stream_writer.close()
