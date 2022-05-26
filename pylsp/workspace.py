@@ -51,6 +51,7 @@ class Workspace:
         self.__rope = None
         self.__rope_config = None
         self.__rope_autoimport = None
+
     def _rope_autoimport(self, rope_config: Optional, memory: bool = False):
         # pylint: disable=import-outside-toplevel
         from rope.contrib.autoimport.sqlite import AutoImport
@@ -154,6 +155,7 @@ class Workspace:
             extra_sys_path=self.source_roots(path),
             rope_project_builder=self._rope_project_builder,
         )
+
     def close(self):
         if self._rope_autoimport is not None:
             self.__rope_autoimport.close()
