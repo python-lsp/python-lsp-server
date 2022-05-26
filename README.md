@@ -48,7 +48,6 @@ pip install -U setuptools
 
 Installing these plugins will add extra functionality to the language server:
 
-- [pyls-flake8](https://github.com/emanspeaks/pyls-flake8/): Error checking using [flake8](https://flake8.pycqa.org/en/latest/).
 - [pylsp-mypy](https://github.com/Richardk2n/pylsp-mypy): [MyPy](http://mypy-lang.org/) type checking for Python >=3.7.
 - [pyls-isort](https://github.com/paradoxxxzero/pyls-isort): code formatting using [isort](https://github.com/PyCQA/isort) (automatic import sorting).
 - [python-lsp-black](https://github.com/python-lsp/python-lsp-black): code formatting using [Black](https://github.com/psf/black).
@@ -70,7 +69,11 @@ Like all language servers, configuration can be passed from the client that talk
 - `pycodestyle`: discovered in `~/.config/pycodestyle`, `setup.cfg`, `tox.ini` and `pycodestyle.cfg`.
 - `flake8`: discovered in `~/.config/flake8`, `setup.cfg`, `tox.ini` and `flake8.cfg`
 
-The default configuration source is `pycodestyle`. Change the `pylsp.configurationSources` setting (in the value passed in from your client) to `['flake8']` in order to use the flake8 configuration instead.
+The default configuration source is `pycodestyle`. If you would like to use flake8, you will need to:
+
+1. Disable `pycodestyle`, `mccabe`, and `pyflakes`, by setting their corresponding `enabled` configurations, e.g. `pylsp.plugins.pycodestyle.enabled`, to `false`. This will prevent duplicate linting messages as flake8 includes these tools.
+1. Set `pylsp.plugins.flake8.enabled` to `true`.
+1. Change the `pylsp.configurationSources` setting (in the value passed in from your client) to `['flake8']` in order to use the flake8 configuration instead.
 
 The configuration options available in these config files (`setup.cfg` etc) are documented in the relevant tools:
 
