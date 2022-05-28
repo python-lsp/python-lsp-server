@@ -69,7 +69,7 @@ Like all language servers, configuration can be passed from the client that talk
 - `pycodestyle`: discovered in `~/.config/pycodestyle`, `setup.cfg`, `tox.ini` and `pycodestyle.cfg`.
 - `flake8`: discovered in `~/.config/flake8`, `setup.cfg`, `tox.ini` and `flake8.cfg`
 
-The default configuration source is `pycodestyle`. If you would like to use flake8, you will need to:
+The default configuration sources are `pycodestyle` and `pyflakes`. If you would like to use `flake8`, you will need to:
 
 1. Disable `pycodestyle`, `mccabe`, and `pyflakes`, by setting their corresponding `enabled` configurations, e.g. `pylsp.plugins.pycodestyle.enabled`, to `false`. This will prevent duplicate linting messages as flake8 includes these tools.
 1. Set `pylsp.plugins.flake8.enabled` to `true`.
