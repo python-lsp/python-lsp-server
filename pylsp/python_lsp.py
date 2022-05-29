@@ -6,7 +6,7 @@ import logging
 import os
 import socketserver
 import threading
-
+import asyncio
 from pylsp_jsonrpc.dispatchers import MethodDispatcher
 from pylsp_jsonrpc.endpoint import Endpoint
 from pylsp_jsonrpc.streams import JsonRpcStreamReader, JsonRpcStreamWriter
@@ -464,7 +464,15 @@ class PythonLSPServer(MethodDispatcher):
 
 
 def flatten(list_of_lists):
-    return [item for lst in list_of_lists for item in lst]
+    new_list_of_lists = []
+    for lst in list_of_lists:
+        if asyncio.iscoroutine(lst):
+            res = asyncio.run(lst)
+            new_list_of_lists.append(res)
+        else:
+            new_list_of_lists.append(lst)
+
+    return [item for lst in new_list_of_lists for item in lst]
 
 
 def merge(list_of_dicts):
