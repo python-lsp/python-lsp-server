@@ -95,6 +95,21 @@ As an example, to change the list of errors that pycodestyle will ignore, assumi
 3. Same as 1, but add to `setup.cfg` file in the root of the project.
 
 
+Python LSP Server can communicate over WebSockets when configured as follows:
+
+```
+pylsp --ws --port [port]
+```
+
+The following libraries are required for Web Sockets support:
+- [websockets](https://websockets.readthedocs.io/en/stable/) for Python LSP Server Web sockets using websockets library. refer [Websockets installation](https://websockets.readthedocs.io/en/stable/intro/index.html#installation) for more details
+
+You can install this dependency with command below:
+
+```
+pip install 'python-lsp-server[websockets]'
+```
+
 ## LSP Server Features
 
 * Auto Completion

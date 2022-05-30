@@ -6,6 +6,7 @@ import logging
 import os
 import socketserver
 import threading
+import ujson as json
 
 from pylsp_jsonrpc.dispatchers import MethodDispatcher
 from pylsp_jsonrpc.endpoint import Endpoint
@@ -91,6 +92,57 @@ def start_io_lang_server(rfile, wfile, check_parent_process, handler_class):
     server.start()
 
 
+def start_ws_lang_server(port, check_parent_process, handler_class):
+    if not issubclass(handler_class, PythonLSPServer):
+        raise ValueError('Handler class must be an instance of PythonLSPServer')
+
+    # pylint: disable=import-outside-toplevel
+
+    # imports needed only for websockets based server
+    try:
+        import asyncio
+        from concurrent.futures import ThreadPoolExecutor
+        import websockets
+    except ImportError as e:
+        raise ImportError("websocket modules missing. Please run pip install 'python-lsp-server[websockets]") from e
+
+    with ThreadPoolExecutor(max_workers=10) as tpool:
+        async def pylsp_ws(websocket):
+            log.debug("Creating LSP object")
+
+            # creating a partial function and suppling the websocket connection
+            response_handler = partial(send_message, websocket=websocket)
+
+            # Not using default stream reader and writer.
+            # Instead using a consumer based approach to handle processed requests
+            pylsp_handler = handler_class(rx=None, tx=None, consumer=response_handler,
+                                          check_parent_process=check_parent_process)
+
+            async for message in websocket:
+                try:
+                    log.debug("consuming payload and feeding it to LSP handler")
+                    request = json.loads(message)
+                    loop = asyncio.get_running_loop()
+                    await loop.run_in_executor(tpool, pylsp_handler.consume, request)
+                except Exception as e:  # pylint: disable=broad-except
+                    log.exception("Failed to process request %s, %s", message, str(e))
+
+        def send_message(message, websocket):
+            """Handler to send responses of  processed requests to respective web socket clients"""
+            try:
+                payload = json.dumps(message, ensure_ascii=False)
+                asyncio.run(websocket.send(payload))
+            except Exception as e:  # pylint: disable=broad-except
+                log.exception("Failed to write message %s, %s", message, str(e))
+
+        async def run_server():
+            async with websockets.serve(pylsp_ws, port=port):
+                # runs forever
+                await asyncio.Future()
+
+        asyncio.run(run_server())
+
+
 class PythonLSPServer(MethodDispatcher):
     """ Implementation of the Microsoft VSCode Language Server Protocol
     https://github.com/Microsoft/language-server-protocol/blob/master/versions/protocol-1-x.md
@@ -98,7 +150,7 @@ class PythonLSPServer(MethodDispatcher):
 
     # pylint: disable=too-many-public-methods,redefined-builtin
 
-    def __init__(self, rx, tx, check_parent_process=False):
+    def __init__(self, rx, tx, check_parent_process=False, consumer=None):
         self.workspace = None
         self.config = None
         self.root_uri = None
@@ -106,16 +158,35 @@ class PythonLSPServer(MethodDispatcher):
         self.workspaces = {}
         self.uri_workspace_mapper = {}
 
-        self._jsonrpc_stream_reader = JsonRpcStreamReader(rx)
-        self._jsonrpc_stream_writer = JsonRpcStreamWriter(tx)
         self._check_parent_process = check_parent_process
-        self._endpoint = Endpoint(self, self._jsonrpc_stream_writer.write, max_workers=MAX_WORKERS)
+
+        if rx is not None:
+            self._jsonrpc_stream_reader = JsonRpcStreamReader(rx)
+        else:
+            self._jsonrpc_stream_reader = None
+
+        if tx is not None:
+            self._jsonrpc_stream_writer = JsonRpcStreamWriter(tx)
+        else:
+            self._jsonrpc_stream_writer = None
+
+        # if consumer is None, it is assumed that the default streams-based approach is being used
+        if consumer is None:
+            self._endpoint = Endpoint(self, self._jsonrpc_stream_writer.write, max_workers=MAX_WORKERS)
+        else:
+            self._endpoint = Endpoint(self, consumer, max_workers=MAX_WORKERS)
+
         self._dispatchers = []
         self._shutdown = False
 
     def start(self):
         """Entry point for the server."""
         self._jsonrpc_stream_reader.listen(self._endpoint.consume)
+
+    def consume(self, message):
+        """Entry point for consumer based server. Alternative to stream listeners."""
+        # assuming message will be JSON
+        self._endpoint.consume(message)
 
     def __getitem__(self, item):
         """Override getitem to fallback through multiple dispatchers."""
@@ -141,8 +212,10 @@ class PythonLSPServer(MethodDispatcher):
 
     def m_exit(self, **_kwargs):
         self._endpoint.shutdown()
-        self._jsonrpc_stream_reader.close()
-        self._jsonrpc_stream_writer.close()
+        if self._jsonrpc_stream_reader is not None:
+            self._jsonrpc_stream_reader.close()
+        if self._jsonrpc_stream_writer is not None:
+            self._jsonrpc_stream_writer.close()
 
     def _match_uri_to_workspace(self, uri):
         workspace_uri = _utils.match_uri_to_workspace(uri, self.workspaces)
