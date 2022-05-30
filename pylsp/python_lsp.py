@@ -184,7 +184,7 @@ class PythonLSPServer(MethodDispatcher):
         self._jsonrpc_stream_reader.listen(self._endpoint.consume)
 
     def consume(self, message):
-        """Entry point for consumer based server. Alternate to stream listeners"""
+        """Entry point for consumer based server. Alternative to stream listeners."""
         # assuming message will be JSON
         self._endpoint.consume(message)
 

@@ -104,7 +104,7 @@ pylsp --ws --port [port]
 The following libraries are required for Web Sockets support:
 - [websockets](https://websockets.readthedocs.io/en/stable/) for Python LSP Server Web sockets using websockets library. refer [Websockets installation](https://websockets.readthedocs.io/en/stable/intro/index.html#installation) for more details
 
-you can install these dependencies with below command:
+You can install this dependency with command below:
 
 ```
 pip install 'python-lsp-server[websockets]'
