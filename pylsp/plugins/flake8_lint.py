@@ -40,7 +40,8 @@ def pylsp_lint(workspace, document):
                 # It's legal to just specify another error type for the same
                 # file pattern:
                 if prev_file_pat is None:
-                    log.warn("skipping a Per-file-ignore with no file pattern")
+                    log.warning(
+                        "skipping a Per-file-ignore with no file pattern")
                     continue
                 file_pat = prev_file_pat
                 errors = path
