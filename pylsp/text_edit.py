@@ -1,30 +1,33 @@
-def get_well_formatted_range(range):
-    start = range['start']
-    end = range['end']
+def get_well_formatted_range(lsp_range):
+    start = lsp_range['start']
+    end = lsp_range['end']
 
     if start['line'] > end['line'] or (start['line'] == end['line'] and start['character'] > end['character']):
-        return { 'start': end, 'end': start }
+        return {'start': end, 'end': start}
 
-    return range
+    return lsp_range
+
 
 def get_well_formatted_edit(text_edit):
-    range = get_well_formatted_range(text_edit['range'])
-    if range != text_edit['range']:
-        return { 'newText': text_edit['newText'], 'range': range }
-    
+    lsp_range = get_well_formatted_range(text_edit['range'])
+    if lsp_range != text_edit['range']:
+        return {'newText': text_edit['newText'], 'range': lsp_range}
+
     return text_edit
+
 
 def compare_text_edits(a, b):
     diff = a['range']['start']['line'] - b['range']['start']['line']
     if diff == 0:
         return a['range']['start']['character'] - b['range']['start']['character']
-    
+
     return diff
+
 
 def merge_sort_text_edits(text_edits):
     if len(text_edits) <= 1:
         return text_edits
-    
+
     p = len(text_edits) // 2
     left = text_edits[:p]
     right = text_edits[p:]
@@ -45,8 +48,8 @@ def merge_sort_text_edits(text_edits):
         else:
             # greater -> take right
             text_edits[i] = right[right_idx]
-            i+=1
-            right_idx +=1
+            i += 1
+            right_idx += 1
     while left_idx < len(left):
         text_edits[i] = left[left_idx]
         i += 1
@@ -57,18 +60,20 @@ def merge_sort_text_edits(text_edits):
         right_idx += 1
     return text_edits
 
+
 def apply_text_edits(doc, text_edits):
     text = doc.source
-    sorted_edits = merge_sort_text_edits(list(map(get_well_formatted_edit,text_edits)))
+    sorted_edits = merge_sort_text_edits(list(map(get_well_formatted_edit, text_edits)))
     last_modified_offset = 0
     spans = []
     for e in sorted_edits:
         start_offset = doc.offset_at_position(e['range']['start'])
         if start_offset < last_modified_offset:
             raise Exception('overlapping edit')
-        elif start_offset > last_modified_offset:
+
+        if start_offset > last_modified_offset:
             spans.append(text[last_modified_offset:start_offset])
-        
+
         if len(e['newText']):
             spans.append(e['newText'])
         last_modified_offset = doc.offset_at_position(e['range']['end'])

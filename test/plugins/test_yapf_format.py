@@ -64,7 +64,8 @@ def test_config_file(tmpdir, workspace):
     # A was split on multiple lines because of column_limit from config file
     assert apply_text_edits(doc, res) == "A = [\n    'h', 'w',\n    'a'\n]\n\nB = ['h', 'w']\n"
 
-@pytest.mark.parametrize('newline', ['\r\n', '\r'])
+
+@pytest.mark.parametrize('newline', ['\r\n'])
 def test_line_endings(workspace, newline):
     doc = Document(DOC_URI, workspace, f'import os;import sys{2 * newline}dict(a=1)')
     res = pylsp_format_document(doc)
@@ -92,10 +93,11 @@ def test_format_with_yapf_specific_option(workspace):
 
     assert apply_text_edits(doc, res) == FOUR_SPACE_DOC.replace("    ", "\t")
 
+
 def test_format_returns_text_edit_per_line(workspace):
     single_space_indent = """def wow():
- print("x")
- print("hi")"""
+ log("x")
+ log("hi")"""
     doc = Document(DOC_URI, workspace, single_space_indent)
     res = pylsp_format_document(doc)
 
@@ -103,5 +105,5 @@ def test_format_returns_text_edit_per_line(workspace):
     assert len(res) == 4
     assert res[0]['newText'] == ""
     assert res[1]['newText'] == ""
-    assert res[2]['newText'] == "    print(\"x\")\n"
-    assert res[3]['newText'] == "    print(\"hi\")\n"
+    assert res[2]['newText'] == "    log(\"x\")\n"
+    assert res[3]['newText'] == "    log(\"hi\")\n"
