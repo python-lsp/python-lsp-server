@@ -31,8 +31,20 @@ def pylsp_lint(workspace, document):
     per_file_ignores = settings.get("perFileIgnores")
 
     if per_file_ignores:
+        prev_file_pat = None
         for path in per_file_ignores:
-            file_pat, errors = path.split(":")
+            try:
+                file_pat, errors = path.split(":")
+                prev_file_pat = file_pat
+            except ValueError:
+                # It's legal to just specify another error type for the same
+                # file pattern:
+                if prev_file_pat is None:
+                    log.warning(
+                        "skipping a Per-file-ignore with no file pattern")
+                    continue
+                file_pat = prev_file_pat
+                errors = path
             if PurePath(document.path).match(file_pat):
                 ignores.extend(errors.split(","))
 
@@ -81,7 +93,7 @@ def run_flake8(flake8_executable, args, document):
     try:
         cmd = [flake8_executable]
         cmd.extend(args)
-        p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)  # pylint: disable=consider-using-with
+        p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
     except IOError:
         log.debug("Can't execute %s. Trying with '%s -m flake8'", flake8_executable, sys.executable)
         cmd = [sys.executable, '-m', 'flake8']
