@@ -100,8 +100,10 @@ def _format(document, lines=None, options=None):
     diff = next(patch_generator)
     patch_generator.close()
 
-    # To keep things simple our text edits will be line based
-    # and uncompacted
+    # To keep things simple our text edits will be line based.
+    # We will also return the edits uncompacted, meaning a
+    # line replacement will come in as a line remove followed
+    # by a line add instead of a line replace.
     textEdits = []
     # keep track of line number since additions
     # don't include the line number it's being added
@@ -109,7 +111,7 @@ def _format(document, lines=None, options=None):
     prev_line_no = -1
     for change in diff.changes:
         if change.old and change.new:
-            # no change
+            # old and new are the same line, no change
             # diffs are 1-indexed
             prev_line_no = change.old - 1
         elif change.new:
@@ -148,5 +150,24 @@ def _format(document, lines=None, options=None):
                 'newText': ''
             })
             prev_line_no = lsp_line_no
+
+    # diffs don't include EOF newline https://github.com/google/yapf/issues/1008
+    # we'll add it ourselves if our document doesn't already have it and the diff
+    # does not change the last line.
+    if not source.endswith(eol_chars) and diff.changes \
+        and diff.changes[-1].old and diff.changes[-1].new:
+        textEdits.append({
+            'range': {
+                'start': {
+                    'line': prev_line_no,
+                    'character': 0
+                },
+                'end': {
+                    'line': prev_line_no + 1,
+                    'character': 0
+                }
+            },
+            'newText': diff.changes[-1].line + eol_chars
+        })
 
     return textEdits
