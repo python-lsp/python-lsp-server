@@ -1,4 +1,4 @@
-from pylsp.text_edit import apply_text_edits
+from pylsp.text_edit import OverLappingTextEditException, apply_text_edits
 from pylsp import uris
 
 DOC_URI = uris.from_fs_path(__file__)
@@ -245,70 +245,67 @@ def test_apply_text_edits_overlap(pylsp):
     pylsp.workspace.put_document(DOC_URI, '012345678901234567890123456789')
     test_doc = pylsp.workspace.get_document(DOC_URI)
 
-    over_lapping_edits1 = [{
-        "range": {
-            "start": {
-                "line": 0,
-                "character": 3
-            },
-            "end": {
-                "line": 0,
-                "character": 6
-            }
-        },
-        "newText": "Hello"
-    }, {
-        "range": {
-            "start": {
-                "line": 0,
-                "character": 3
-            },
-            "end": {
-                "line": 0,
-                "character": 3
-            }
-        },
-        "newText": "World"
-    }]
-
     did_throw = False
     try:
-        apply_text_edits(test_doc, over_lapping_edits1)
-    except Exception:
+        apply_text_edits(test_doc, [{
+            "range": {
+                "start": {
+                    "line": 0,
+                    "character": 3
+                },
+                "end": {
+                    "line": 0,
+                    "character": 6
+                }
+            },
+            "newText": "Hello"
+        }, {
+            "range": {
+                "start": {
+                    "line": 0,
+                    "character": 3
+                },
+                "end": {
+                    "line": 0,
+                    "character": 3
+                }
+            },
+            "newText": "World"
+        }])
+    except OverLappingTextEditException:
         did_throw = True
 
     assert did_throw
 
-    over_lapping_edits2 = [{
-        "range": {
-            "start": {
-                "line": 0,
-                "character": 3
-            },
-            "end": {
-                "line": 0,
-                "character": 6
-            }
-        },
-        "newText": "Hello"
-    }, {
-        "range": {
-            "start": {
-                "line": 0,
-                "character": 4
-            },
-            "end": {
-                "line": 0,
-                "character": 4
-            }
-        },
-        "newText": "World"
-    }]
     did_throw = False
 
     try:
-        apply_text_edits(test_doc, over_lapping_edits2)
-    except Exception:
+        apply_text_edits(test_doc, [{
+            "range": {
+                "start": {
+                    "line": 0,
+                    "character": 3
+                },
+                "end": {
+                    "line": 0,
+                    "character": 6
+                }
+            },
+            "newText": "Hello"
+        }, {
+            "range": {
+                "start": {
+                    "line": 0,
+                    "character": 4
+                },
+                "end": {
+                    "line": 0,
+                    "character": 4
+                }
+            },
+            "newText": "World"
+        }])
+    except OverLappingTextEditException:
         did_throw = True
 
     assert did_throw

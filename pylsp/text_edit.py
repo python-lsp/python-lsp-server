@@ -61,6 +61,14 @@ def merge_sort_text_edits(text_edits):
     return text_edits
 
 
+class OverLappingTextEditException(Exception):
+    """
+    Text edits are expected to be sorted
+    and compressed instead of overlapping.
+    This error is raised when two edits
+    are overlapping.
+    """
+
 def apply_text_edits(doc, text_edits):
     text = doc.source
     sorted_edits = merge_sort_text_edits(list(map(get_well_formatted_edit, text_edits)))
@@ -69,7 +77,7 @@ def apply_text_edits(doc, text_edits):
     for e in sorted_edits:
         start_offset = doc.offset_at_position(e['range']['start'])
         if start_offset < last_modified_offset:
-            raise Exception('overlapping edit')
+            raise OverLappingTextEditException('overlapping edit')
 
         if start_offset > last_modified_offset:
             spans.append(text[last_modified_offset:start_offset])
