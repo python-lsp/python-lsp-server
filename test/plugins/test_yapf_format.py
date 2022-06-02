@@ -68,7 +68,7 @@ def test_config_file(tmpdir, workspace):
 def test_line_endings(workspace, newline):
     doc = Document(DOC_URI, workspace, f'import os;import sys{2 * newline}dict(a=1)')
     res = pylsp_format_document(doc)
-    
+
     assert apply_text_edits(doc, res) == f'import os{newline}import sys{2 * newline}dict(a=1){newline}'
 
 
@@ -105,5 +105,3 @@ def test_format_returns_text_edit_per_line(workspace):
     assert res[1]['newText'] == ""
     assert res[2]['newText'] == "    print(\"x\")\n"
     assert res[3]['newText'] == "    print(\"hi\")\n"
-
-
