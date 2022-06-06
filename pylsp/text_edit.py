@@ -1,3 +1,6 @@
+# Copyright 2017-2020 Palantir Technologies, Inc.
+# Copyright 2021- Python Language Server Contributors.
+
 def get_well_formatted_range(lsp_range):
     start = lsp_range['start']
     end = lsp_range['end']
