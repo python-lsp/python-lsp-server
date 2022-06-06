@@ -5,6 +5,7 @@ import pathlib
 import pytest
 from pylsp import uris
 
+
 DOC_URI = uris.from_fs_path(__file__)
 
 
