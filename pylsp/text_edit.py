@@ -72,6 +72,7 @@ class OverLappingTextEditException(Exception):
     are overlapping.
     """
 
+
 def apply_text_edits(doc, text_edits):
     text = doc.source
     sorted_edits = merge_sort_text_edits(list(map(get_well_formatted_edit, text_edits)))
