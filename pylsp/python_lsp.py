@@ -34,6 +34,7 @@ class _StreamHandlerWrapper(socketserver.StreamRequestHandler):
 
     def setup(self):
         super().setup()
+        # pylint: disable=no-member
         self.delegate = self.DELEGATE_CLASS(self.rfile, self.wfile)
 
     def handle(self):
@@ -121,6 +122,7 @@ def start_ws_lang_server(port, check_parent_process, handler_class):
             async for message in websocket:
                 try:
                     log.debug("consuming payload and feeding it to LSP handler")
+                    # pylint: disable=c-extension-no-member
                     request = json.loads(message)
                     loop = asyncio.get_running_loop()
                     await loop.run_in_executor(tpool, pylsp_handler.consume, request)
@@ -130,6 +132,7 @@ def start_ws_lang_server(port, check_parent_process, handler_class):
         def send_message(message, websocket):
             """Handler to send responses of  processed requests to respective web socket clients"""
             try:
+                # pylint: disable=c-extension-no-member
                 payload = json.dumps(message, ensure_ascii=False)
                 asyncio.run(websocket.send(payload))
             except Exception as e:  # pylint: disable=broad-except
