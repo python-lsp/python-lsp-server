@@ -48,6 +48,7 @@ class _StreamHandlerWrapper(socketserver.StreamRequestHandler):
                 if isinstance(e, WindowsError) and e.winerror == 10054:
                     pass
 
+        # pylint: disable=no-member
         self.SHUTDOWN_CALL()
 
 
