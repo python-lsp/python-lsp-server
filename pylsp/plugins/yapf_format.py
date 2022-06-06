@@ -174,6 +174,8 @@ def _format(document, lines=None, options=None):
     eol_chars = get_eol_chars(source)
     if eol_chars in ['\r', '\r\n']:
         source = source.replace(eol_chars, '\n')
+    else:
+        eol_chars = '\n'
 
     style_config = get_style_config(document_path=document.path, options=options)
 

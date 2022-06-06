@@ -229,8 +229,8 @@ else:
 
 
 def get_eol_chars(text):
-    """Get EOL chars used in text. Defaults to line feed"""
+    """Get EOL chars used in text."""
     match = EOL_REGEX.search(text)
     if match:
         return match.group(0)
-    return "\n"
+    return None
