@@ -24,7 +24,6 @@ If the respective dependencies are found, the following optional providers will 
 - [YAPF](https://github.com/google/yapf) for code formatting (preferred over autopep8)
 - [flake8](https://github.com/pycqa/flake8) for error checking (disabled by default)
 - [pylint](https://github.com/PyCQA/pylint) for code linting (disabled by default)
-- [preload](https://github.com/tfiers/preload) for heavy modules (not included by default)
 
 Optional providers can be installed using the `extras` syntax. To install [YAPF](https://github.com/google/yapf) formatting for example:
 
