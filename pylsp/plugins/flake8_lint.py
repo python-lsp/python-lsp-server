@@ -173,6 +173,9 @@ def parse_stdout(document, stdout):
         character = int(character) - 1
         # show also the code in message
         msg = code + ' ' + msg
+        severity = lsp.DiagnosticSeverity.Warning
+        if code[0] == "E":
+            severity = lsp.DiagnosticSeverity.Error
         diagnostics.append(
             {
                 'source': 'flake8',
@@ -189,7 +192,7 @@ def parse_stdout(document, stdout):
                     }
                 },
                 'message': msg,
-                'severity': lsp.DiagnosticSeverity.Warning,
+                'severity': severity,
             }
         )
 
