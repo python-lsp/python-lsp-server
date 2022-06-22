@@ -43,7 +43,7 @@ pycodestyle = ["pycodestyle>=2.8.0,<2.9.0"]
 pydocstyle = ["pydocstyle>=2.0.0"]
 pyflakes = ["pyflakes>=2.4.0,<2.5.0"]
 pylint = ["pylint>=2.5.0"]
-rope = ["rope>1.1.1"]
+rope = ["rope>1.2.0"]
 yapf = ["yapf"]
 test = [
     "pylint>=2.5.0",
