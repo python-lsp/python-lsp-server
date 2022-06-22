@@ -31,8 +31,20 @@ def pylsp_lint(workspace, document):
     per_file_ignores = settings.get("perFileIgnores")
 
     if per_file_ignores:
+        prev_file_pat = None
         for path in per_file_ignores:
-            file_pat, errors = path.split(":")
+            try:
+                file_pat, errors = path.split(":")
+                prev_file_pat = file_pat
+            except ValueError:
+                # It's legal to just specify another error type for the same
+                # file pattern:
+                if prev_file_pat is None:
+                    log.warning(
+                        "skipping a Per-file-ignore with no file pattern")
+                    continue
+                file_pat = prev_file_pat
+                errors = path
             if PurePath(document.path).match(file_pat):
                 ignores.extend(errors.split(","))
 
@@ -161,6 +173,9 @@ def parse_stdout(document, stdout):
         character = int(character) - 1
         # show also the code in message
         msg = code + ' ' + msg
+        severity = lsp.DiagnosticSeverity.Warning
+        if code[0] == "E":
+            severity = lsp.DiagnosticSeverity.Error
         diagnostics.append(
             {
                 'source': 'flake8',
@@ -177,7 +192,7 @@ def parse_stdout(document, stdout):
                     }
                 },
                 'message': msg,
-                'severity': lsp.DiagnosticSeverity.Warning,
+                'severity': severity,
             }
         )
 
