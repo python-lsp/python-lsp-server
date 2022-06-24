@@ -5,7 +5,9 @@ import io
 import logging
 import os
 import re
+import uuid
 import functools
+from typing import Optional
 from threading import RLock
 
 import jedi
@@ -31,6 +33,7 @@ def lock(method):
 class Workspace:
 
     M_PUBLISH_DIAGNOSTICS = 'textDocument/publishDiagnostics'
+    M_PROGRESS = '$/progress'
     M_APPLY_EDIT = 'workspace/applyEdit'
     M_SHOW_MESSAGE = 'window/showMessage'
 
@@ -108,6 +111,58 @@ class Workspace:
 
     def publish_diagnostics(self, doc_uri, diagnostics):
         self._endpoint.notify(self.M_PUBLISH_DIAGNOSTICS, params={'uri': doc_uri, 'diagnostics': diagnostics})
+
+    def progress_begin(self, title: str, message: Optional[str]=None, percentage: Optional[int]=None) -> str:
+        token = str(uuid.uuid4())
+        value = {
+            'kind': 'begin',
+            'title': title,
+        }
+        if message:
+            value['message'] = message
+        if percentage:
+            value['percentage'] = percentage
+
+        self._endpoint.notify(
+            self.M_PROGRESS,
+            params={
+                'token': token,
+                'value': value,
+            }
+        )
+        return token
+
+    def progress_report(self, token: str, message: Optional[str]=None, percentage: Optional[int]=None) -> None:
+        value = {
+            'kind': 'report',
+        }
+        if message:
+            value['message'] = message
+        if percentage:
+            value['percentage'] = percentage
+
+        self._endpoint.notify(
+            self.M_PROGRESS,
+            params={
+                'token': token,
+                'value': value,
+            }
+        )
+
+    def progress_end(self, token: str, message: Optional[str]=None) -> None:
+        value = {
+            'kind': 'end',
+        }
+        if message:
+            value['message'] = message
+
+        self._endpoint.notify(
+            self.M_PROGRESS,
+            params={
+                'token': token,
+                'value': value,
+            }
+        )
 
     def show_message(self, message, msg_type=lsp.MessageType.Info):
         self._endpoint.notify(self.M_SHOW_MESSAGE, params={'type': msg_type, 'message': message})
