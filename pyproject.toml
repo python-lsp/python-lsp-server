@@ -28,7 +28,7 @@ Homepage = "https://github.com/python-lsp/python-lsp-server"
 all = [
     "autopep8>=1.6.0,<1.7.0",
     "flake8>=4.0.0,<4.1.0",
-    "mccabe>=0.6.0,<0.7.0",
+    "mccabe>=0.6.0,<0.8.0",
     "pycodestyle>=2.8.0,<2.9.0",
     "pydocstyle>=2.0.0",
     "pyflakes>=2.4.0,<2.5.0",
@@ -39,7 +39,7 @@ all = [
 ]
 autopep8 = ["autopep8>=1.6.0,<1.7.0"]
 flake8 = ["flake8>=4.0.0,<4.1.0"]
-mccabe = ["mccabe>=0.6.0,<0.7.0"]
+mccabe = ["mccabe>=0.6.0,<0.8.0"]
 pycodestyle = ["pycodestyle>=2.8.0,<2.9.0"]
 pydocstyle = ["pydocstyle>=2.0.0"]
 pyflakes = ["pyflakes>=2.4.0,<2.5.0"]
