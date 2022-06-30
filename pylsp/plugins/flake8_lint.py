@@ -174,7 +174,7 @@ def parse_stdout(document, stdout):
         # show also the code in message
         msg = code + ' ' + msg
         severity = lsp.DiagnosticSeverity.Warning
-        if code[0] == "E":
+        if code == "E999" or code[0] == "F":
             severity = lsp.DiagnosticSeverity.Error
         diagnostics.append(
             {
