@@ -40,6 +40,7 @@ def test_flake8_unsaved(workspace):
     assert unused_var['range']['start'] == {'line': 5, 'character': 1}
     assert unused_var['range']['end'] == {'line': 5, 'character': 11}
     assert unused_var['severity'] == lsp.DiagnosticSeverity.Error
+    assert unused_var['tags'] == [lsp.DiagnosticTag.Unnecessary]
 
 
 def test_flake8_lint(workspace):
