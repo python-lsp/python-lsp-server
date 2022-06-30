@@ -13,6 +13,13 @@ from pylsp import hookimpl, lsp
 
 log = logging.getLogger(__name__)
 FIX_IGNORES_RE = re.compile(r'([^a-zA-Z0-9_,]*;.*(\W+||$))')
+UNNECESSITY_CODES = {
+    'F401',  # `module` imported but unused
+    'F504',  # % format unused named arguments
+    'F522',  # .format(...) unused named arguments
+    'F523',  # .format(...) unused positional arguments
+    'F841'   # local variable `name` is assigned to but never used
+}
 
 
 @hookimpl
@@ -176,24 +183,25 @@ def parse_stdout(document, stdout):
         severity = lsp.DiagnosticSeverity.Warning
         if code == "E999" or code[0] == "F":
             severity = lsp.DiagnosticSeverity.Error
-        diagnostics.append(
-            {
-                'source': 'flake8',
-                'code': code,
-                'range': {
-                    'start': {
-                        'line': line,
-                        'character': character
-                    },
-                    'end': {
-                        'line': line,
-                        # no way to determine the column
-                        'character': len(document.lines[line])
-                    }
+        diagnostic = {
+            'source': 'flake8',
+            'code': code,
+            'range': {
+                'start': {
+                    'line': line,
+                    'character': character
                 },
-                'message': msg,
-                'severity': severity,
-            }
-        )
+                'end': {
+                    'line': line,
+                    # no way to determine the column
+                    'character': len(document.lines[line])
+                }
+            },
+            'message': msg,
+            'severity': severity,
+        }
+        if code in UNNECESSITY_CODES:
+            diagnostic['tags'] = [lsp.DiagnosticTag.Unnecessary]
+        diagnostics.append(diagnostic)
 
     return diagnostics
