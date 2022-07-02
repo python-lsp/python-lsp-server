@@ -4,6 +4,7 @@ This server can be configured using `workspace/didChangeConfiguration` method. E
 | **Configuration Key** | **Type** | **Description** | **Default** 
 |----|----|----|----|
 | `pylsp.configurationSources` | `array` of unique `string` (one of: `pycodestyle`, `pyflakes`) items | List of configuration sources to use. | `["pycodestyle"]` |
+| `pylsp.plugins.autopep8.enabled` | `boolean` | Enable or disable the plugin (disabling required to use `yapf`). | `true` |
 | `pylsp.plugins.flake8.config` | `string` | Path to the config file that will be the authoritative config source. | `null` |
 | `pylsp.plugins.flake8.enabled` | `boolean` | Enable or disable the plugin. | `false` |
 | `pylsp.plugins.flake8.exclude` | `array` of `string` items | List of files or directories to exclude. | `[]` |
