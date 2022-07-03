@@ -57,7 +57,7 @@ class Workspace:
         from rope.contrib.autoimport.sqlite import AutoImport
         if self.__rope_autoimport is None:
             project = self._rope_project_builder(rope_config)
-            self.__rope_autoimport = AutoImport(project, memory)
+            self.__rope_autoimport = AutoImport(project, memory=memory)
         return self.__rope_autoimport
 
     def _rope_project_builder(self, rope_config):
