@@ -3,11 +3,12 @@
 
 import io
 import logging
+from contextlib import contextmanager
 import os
 import re
 import uuid
 import functools
-from typing import Optional
+from typing import Optional, Generator
 from threading import RLock
 
 import jedi
@@ -112,7 +113,19 @@ class Workspace:
     def publish_diagnostics(self, doc_uri, diagnostics):
         self._endpoint.notify(self.M_PUBLISH_DIAGNOSTICS, params={'uri': doc_uri, 'diagnostics': diagnostics})
 
-    def progress_begin(self, title: str, message: Optional[str]=None, percentage: Optional[int]=None) -> str:
+    @contextmanager 
+    def report_progress(self, title: str, message: Optional[str]=None, percentage: Optional[int] = None):
+        token = self._progress_begin(title, message, percentage)
+
+        def progress_message(message: str, percentage: Optional[int]=None):
+            self._progress_report(token, message, percentage)
+
+        try: 
+            yield progress_message
+        finally: 
+            self._progress_end(token)
+
+    def _progress_begin(self, title: str, message: Optional[str]=None, percentage: Optional[int]=None) -> str:
         token = str(uuid.uuid4())
         value = {
             'kind': 'begin',
@@ -132,7 +145,7 @@ class Workspace:
         )
         return token
 
-    def progress_report(self, token: str, message: Optional[str]=None, percentage: Optional[int]=None) -> None:
+    def _progress_report(self, token: str, message: Optional[str]=None, percentage: Optional[int]=None) -> None:
         value = {
             'kind': 'report',
         }
@@ -149,7 +162,7 @@ class Workspace:
             }
         )
 
-    def progress_end(self, token: str, message: Optional[str]=None) -> None:
+    def _progress_end(self, token: str, message: Optional[str]=None) -> None:
         value = {
             'kind': 'end',
         }
