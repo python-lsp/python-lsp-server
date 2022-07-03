@@ -22,7 +22,7 @@ _score_max = 10**_score_pow
 @hookimpl
 def pylsp_settings() -> Dict[str, Dict[str, Dict[str, Any]]]:
     # Default rope_completion to disabled
-    return {"plugins": {"rope_autoimport": {"enabled": False, "memory": True}}}
+    return {"plugins": {"rope_autoimport": {"enabled": True, "memory": False}}}
 
 
 def _should_insert(expr: tree.BaseNode, word_node: tree.Leaf) -> bool:
@@ -212,7 +212,7 @@ def _sort_import(score: int) -> str:
 @hookimpl
 def pylsp_initialize(config: Config, workspace: Workspace):
     """Initialize AutoImport. Generates the cache for local and global items."""
-    memory: bool = config.settings().get("rope_autoimport", {})["memory"]
+    memory: bool = config.plugin_settings("rope_autoimport").get("memory", False)
     rope_config = config.settings().get("rope", {})
     autoimport = workspace._rope_autoimport(rope_config, memory)
     autoimport.generate_modules_cache()
