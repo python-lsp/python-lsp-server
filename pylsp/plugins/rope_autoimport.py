@@ -14,7 +14,7 @@ from rope.contrib.autoimport.sqlite import AutoImport
 from pylsp import hookimpl
 from pylsp.config.config import Config
 from pylsp.workspace import Document, Workspace
-
+from ._rope_task_handle import PylspTaskHandle
 log = logging.getLogger(__name__)
 
 _score_pow = 5
@@ -203,8 +203,9 @@ def pylsp_initialize(config: Config, workspace: Workspace):
         "memory", False)
     rope_config = config.settings().get("rope", {})
     autoimport = workspace._rope_autoimport(rope_config, memory)
-    autoimport.generate_modules_cache()
-    autoimport.generate_cache()
+    task_handle = PylspTaskHandle(workspace)
+    autoimport.generate_modules_cache(task_handle=task_handle)
+    autoimport.generate_cache(task_handle=task_handle)
 
 
 @hookimpl
@@ -213,7 +214,8 @@ def pylsp_document_did_save(config: Config, workspace: Workspace,
     """Update the names associated with this document."""
     rope_config = config.settings().get("rope", {})
     rope_doucment: Resource = document._rope_resource(rope_config)
+    task_handle = PylspTaskHandle(workspace)
     autoimport = workspace._rope_autoimport(rope_config)
-    autoimport.generate_cache(resources=[rope_doucment])
+    autoimport.generate_cache(resources=[rope_doucment], task_handle=task_handle)
     # Might as well using saving the document as an indicator to regenerate the module cache
-    autoimport.generate_modules_cache()
+    autoimport.generate_modules_cache(task_handle=task_handle)
