@@ -17,7 +17,7 @@ DOC_URI = uris.from_fs_path(__file__)
 # pylint: disable=redefined-outer-name
 @pytest.fixture
 def completions(config: Config, workspace: Workspace, request):
-    config.update({"rope_autoimport": {"memory": True, "enabled": True}})
+    config.update({"rope_autoimport": {"memory": False, "enabled": True}})
     pylsp_initialize(config, workspace)
     document, position = request.param
     com_position = {"line": 0, "character": position}
