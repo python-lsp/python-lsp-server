@@ -167,7 +167,6 @@ def test_autoimport_defined_name(config, workspace):
 #     workspace.rm_document(DOC_URI)
 
 
-# pylint: disable=no-self-use
 class test_should_insert:
 
     def test_dot(self):
