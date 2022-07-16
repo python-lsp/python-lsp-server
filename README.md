@@ -43,6 +43,31 @@ If you get an error similar to `'install_requires' must be a string or list of s
 pip install -U setuptools
 ```
 
+### Windows and Linux installation
+
+You can install python lsp server on Windows using this conda command
+```
+conda install -c conda-forge python-lsp-server 
+```
+
+Python lsp server is available in repo of every major Linux distribution, and it is usually called `python-lsp-server`
+
+For example, here is how to install it in Debian and Debian-based distributions (E.g. Ubuntu, Pop!_OS, Linux Mint)
+
+```
+sudo apt-get install python-lsp-server
+```
+or Fedora Linux
+
+```
+sudo dnf install python-lsp-server
+```
+
+Only Alpine Linux package is named differently, you can install it by typing this command in your terminal
+```
+apk add py3-lsp-server
+```
+
 ### 3rd Party Plugins
 
 Installing these plugins will add extra functionality to the language server:
