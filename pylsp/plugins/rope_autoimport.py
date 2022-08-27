@@ -1,8 +1,8 @@
 import logging
-from functools import lru_cache
 from typing import Any, Dict, Generator, List, Set
 
 import parso
+from jedi import Script
 from parso.python import tree
 from parso.tree import NodeOrLeaf
 from rope.base.resources import Resource
@@ -131,33 +131,11 @@ def _process_statements(
         }
 
 
-def _get_names_from_import(node: tree.Import) -> Generator[str, None, None]:
-    if not node.is_star_import():
-        for name in node.children:
-            if isinstance(name, tree.PythonNode):
-                for sub_name in name.children:
-                    if isinstance(sub_name, tree.Name):
-                        yield sub_name.value
-            elif isinstance(name, tree.Name):
-                yield name.value
-
-
-@lru_cache(maxsize=100)
-def get_names(file: str) -> Generator[str, None, None]:
+def get_names(script: Script) -> Set[str]:
     """Get all names to ignore from the current file."""
-    expr = parso.parse(file)
-    for item in expr.children:
-        if isinstance(item, tree.PythonNode):
-            for child in item.children:
-                if isinstance(child, (tree.ImportFrom, tree.ExprStmt)):
-                    for name in child.get_defined_names():
-                        yield name.value
-                elif isinstance(child, tree.Import):
-                    for name in _get_names_from_import(child):
-                        yield name
-
-        if isinstance(item, (tree.Function, tree.Class)):
-            yield item.name.value
+    raw_names = script.get_names(definitions=True)
+    log.debug(raw_names)
+    return set(name.name for name in raw_names)
 
 
 @hookimpl
@@ -172,7 +150,7 @@ def pylsp_completions(config: Config, workspace: Workspace, document: Document,
     word = word_node.value
     log.debug(f"autoimport: searching for word: {word}")
     rope_config = config.settings(document_path=document.path).get("rope", {})
-    ignored_names: Set[str] = set(get_names(document.source))
+    ignored_names: Set[str] = get_names(document.jedi_script(use_document_path=True))
     autoimport = workspace._rope_autoimport(rope_config)
     suggestions = list(
         autoimport.search_full(word, ignored_names=ignored_names))

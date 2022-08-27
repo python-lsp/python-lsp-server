@@ -10,14 +10,14 @@ from pylsp.plugins.rope_autoimport import \
     pylsp_completions as pylsp_autoimport_completions
 from pylsp.plugins.rope_autoimport import pylsp_initialize
 from pylsp.workspace import Workspace
-
+import jedi
 DOC_URI = uris.from_fs_path(__file__)
 
 
 # pylint: disable=redefined-outer-name
 @pytest.fixture
 def completions(config: Config, workspace: Workspace, request):
-    config.update({"rope_autoimport": {"memory": False, "enabled": True}})
+    config.update({"rope_autoimport": {"memory": True, "enabled": True}})
     pylsp_initialize(config, workspace)
     document, position = request.param
     com_position = {"line": 0, "character": position}
@@ -220,6 +220,6 @@ def test_get_names():
     class sfa:
         sfiosifo
     """
-    results = set(get_names(source))
+    results = get_names(jedi.Script(code=source))
     assert results == set(
         ["blah", "bleh", "e", "hello", "someone", "sfa", "a", "b"])
