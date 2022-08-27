@@ -2,7 +2,7 @@
 # Copyright 2021- Python Language Server Contributors.
 
 [build-system]
-requires = ["setuptools>=61.2.0", "wheel", "setuptools_scm[toml]>=3.4.3"]
+requires = ["setuptools>=61.2.0", "setuptools_scm[toml]>=3.4.3"]
 build-backend = "setuptools.build_meta"
 
 [project]
