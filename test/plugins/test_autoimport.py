@@ -11,20 +11,29 @@ from pylsp.plugins.rope_autoimport import \
 from pylsp.plugins.rope_autoimport import pylsp_initialize
 from pylsp.workspace import Workspace
 import jedi
+from unittest.mock import Mock
 DOC_URI = uris.from_fs_path(__file__)
 
 
-# pylint: disable=redefined-outer-name
+@pytest.fixture(scope="session")
+def autoimport_workspace(tmp_path_factory) -> Workspace:
+    "Special autoimport workspace. Persists across sessions to make in-memory sqlite3 database fast."
+    workspace = Workspace(uris.from_fs_path(str(tmp_path_factory.mktemp("pylsp"))), Mock())
+    workspace._config = Config(workspace.root_uri, {}, 0, {})
+    workspace._config.update({"rope_autoimport": {"memory": True, "enabled": True}})
+    pylsp_initialize(workspace._config, workspace)
+    yield workspace
+    workspace.close()
+
+
 @pytest.fixture
-def completions(config: Config, workspace: Workspace, request):
-    config.update({"rope_autoimport": {"memory": True, "enabled": True}})
-    pylsp_initialize(config, workspace)
+def completions(config: Config, autoimport_workspace: Workspace, request):
     document, position = request.param
     com_position = {"line": 0, "character": position}
-    workspace.put_document(DOC_URI, source=document)
-    doc = workspace.get_document(DOC_URI)
-    yield pylsp_autoimport_completions(config, workspace, doc, com_position)
-    workspace.rm_document(DOC_URI)
+    autoimport_workspace.put_document(DOC_URI, source=document)
+    doc = autoimport_workspace.get_document(DOC_URI)
+    yield pylsp_autoimport_completions(config, autoimport_workspace, doc, com_position)
+    autoimport_workspace.rm_document(DOC_URI)
 
 
 def should_insert(phrase: str, position: int):
