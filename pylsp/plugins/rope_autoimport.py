@@ -17,6 +17,7 @@ log = logging.getLogger(__name__)
 
 _score_pow = 5
 _score_max = 10**_score_pow
+MAX_RESULTS = 1000
 
 
 @hookimpl
@@ -111,23 +112,25 @@ def _process_statements(
     autoimport: AutoImport,
     document: Document,
 ) -> Generator[Dict[str, Any], None, None]:
-    for import_statement, name, source, itemkind in suggestions:
+    for suggestion in suggestions:
         insert_line = autoimport.find_insertion_line(document.source) - 1
         start = {"line": insert_line, "character": 0}
         edit_range = {"start": start, "end": start}
-        edit = {"range": edit_range, "newText": import_statement + "\n"}
-        score = _get_score(source, import_statement, name, word)
+        edit = {"range": edit_range, "newText": suggestion.import_statement + "\n"}
+        score = _get_score(suggestion.source, suggestion.import_statement, suggestion.name, word)
         if score > _score_max:
             continue
+        # TODO make this markdown
         yield {
-            "label": name,
-            "kind": itemkind,
+            "label": suggestion.name,
+            "kind": suggestion.itemkind,
             "sortText": _sort_import(score),
             "data": {
                 "doc_uri": doc_uri
             },
-            "detail": _document(import_statement),
+            "detail": _document(suggestion.import_statement),
             "additionalTextEdits": [edit],
+
         }
 
 
@@ -160,14 +163,13 @@ def pylsp_completions(config: Config, workspace: Workspace, document: Document,
                                 document),
             key=lambda statement: statement["sortText"],
         ))
-    max_size = 100
-    if len(results) > max_size:
-        results = results[:max_size]
+    if len(results) > MAX_RESULTS:
+        results = results[:MAX_RESULTS]
     return results
 
 
 def _document(import_statement: str) -> str:
-    return "__autoimport__\n" + import_statement
+    return """# Auto-Import\n""" + import_statement
 
 
 def _get_score(source: int, full_statement: str, suggested_name: str,
