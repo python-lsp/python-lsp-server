@@ -1,5 +1,7 @@
 from typing import Dict, List
+from unittest.mock import Mock
 
+import jedi
 import parso
 import pytest
 
@@ -10,8 +12,7 @@ from pylsp.plugins.rope_autoimport import \
     pylsp_completions as pylsp_autoimport_completions
 from pylsp.plugins.rope_autoimport import pylsp_initialize
 from pylsp.workspace import Workspace
-import jedi
-from unittest.mock import Mock
+
 DOC_URI = uris.from_fs_path(__file__)
 
 
@@ -26,6 +27,7 @@ def autoimport_workspace(tmp_path_factory) -> Workspace:
     workspace.close()
 
 
+# pylint: disable=redefined-outer-name
 @pytest.fixture
 def completions(config: Config, autoimport_workspace: Workspace, request):
     document, position = request.param

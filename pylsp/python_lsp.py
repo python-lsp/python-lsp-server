@@ -138,7 +138,6 @@ def start_ws_lang_server(port, check_parent_process, handler_class):
                 log.exception("Failed to write message %s, %s", message, str(e))
 
         async def run_server():
-            # pylint: disable=no-member
             async with websockets.serve(pylsp_ws, port=port):
                 # runs forever
                 await asyncio.Future()
