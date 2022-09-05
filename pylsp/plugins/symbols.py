@@ -81,6 +81,15 @@ def pylsp_document_symbols(config, document):
                 if imported_symbol:
                     if not sym_module_name.startswith('__main__'):
                         continue
+            else:
+                # We need to skip symbols if their definition doesn't have `full_name` info, they
+                # are detected as a definition, but their description (e.g. `class Foo`) doesn't
+                # match the code where they're detected by Jedi. This happens for relative imports.
+                if _include_def(d):
+                    if d.description not in d.get_line_code():
+                        continue
+                else:
+                    continue
 
         try:
             docismodule = os.path.samefile(document.path, d.module_path)
