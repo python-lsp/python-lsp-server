@@ -38,8 +38,9 @@ def pylsp_document_symbols(config, document):
 
             # Skip imported symbols comparing module names.
             sym_full_name = d.full_name
-            document_dot_path = document.dot_path
             if sym_full_name is not None:
+                document_dot_path = document.dot_path
+
                 # We assume a symbol is imported from another module to start
                 # with.
                 imported_symbol = True
@@ -48,6 +49,8 @@ def pylsp_document_symbols(config, document):
                 # we need to discard it to do module comparisons below.
                 if '.' in sym_full_name:
                     sym_module_name = sym_full_name.rpartition('.')[0]
+                else:
+                    sym_module_name = sym_full_name
 
                 # This is necessary to display symbols in init files (the checks
                 # below fail without it).
@@ -56,9 +59,9 @@ def pylsp_document_symbols(config, document):
 
                 # document_dot_path is the module where the symbol is imported,
                 # whereas sym_module_name is the one where it was declared.
-                if sym_module_name.startswith(document_dot_path):
-                    # If sym_module_name starts with the same string as document_dot_path,
-                    # we can safely assume it was declared in the document.
+                if document_dot_path in sym_module_name:
+                    # If document_dot_path is in sym_module_name, we can safely assume
+                    # that the symbol was declared in the document.
                     imported_symbol = False
                 elif sym_module_name.split('.')[0] in document_dot_path.split('.'):
                     # If the first module in sym_module_name is one of the modules in
@@ -74,7 +77,7 @@ def pylsp_document_symbols(config, document):
                 # When there's no __init__.py next to a file or in one of its
                 # parents, the checks above fail. However, Jedi has a nice way
                 # to tell if the symbol was declared in the same file: if
-                # full_name starts by __main__.
+                # sym_module_name starts by __main__.
                 if imported_symbol:
                     if not sym_module_name.startswith('__main__'):
                         continue
