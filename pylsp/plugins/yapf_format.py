@@ -21,7 +21,7 @@ def pylsp_format_document(document, options):
 
 
 @hookimpl
-def pylsp_format_range(document, range, options=None):  # pylint: disable=redefined-builtin
+def pylsp_format_range(document, range, options):  # pylint: disable=redefined-builtin
     # First we 'round' the range up/down to full lines only
     range['start']['character'] = 0
     range['end']['line'] += 1
