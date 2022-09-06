@@ -16,7 +16,7 @@ log = logging.getLogger(__name__)
 
 
 @hookimpl
-def pylsp_format_document(document, options=None):
+def pylsp_format_document(document, options):
     return _format(document, options=options)
 
 
