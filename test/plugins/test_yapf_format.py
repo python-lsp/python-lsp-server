@@ -29,7 +29,7 @@ FOUR_SPACE_DOC = """def hello():
 
 def test_format(workspace):
     doc = Document(DOC_URI, workspace, DOC)
-    res = pylsp_format_document(doc)
+    res = pylsp_format_document(doc, None)
 
     assert apply_text_edits(doc, res) == "A = ['h', 'w', 'a']\n\nB = ['h', 'w']\n"
 
@@ -41,7 +41,7 @@ def test_range_format(workspace):
         'start': {'line': 0, 'character': 0},
         'end': {'line': 4, 'character': 10}
     }
-    res = pylsp_format_range(doc, def_range)
+    res = pylsp_format_range(doc, def_range, None)
 
     # Make sure B is still badly formatted
     assert apply_text_edits(doc, res) == "A = ['h', 'w', 'a']\n\nB = ['h',\n\n\n'w']\n"
