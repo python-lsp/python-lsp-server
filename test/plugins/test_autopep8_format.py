@@ -54,7 +54,7 @@ def test_range_format(config, workspace):
         'start': {'line': 0, 'character': 0},
         'end': {'line': 2, 'character': 0}
     }
-    res = pylsp_format_range(config, doc, def_range)
+    res = pylsp_format_range(config, doc, def_range, options=None)
 
     assert len(res) == 1
 
