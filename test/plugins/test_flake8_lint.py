@@ -39,12 +39,13 @@ def test_flake8_unsaved(workspace):
     assert unused_var['code'] == 'F841'
     assert unused_var['range']['start'] == {'line': 5, 'character': 1}
     assert unused_var['range']['end'] == {'line': 5, 'character': 11}
-    assert unused_var['severity'] == lsp.DiagnosticSeverity.Warning
+    assert unused_var['severity'] == lsp.DiagnosticSeverity.Error
+    assert unused_var['tags'] == [lsp.DiagnosticTag.Unnecessary]
 
 
 def test_flake8_lint(workspace):
+    name, doc = temp_document(DOC, workspace)
     try:
-        name, doc = temp_document(DOC, workspace)
         diags = flake8_lint.pylsp_lint(workspace, doc)
         msg = 'F841 local variable \'a\' is assigned to but never used'
         unused_var = [d for d in diags if d['message'] == msg][0]
@@ -53,8 +54,7 @@ def test_flake8_lint(workspace):
         assert unused_var['code'] == 'F841'
         assert unused_var['range']['start'] == {'line': 5, 'character': 1}
         assert unused_var['range']['end'] == {'line': 5, 'character': 11}
-        assert unused_var['severity'] == lsp.DiagnosticSeverity.Warning
-
+        assert unused_var['severity'] == lsp.DiagnosticSeverity.Error
     finally:
         os.remove(name)
 
@@ -153,6 +153,28 @@ exclude =
     assert len(flake8_settings["perFileIgnores"]) == 2
     assert "exclude" in flake8_settings
     assert len(flake8_settings["exclude"]) == 2
+
+    doc = workspace.get_document(doc_uri)
+    res = flake8_lint.pylsp_lint(workspace, doc)
+    assert not res
+
+    os.unlink(os.path.join(workspace.root_path, "setup.cfg"))
+
+
+def test_per_file_ignores_alternative_syntax(workspace):
+    config_str = r"""[flake8]
+per-file-ignores = **/__init__.py:F401,E402
+    """
+
+    doc_str = "print('hi')\nimport os\n"
+
+    doc_uri = uris.from_fs_path(os.path.join(workspace.root_path, "blah/__init__.py"))
+    workspace.put_document(doc_uri, doc_str)
+
+    flake8_settings = get_flake8_cfg_settings(workspace, config_str)
+
+    assert "perFileIgnores" in flake8_settings
+    assert len(flake8_settings["perFileIgnores"]) == 2
 
     doc = workspace.get_document(doc_uri)
     res = flake8_lint.pylsp_lint(workspace, doc)

@@ -15,6 +15,11 @@ import jedi
 
 JEDI_VERSION = jedi.__version__
 
+# Eol chars accepted by the LSP protocol
+# the ordering affects performance
+EOL_CHARS = ['\r\n', '\r', '\n']
+EOL_REGEX = re.compile(f'({"|".join(EOL_CHARS)})')
+
 log = logging.getLogger(__name__)
 
 
@@ -278,3 +283,11 @@ else:
             return e.errno == errno.EPERM
         else:
             return True
+
+
+def get_eol_chars(text):
+    """Get EOL chars used in text."""
+    match = EOL_REGEX.search(text)
+    if match:
+        return match.group(0)
+    return None

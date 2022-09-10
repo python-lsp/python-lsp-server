@@ -8,6 +8,7 @@ import logging
 import sys
 import re
 from subprocess import Popen, PIPE
+import os
 
 from pylint.epylint import py_run
 from pylsp import hookimpl, lsp
@@ -18,6 +19,29 @@ except Exception:  # pylint: disable=broad-except
     import json
 
 log = logging.getLogger(__name__)
+
+# Pylint fails to suppress STDOUT when importing whitelisted C
+# extensions, mangling their output into the expected JSON which breaks the
+# parser. The most prominent example (and maybe the only one out there) is
+# pygame - we work around that by asking pygame to NOT display the message upon
+# import via an (otherwise harmless) environment variable. This is an ad-hoc
+# fix for a very specific upstream issue.
+# Related: https://github.com/PyCQA/pylint/issues/3518
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = 'hide'
+DEPRECATION_CODES = {
+    'W0402',  # Uses of a deprecated module %r
+    'W1505',  # Using deprecated method %s()
+    'W1511',  # Using deprecated argument %s of method %s()
+    'W1512',  # Using deprecated class %s of module %s
+    'W1513',  # Using deprecated decorator %s()
+}
+UNNECESSITY_CODES = {
+    'W0611',  # Unused import %s
+    'W0612',  # Unused variable %r
+    'W0613',  # Unused argument %r
+    'W0614',  # Unused import %s from wildcard import
+    'W1304',  # Unused-format-string-argument
+}
 
 
 class PylintLinter:
@@ -136,13 +160,22 @@ class PylintLinter:
             elif diag['type'] == 'warning':
                 severity = lsp.DiagnosticSeverity.Warning
 
-            diagnostics.append({
+            code = diag['message-id']
+
+            diagnostic = {
                 'source': 'pylint',
                 'range': err_range,
                 'message': '[{}] {}'.format(diag['symbol'], diag['message']),
                 'severity': severity,
-                'code': diag['message-id']
-            })
+                'code': code
+            }
+
+            if code in UNNECESSITY_CODES:
+                diagnostic['tags'] = [lsp.DiagnosticTag.Unnecessary]
+            if code in DEPRECATION_CODES:
+                diagnostic['tags'] = [lsp.DiagnosticTag.Deprecated]
+
+            diagnostics.append(diagnostic)
         cls.last_diags[document.path] = diagnostics
         return diagnostics
 
@@ -285,24 +318,27 @@ def _parse_pylint_stdio_result(document, stdout):
             'W': lsp.DiagnosticSeverity.Warning,
         }
         severity = severity_map[code[0]]
-        diagnostics.append(
-            {
-                'source': 'pylint',
-                'code': code,
-                'range': {
-                    'start': {
-                        'line': line,
-                        'character': character
-                    },
-                    'end': {
-                        'line': line,
-                        # no way to determine the column
-                        'character': len(document.lines[line]) - 1
-                    }
+        diagnostic = {
+            'source': 'pylint',
+            'code': code,
+            'range': {
+                'start': {
+                    'line': line,
+                    'character': character
                 },
-                'message': msg,
-                'severity': severity,
-            }
-        )
+                'end': {
+                    'line': line,
+                    # no way to determine the column
+                    'character': len(document.lines[line]) - 1
+                }
+            },
+            'message': msg,
+            'severity': severity,
+        }
+        if code in UNNECESSITY_CODES:
+            diagnostic['tags'] = [lsp.DiagnosticTag.Unnecessary]
+        if code in DEPRECATION_CODES:
+            diagnostic['tags'] = [lsp.DiagnosticTag.Deprecated]
+        diagnostics.append(diagnostic)
 
     return diagnostics
