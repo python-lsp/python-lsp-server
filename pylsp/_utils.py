@@ -146,15 +146,23 @@ def merge_dicts(dict_a, dict_b):
     return dict(_merge_dicts_(dict_a, dict_b))
 
 
+def escape_plain_text(contents: str) -> str:
+    """
+    Format plain text to display nicely in environments which do not respect whitespaces.
+    """
+    contents = contents.replace('\t', '\u00A0' * 4)
+    contents = contents.replace('  ', '\u00A0' * 2)
+    return contents
+
+
 def escape_markdown(contents: str) -> str:
     """
-    Try to make the plain text string work nicely when displayed in Markdown environment.
+    Format plain text to display nicely in Markdown environment.
     """
     # escape markdown syntax
     contents = re.sub(r'([\\*_#[\]])', r'\\\1', contents)
     # preserve white space characters
-    contents = contents.replace('\t', '\u00A0' * 4)
-    contents = contents.replace('  ', '\u00A0' * 2)
+    contents = escape_plain_text(contents)
     return contents
 
 
@@ -208,7 +216,7 @@ def format_docstring(contents: str, markup_kind: str, signatures: Optional[List[
         value = '\n'.join(signatures) + '\n\n' + value
     return {
         'kind': 'plaintext',
-        'value': value
+        'value': escape_plain_text(value)
     }
 
 
