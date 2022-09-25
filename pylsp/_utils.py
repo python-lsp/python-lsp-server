@@ -174,9 +174,10 @@ SERVER_SUPPORTED_MARKUP_KINDS = {'markdown', 'plaintext'}
 
 
 def choose_markup_kind(client_supported_markup_kinds: List[str]):
-    """Choose a markup kind supported by both client and the server,
+    """Choose a markup kind supported by both client and the server.
 
-    giving a priority to the markup kinds provided earlier on the client preference list"""
+    This gives priority to the markup kinds provided earlier on the client preference list.
+    """
     for kind in client_supported_markup_kinds:
         if kind in SERVER_SUPPORTED_MARKUP_KINDS:
             return kind
@@ -189,6 +190,9 @@ def format_docstring(contents: str, markup_kind: str, signatures: Optional[List[
     If `markup_kind` is 'markdown' the docstring will get converted to
     markdown representation using `docstring-to-markdown`; if it is
     `plaintext`, it will be returned as plain text.
+    Call signatures of functions (or equivalent code summaries)
+    provided in optional `signatures` argument will be prepended
+    to the provided contents of the docstring if given.
     """
     if not isinstance(contents, str):
         contents = ''
