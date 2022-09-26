@@ -18,6 +18,7 @@ dependencies = [
     "pluggy>=1.0.0",
     "ujson>=3.0.0",
     "setuptools>=39.0.0",
+    "toml=>0.10.2",
 ]
 dynamic = ["version"]
 
