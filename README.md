@@ -2,6 +2,8 @@
 
 This is a fork of https://github.com/python-lsp/python-lsp-server.
 
+See [RELEASE.md] for how to make a new release.
+
 A Python 3.7+ implementation of the [Language Server Protocol](https://github.com/Microsoft/language-server-protocol).
 (Note: versions <1.4 should still work with Python 3.6)
 
