@@ -1,6 +1,6 @@
 # Python LSP Server
 
-[![image](https://github.com/python-ls/python-ls/workflows/Linux%20tests/badge.svg)](https://github.com/python-ls/python-ls/actions?query=workflow%3A%22Linux+tests%22) [![image](https://github.com/python-ls/python-ls/workflows/Mac%20tests/badge.svg)](https://github.com/python-ls/python-ls/actions?query=workflow%3A%22Mac+tests%22) [![image](https://github.com/python-ls/python-ls/workflows/Windows%20tests/badge.svg)](https://github.com/python-ls/python-ls/actions?query=workflow%3A%22Windows+tests%22) [![image](https://img.shields.io/github/license/python-ls/python-ls.svg)](https://github.com/python-ls/python-ls/blob/master/LICENSE)
+This is a fork of https://github.com/python-lsp/python-lsp-server.
 
 A Python 3.7+ implementation of the [Language Server Protocol](https://github.com/Microsoft/language-server-protocol).
 (Note: versions <1.4 should still work with Python 3.6)

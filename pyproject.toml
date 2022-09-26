@@ -6,7 +6,7 @@ requires = ["setuptools>=61.2.0", "setuptools_scm[toml]>=3.4.3"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "python-lsp-server"
+name = "replit-python-lsp-server"
 authors = [{name = "Python Language Server Contributors"}]
 description = "Python Language Server for the Language Server Protocol"
 readme = "README.md"
@@ -22,7 +22,7 @@ dependencies = [
 dynamic = ["version"]
 
 [project.urls]
-Homepage = "https://github.com/python-lsp/python-lsp-server"
+Homepage = "https://github.com/replit/python-lsp-server"
 
 [project.optional-dependencies]
 all = [
