@@ -117,12 +117,12 @@
     },
     "pylsp.plugins.jedi_completion.include_class_objects": {
       "type": "boolean",
-      "default": true,
+      "default": false,
       "description": "Adds class objects as a separate completion item."
     },
     "pylsp.plugins.jedi_completion.include_function_objects": {
       "type": "boolean",
-      "default": true,
+      "default": false,
       "description": "Adds function objects as a separate completion item."
     },
     "pylsp.plugins.jedi_completion.fuzzy": {
