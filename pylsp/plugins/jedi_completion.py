@@ -56,7 +56,7 @@ def pylsp_completions(config, document, position):
     preferred_markup_kind = _utils.choose_markup_kind(supported_markup_kinds)
 
     should_include_params = settings.get('include_params')
-    should_include_class_objects = settings.get('include_class_objects', True)
+    should_include_class_objects = settings.get('include_class_objects', False)
     should_include_function_objects = settings.get('include_function_objects', False)
 
     max_to_resolve = settings.get('resolve_at_most', 25)

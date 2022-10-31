@@ -21,8 +21,8 @@ This server can be configured using the `workspace/didChangeConfiguration` metho
 | `pylsp.plugins.jedi.environment` | `string` | Define environment for jedi.Script and Jedi.names. | `null` |
 | `pylsp.plugins.jedi_completion.enabled` | `boolean` | Enable or disable the plugin. | `true` |
 | `pylsp.plugins.jedi_completion.include_params` | `boolean` | Auto-completes methods and classes with tabstops for each parameter. | `true` |
-| `pylsp.plugins.jedi_completion.include_class_objects` | `boolean` | Adds class objects as a separate completion item. | `true` |
-| `pylsp.plugins.jedi_completion.include_function_objects` | `boolean` | Adds function objects as a separate completion item. | `true` |
+| `pylsp.plugins.jedi_completion.include_class_objects` | `boolean` | Adds class objects as a separate completion item. | `false` |
+| `pylsp.plugins.jedi_completion.include_function_objects` | `boolean` | Adds function objects as a separate completion item. | `false` |
 | `pylsp.plugins.jedi_completion.fuzzy` | `boolean` | Enable fuzzy when requesting autocomplete. | `false` |
 | `pylsp.plugins.jedi_completion.eager` | `boolean` | Resolve documentation and detail eagerly. | `false` |
 | `pylsp.plugins.jedi_completion.resolve_at_most` | `integer` | How many labels and snippets (at most) should be resolved? | `25` |
