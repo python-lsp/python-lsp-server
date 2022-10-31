@@ -73,7 +73,7 @@ def pylsp_completions(config, document, position):
         _format_completion(
             c,
             markup_kind=preferred_markup_kind,
-            include_params=include_params,
+            include_params=include_params if c.type in ["class", "function"] else False,
             resolve=resolve_eagerly,
             resolve_label_or_snippet=(i < max_to_resolve)
         )
