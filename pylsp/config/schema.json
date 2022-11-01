@@ -87,6 +87,14 @@
       "uniqueItems": true,
       "description": "List of errors and warnings to enable."
     },
+    "pylsp.plugins.jedi.auto_import_modules": {
+      "type": "array",
+      "default": ["numpy"],
+      "items": {
+        "type": "string"
+      },
+      "description": "List of module names for jedi.settings.auto_import_modules."
+    },
     "pylsp.plugins.jedi.extra_paths": {
       "type": "array",
       "default": [],
