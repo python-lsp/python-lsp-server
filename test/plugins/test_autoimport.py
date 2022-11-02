@@ -178,7 +178,7 @@ def test_autoimport_defined_name(config, workspace):
 #     workspace.rm_document(DOC_URI)
 
 
-class test_should_insert:
+class TestShouldInsert:
 
     def test_dot(self):
 
