@@ -132,7 +132,6 @@ def _process_statements(
             },
             "detail": _document(suggestion.import_statement),
             "additionalTextEdits": [edit],
-
         }
 
 
