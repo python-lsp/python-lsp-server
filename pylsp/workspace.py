@@ -1,16 +1,16 @@
 # Copyright 2017-2020 Palantir Technologies, Inc.
 # Copyright 2021- Python Language Server Contributors.
 
-import functools
 import io
 import logging
 import os
 import re
+import functools
 from threading import RLock
-from typing import Optional
+
 import jedi
 
-from . import _utils, lsp, uris
+from . import lsp, uris, _utils
 
 log = logging.getLogger(__name__)
 
@@ -21,12 +21,10 @@ RE_END_WORD = re.compile('^[A-Za-z_0-9]*')
 
 def lock(method):
     """Define an atomic region over a method."""
-
     @functools.wraps(method)
     def wrapper(self, *args, **kwargs):
         with self._lock:
             return method(self, *args, **kwargs)
-
     return wrapper
 
 
@@ -91,8 +89,7 @@ class Workspace:
         return self._root_uri
 
     def is_local(self):
-        return (self._root_uri_scheme in ['', 'file']) and os.path.exists(
-            self._root_path)
+        return (self._root_uri_scheme in ['', 'file']) and os.path.exists(self._root_path)
 
     def get_document(self, doc_uri):
         """Return a managed document if-present, else create one pointing at disk.
@@ -105,9 +102,7 @@ class Workspace:
         return self._docs.get(doc_uri)
 
     def put_document(self, doc_uri, source, version=None):
-        self._docs[doc_uri] = self._create_document(doc_uri,
-                                                    source=source,
-                                                    version=version)
+        self._docs[doc_uri] = self._create_document(doc_uri, source=source, version=version)
 
     def rm_document(self, doc_uri):
         self._docs.pop(doc_uri)
@@ -125,25 +120,15 @@ class Workspace:
         return self._endpoint.request(self.M_APPLY_EDIT, {'edit': edit})
 
     def publish_diagnostics(self, doc_uri, diagnostics):
-        self._endpoint.notify(self.M_PUBLISH_DIAGNOSTICS,
-                              params={
-                                  'uri': doc_uri,
-                                  'diagnostics': diagnostics
-                              })
+        self._endpoint.notify(self.M_PUBLISH_DIAGNOSTICS, params={'uri': doc_uri, 'diagnostics': diagnostics})
 
     def show_message(self, message, msg_type=lsp.MessageType.Info):
-        self._endpoint.notify(self.M_SHOW_MESSAGE,
-                              params={
-                                  'type': msg_type,
-                                  'message': message
-                              })
+        self._endpoint.notify(self.M_SHOW_MESSAGE, params={'type': msg_type, 'message': message})
 
     def source_roots(self, document_path):
         """Return the source roots for the given document."""
-        files = _utils.find_parents(self._root_path, document_path,
-                                    ['setup.py', 'pyproject.toml']) or []
-        return list({os.path.dirname(project_file)
-                     for project_file in files}) or [self._root_path]
+        files = _utils.find_parents(self._root_path, document_path, ['setup.py', 'pyproject.toml']) or []
+        return list({os.path.dirname(project_file) for project_file in files}) or [self._root_path]
 
     def _create_document(self, doc_uri, source=None, version=None):
         path = uris.to_fs_path(doc_uri)
@@ -163,13 +148,7 @@ class Workspace:
 
 class Document:
 
-    def __init__(self,
-                 uri,
-                 workspace,
-                 source=None,
-                 version=None,
-                 local=True,
-                 extra_sys_path=None,
+    def __init__(self, uri, workspace, source=None, version=None, local=True, extra_sys_path=None,
                  rope_project_builder=None):
         self.uri = uri
         self.version = version
@@ -192,8 +171,7 @@ class Document:
     def _rope_resource(self, rope_config):
         # pylint: disable=import-outside-toplevel
         from rope.base import libutils
-        return libutils.path_to_resource(
-            self._rope_project_builder(rope_config), self.path)
+        return libutils.path_to_resource(self._rope_project_builder(rope_config), self.path)
 
     @property
     @lock
@@ -257,8 +235,7 @@ class Document:
 
     def offset_at_position(self, position):
         """Return the byte-offset pointed at by the given position."""
-        return position['character'] + len(''.join(
-            self.lines[:position['line']]))
+        return position['character'] + len(''.join(self.lines[:position['line']]))
 
     def word_at_position(self, position):
         """Get the word under the cursor returning the start and end positions."""
@@ -281,8 +258,7 @@ class Document:
     @lock
     def jedi_names(self, all_scopes=False, definitions=True, references=False):
         script = self.jedi_script()
-        return script.get_names(all_scopes=all_scopes,
-                                definitions=definitions,
+        return script.get_names(all_scopes=all_scopes, definitions=definitions,
                                 references=references)
 
     @lock
@@ -292,8 +268,7 @@ class Document:
         env_vars = None
 
         if self._config:
-            jedi_settings = self._config.plugin_settings(
-                'jedi', document_path=self.path)
+            jedi_settings = self._config.plugin_settings('jedi', document_path=self.path)
             environment_path = jedi_settings.get('environment')
             extra_paths = jedi_settings.get('extra_paths') or []
             env_vars = jedi_settings.get('env_vars')
@@ -304,10 +279,8 @@ class Document:
             env_vars = os.environ.copy()
         env_vars.pop('PYTHONPATH', None)
 
-        environment = self.get_enviroment(
-            environment_path, env_vars=env_vars) if environment_path else None
-        sys_path = self.sys_path(environment_path,
-                                 env_vars=env_vars) + extra_paths
+        environment = self.get_enviroment(environment_path, env_vars=env_vars) if environment_path else None
+        sys_path = self.sys_path(environment_path, env_vars=env_vars) + extra_paths
         project_path = self._workspace.root_path
 
         # Extend sys_path with document's path if requested
@@ -335,8 +308,9 @@ class Document:
             if environment_path in self._workspace._environments:
                 environment = self._workspace._environments[environment_path]
             else:
-                environment = jedi.api.environment.create_environment(
-                    path=environment_path, safe=False, env_vars=env_vars)
+                environment = jedi.api.environment.create_environment(path=environment_path,
+                                                                      safe=False,
+                                                                      env_vars=env_vars)
                 self._workspace._environments[environment_path] = environment
 
         return environment
@@ -345,7 +319,6 @@ class Document:
         # Copy our extra sys path
         # TODO: when safe to break API, use env_vars explicitly to pass to create_environment
         path = list(self._extra_sys_path)
-        environment = self.get_enviroment(environment_path=environment_path,
-                                          env_vars=env_vars)
+        environment = self.get_enviroment(environment_path=environment_path, env_vars=env_vars)
         path.extend(environment.get_sys_path())
         return path

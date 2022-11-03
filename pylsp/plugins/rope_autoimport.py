@@ -25,7 +25,6 @@ def pylsp_settings() -> Dict[str, Dict[str, Dict[str, Any]]]:
     # Default rope_completion to disabled
     return {"plugins": {"rope_autoimport": {"enabled": True, "memory": False}}}
 
-
 def _should_insert(expr: tree.BaseNode, word_node: tree.Leaf) -> bool:
     """
     Check if we should insert the word_node on the given expr.
