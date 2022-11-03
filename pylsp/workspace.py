@@ -7,6 +7,7 @@ import os
 import re
 import functools
 from threading import RLock
+from typing import Optional
 
 import jedi
 
