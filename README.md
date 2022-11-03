@@ -140,6 +140,7 @@ pip install 'python-lsp-server[websockets]'
 ## LSP Server Features
 
 * Auto Completion
+* [Autoimport](docs/autoimport.md)
 * Code Linting
 * Signature Help
 * Go to definition

@@ -362,6 +362,16 @@
       "default": null,
       "description": "Executable to run pylint with. Enabling this will run pylint on unsaved files via stdin. Can slow down workflow. Only works with python3."
     },
+    "pylsp.plugins.rope_autoimport.enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Enable or disable autoimport."
+    },
+    "pylsp.plugins.rope_autoimport.memory": {
+      "type": "boolean",
+      "default": false,
+      "description": "Make the autoimport database memory only. Drastically increases startup time."
+    },
     "pylsp.plugins.rope_completion.enabled": {
       "type": "boolean",
       "default": false,
