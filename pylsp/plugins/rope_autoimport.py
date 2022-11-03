@@ -44,8 +44,8 @@ def _should_insert(expr: tree.BaseNode, word_node: tree.Leaf) -> bool:
     if first_child == word_node:
         return True  # If the word is the first word then its fine
     if len(expr.children) > 1:
-        if any(node.type == "operator" and "." in node.value
-               or node.type == "trailer" for node in expr.children):
+        if any(node.type == "operator" and "." in node.value or
+               node.type == "trailer" for node in expr.children):
             return False  # Check if we're on a method of a function
     if isinstance(first_child, (tree.PythonErrorNode, tree.PythonNode)):
         # The tree will often include error nodes like this to indicate errors
