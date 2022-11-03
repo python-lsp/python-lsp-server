@@ -1,3 +1,5 @@
+# Copyright 2022- Python Language Server Contributors.
+
 from typing import Dict, List
 from unittest.mock import Mock
 

@@ -1,3 +1,5 @@
+# Copyright 2022- Python Language Server Contributors.
+
 import logging
 from typing import Any, Dict, Generator, List, Set
 
@@ -24,6 +26,7 @@ MAX_RESULTS = 1000
 def pylsp_settings() -> Dict[str, Dict[str, Dict[str, Any]]]:
     # Default rope_completion to disabled
     return {"plugins": {"rope_autoimport": {"enabled": True, "memory": False}}}
+
 
 def _should_insert(expr: tree.BaseNode, word_node: tree.Leaf) -> bool:
     """
