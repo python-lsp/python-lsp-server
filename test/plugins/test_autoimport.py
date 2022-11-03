@@ -71,7 +71,9 @@ def test_autoimport_pathlib(completions):
 
     start = {"line": 0, "character": 0}
     edit_range = {"start": start, "end": start}
-    assert completions[0]["additionalTextEdits"] == [{"range": edit_range, "newText": "import pathlib\n"}]
+    assert completions[0]["additionalTextEdits"] == [
+        {"range": edit_range, "newText": "import pathlib\n"}
+    ]
 
 
 @pytest.mark.parametrize("completions", [("""Pat""", -1)], indirect=True)
