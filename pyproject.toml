@@ -33,7 +33,7 @@ all = [
     "pydocstyle>=2.0.0",
     "pyflakes>=2.4.0,<2.5.0",
     "pylint>=2.5.0",
-    "rope>=1.1.1",
+    "rope>1.2.0",
     "yapf",
     "whatthepatch"
 ]
