@@ -44,7 +44,8 @@ def _should_insert(expr: tree.BaseNode, word_node: tree.Leaf) -> bool:
     if first_child == word_node:
         return True  # If the word is the first word then its fine
     if len(expr.children) > 1:
-        if any(node.type == "trailer" for node in expr.children):
+        if any(node.type == "operator" and "." in node.value
+               or node.type == "trailer" for node in expr.children):
             return False  # Check if we're on a method of a function
     if isinstance(first_child, (tree.PythonErrorNode, tree.PythonNode)):
         # The tree will often include error nodes like this to indicate errors
@@ -118,8 +119,12 @@ def _process_statements(
         insert_line = autoimport.find_insertion_line(document.source) - 1
         start = {"line": insert_line, "character": 0}
         edit_range = {"start": start, "end": start}
-        edit = {"range": edit_range, "newText": suggestion.import_statement + "\n"}
-        score = _get_score(suggestion.source, suggestion.import_statement, suggestion.name, word)
+        edit = {
+            "range": edit_range,
+            "newText": suggestion.import_statement + "\n"
+        }
+        score = _get_score(suggestion.source, suggestion.import_statement,
+                           suggestion.name, word)
         if score > _score_max:
             continue
         # TODO make this markdown
@@ -154,7 +159,8 @@ def pylsp_completions(config: Config, workspace: Workspace, document: Document,
     word = word_node.value
     log.debug(f"autoimport: searching for word: {word}")
     rope_config = config.settings(document_path=document.path).get("rope", {})
-    ignored_names: Set[str] = get_names(document.jedi_script(use_document_path=True))
+    ignored_names: Set[str] = get_names(
+        document.jedi_script(use_document_path=True))
     autoimport = workspace._rope_autoimport(rope_config)
     suggestions = list(
         autoimport.search_full(word, ignored_names=ignored_names))
@@ -193,7 +199,8 @@ def _sort_import(score: int) -> str:
 @hookimpl
 def pylsp_initialize(config: Config, workspace: Workspace):
     """Initialize AutoImport. Generates the cache for local and global items."""
-    memory: bool = config.plugin_settings("rope_autoimport").get("memory", False)
+    memory: bool = config.plugin_settings("rope_autoimport").get(
+        "memory", False)
     rope_config = config.settings().get("rope", {})
     autoimport = workspace._rope_autoimport(rope_config, memory)
     autoimport.generate_modules_cache()
