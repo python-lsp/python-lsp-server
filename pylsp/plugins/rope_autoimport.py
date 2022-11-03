@@ -44,10 +44,8 @@ def _should_insert(expr: tree.BaseNode, word_node: tree.Leaf) -> bool:
     if first_child == word_node:
         return True  # If the word is the first word then its fine
     if len(expr.children) > 1:
-        if any(
-            node.type == "operator" and "." in node.value or node.type == "trailer"
-            for node in expr.children
-        ):
+        if any(node.type == "operator" and "." in node.value
+               or node.type == "trailer" for node in expr.children):
             return False  # Check if we're on a method of a function
     if isinstance(first_child, (tree.PythonErrorNode, tree.PythonNode)):
         # The tree will often include error nodes like this to indicate errors
@@ -56,9 +54,8 @@ def _should_insert(expr: tree.BaseNode, word_node: tree.Leaf) -> bool:
     return _handle_first_child(first_child, expr, word_node)
 
 
-def _handle_first_child(
-    first_child: NodeOrLeaf, expr: tree.BaseNode, word_node: tree.Leaf
-) -> bool:
+def _handle_first_child(first_child: NodeOrLeaf, expr: tree.BaseNode,
+                        word_node: tree.Leaf) -> bool:
     """Check if we suggest imports given the following first child."""
     if isinstance(first_child, tree.Import):
         return False
@@ -122,10 +119,12 @@ def _process_statements(
         insert_line = autoimport.find_insertion_line(document.source) - 1
         start = {"line": insert_line, "character": 0}
         edit_range = {"start": start, "end": start}
-        edit = {"range": edit_range, "newText": suggestion.import_statement + "\n"}
-        score = _get_score(
-            suggestion.source, suggestion.import_statement, suggestion.name, word
-        )
+        edit = {
+            "range": edit_range,
+            "newText": suggestion.import_statement + "\n"
+        }
+        score = _get_score(suggestion.source, suggestion.import_statement,
+                           suggestion.name, word)
         if score > _score_max:
             continue
         # TODO make this markdown
@@ -133,7 +132,9 @@ def _process_statements(
             "label": suggestion.name,
             "kind": suggestion.itemkind,
             "sortText": _sort_import(score),
-            "data": {"doc_uri": doc_uri},
+            "data": {
+                "doc_uri": doc_uri
+            },
             "detail": _document(suggestion.import_statement),
             "additionalTextEdits": [edit],
         }
@@ -147,9 +148,8 @@ def get_names(script: Script) -> Set[str]:
 
 
 @hookimpl
-def pylsp_completions(
-    config: Config, workspace: Workspace, document: Document, position
-):
+def pylsp_completions(config: Config, workspace: Workspace, document: Document,
+                      position):
     """Get autoimport suggestions."""
     line = document.lines[position["line"]]
     expr = parso.parse(line)
@@ -159,15 +159,17 @@ def pylsp_completions(
     word = word_node.value
     log.debug(f"autoimport: searching for word: {word}")
     rope_config = config.settings(document_path=document.path).get("rope", {})
-    ignored_names: Set[str] = get_names(document.jedi_script(use_document_path=True))
+    ignored_names: Set[str] = get_names(
+        document.jedi_script(use_document_path=True))
     autoimport = workspace._rope_autoimport(rope_config)
-    suggestions = list(autoimport.search_full(word, ignored_names=ignored_names))
+    suggestions = list(
+        autoimport.search_full(word, ignored_names=ignored_names))
     results = list(
         sorted(
-            _process_statements(suggestions, document.uri, word, autoimport, document),
+            _process_statements(suggestions, document.uri, word, autoimport,
+                                document),
             key=lambda statement: statement["sortText"],
-        )
-    )
+        ))
     if len(results) > MAX_RESULTS:
         results = results[:MAX_RESULTS]
     return results
@@ -177,12 +179,11 @@ def _document(import_statement: str) -> str:
     return """# Auto-Import\n""" + import_statement
 
 
-def _get_score(
-    source: int, full_statement: str, suggested_name: str, desired_name
-) -> int:
+def _get_score(source: int, full_statement: str, suggested_name: str,
+               desired_name) -> int:
     import_length = len("import")
     full_statement_score = len(full_statement) - import_length
-    suggested_name_score = ((len(suggested_name) - len(desired_name))) ** 2
+    suggested_name_score = ((len(suggested_name) - len(desired_name)))**2
     source_score = 20 * source
     return suggested_name_score + full_statement_score + source_score
 
@@ -198,7 +199,8 @@ def _sort_import(score: int) -> str:
 @hookimpl
 def pylsp_initialize(config: Config, workspace: Workspace):
     """Initialize AutoImport. Generates the cache for local and global items."""
-    memory: bool = config.plugin_settings("rope_autoimport").get("memory", False)
+    memory: bool = config.plugin_settings("rope_autoimport").get(
+        "memory", False)
     rope_config = config.settings().get("rope", {})
     autoimport = workspace._rope_autoimport(rope_config, memory)
     autoimport.generate_modules_cache()
@@ -206,7 +208,8 @@ def pylsp_initialize(config: Config, workspace: Workspace):
 
 
 @hookimpl
-def pylsp_document_did_save(config: Config, workspace: Workspace, document: Document):
+def pylsp_document_did_save(config: Config, workspace: Workspace,
+                            document: Document):
     """Update the names associated with this document."""
     rope_config = config.settings().get("rope", {})
     rope_doucment: Resource = document._rope_resource(rope_config)
