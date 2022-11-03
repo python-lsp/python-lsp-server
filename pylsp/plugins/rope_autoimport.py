@@ -45,7 +45,10 @@ def _should_insert(expr: tree.BaseNode, word_node: tree.Leaf) -> bool:
     if first_child == word_node:
         return True  # If the word is the first word then its fine
     if len(expr.children) > 1:
-        if any(node.type == "operator" and "." in node.value or node.type == "trailer" for node in expr.children):
+        if any(
+            node.type == "operator" and "." in node.value or node.type == "trailer"
+            for node in expr.children
+        ):
             return False  # Check if we're on a method of a function
     if isinstance(first_child, (tree.PythonErrorNode, tree.PythonNode)):
         # The tree will often include error nodes like this to indicate errors
@@ -54,7 +57,9 @@ def _should_insert(expr: tree.BaseNode, word_node: tree.Leaf) -> bool:
     return _handle_first_child(first_child, expr, word_node)
 
 
-def _handle_first_child(first_child: NodeOrLeaf, expr: tree.BaseNode, word_node: tree.Leaf) -> bool:
+def _handle_first_child(
+    first_child: NodeOrLeaf, expr: tree.BaseNode, word_node: tree.Leaf
+) -> bool:
     """Check if we suggest imports given the following first child."""
     if isinstance(first_child, tree.Import):
         return False
@@ -119,7 +124,9 @@ def _process_statements(
         start = {"line": insert_line, "character": 0}
         edit_range = {"start": start, "end": start}
         edit = {"range": edit_range, "newText": suggestion.import_statement + "\n"}
-        score = _get_score(suggestion.source, suggestion.import_statement, suggestion.name, word)
+        score = _get_score(
+            suggestion.source, suggestion.import_statement, suggestion.name, word
+        )
         if score > _score_max:
             continue
         # TODO make this markdown
@@ -128,7 +135,8 @@ def _process_statements(
             "kind": suggestion.itemkind,
             "sortText": _sort_import(score),
             "data": {"doc_uri": doc_uri},
-            "detail": _document(suggestion.import_statement),
+            "detail": _document(suggestion.modname),
+            "labelDetails": {"description": suggestion.modname},
             "documentation": format_docstring(suggestion.description),
             "additionalTextEdits": [edit],
         }
@@ -142,7 +150,9 @@ def get_names(script: Script) -> Set[str]:
 
 
 @hookimpl
-def pylsp_completions(config: Config, workspace: Workspace, document: Document, position):
+def pylsp_completions(
+    config: Config, workspace: Workspace, document: Document, position
+):
     """Get autoimport suggestions."""
     line = document.lines[position["line"]]
     expr = parso.parse(line)
@@ -170,7 +180,9 @@ def _document(import_statement: str) -> str:
     return """# Auto-Import\n""" + import_statement + "\n"
 
 
-def _get_score(source: int, full_statement: str, suggested_name: str, desired_name) -> int:
+def _get_score(
+    source: int, full_statement: str, suggested_name: str, desired_name
+) -> int:
     import_length = len("import")
     full_statement_score = len(full_statement) - import_length
     suggested_name_score = ((len(suggested_name) - len(desired_name))) ** 2
