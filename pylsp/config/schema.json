@@ -289,7 +289,7 @@
     "pylsp.plugins.pydocstyle.convention": {
       "type": ["string", "null"],
       "default": null,
-      "enum": ["pep257", "numpy", null],
+      "enum": ["pep257", "numpy", "google", null],
       "description": "Choose the basic list of checked errors by specifying an existing convention."
     },
     "pylsp.plugins.pydocstyle.addIgnore": {
