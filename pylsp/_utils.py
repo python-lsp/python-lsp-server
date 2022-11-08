@@ -6,11 +6,16 @@ import inspect
 import logging
 import os
 import pathlib
+import re
 import threading
 
 import jedi
 
 JEDI_VERSION = jedi.__version__
+
+# Eol chars accepted by the LSP protocol
+EOL_CHARS = ['\r\n', '\r', '\n']
+EOL_REGEX = re.compile(f'({"|".join(EOL_CHARS)})')
 
 log = logging.getLogger(__name__)
 
@@ -144,8 +149,8 @@ def format_docstring(contents):
     Until we can find a fast enough way of discovering and parsing each format,
     we can do a little better by at least preserving indentation.
     """
-    contents = contents.replace('\t', u'\u00A0' * 4)
-    contents = contents.replace('  ', u'\u00A0' * 2)
+    contents = contents.replace('\t', '\u00A0' * 4)
+    contents = contents.replace('  ', '\u00A0' * 2)
     return contents
 
 
@@ -220,3 +225,11 @@ else:
             return e.errno == errno.EPERM
         else:
             return True
+
+
+def get_eol_chars(text):
+    """Get EOL chars used in text."""
+    match = EOL_REGEX.search(text)
+    if match:
+        return match.group(0)
+    return None

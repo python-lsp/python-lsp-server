@@ -20,6 +20,7 @@ OPTIONS = [
     ('hang-closing', 'plugins.pycodestyle.hangClosing', bool),
     ('ignore', 'plugins.pycodestyle.ignore', list),
     ('max-line-length', 'plugins.pycodestyle.maxLineLength', int),
+    ('indent-size', 'plugins.pycodestyle.indentSize', int),
     ('select', 'plugins.pycodestyle.select', list),
     # flake8
     ('exclude', 'plugins.flake8.exclude', list),
@@ -28,6 +29,7 @@ OPTIONS = [
     ('ignore', 'plugins.flake8.ignore', list),
     ('max-complexity', 'plugins.flake8.maxComplexity', int),
     ('max-line-length', 'plugins.flake8.maxLineLength', int),
+    ('indent-size', 'plugins.flake8.indentSize', int),
     ('select', 'plugins.flake8.select', list),
     ('per-file-ignores', 'plugins.flake8.perFileIgnores', list),
 ]
