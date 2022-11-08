@@ -6,6 +6,7 @@ import logging
 import os
 import socketserver
 import threading
+import ujson as json
 
 from pylsp_jsonrpc.dispatchers import MethodDispatcher
 from pylsp_jsonrpc.endpoint import Endpoint
@@ -91,6 +92,59 @@ def start_io_lang_server(rfile, wfile, check_parent_process, handler_class):
     server.start()
 
 
+def start_ws_lang_server(port, check_parent_process, handler_class):
+    if not issubclass(handler_class, PythonLSPServer):
+        raise ValueError('Handler class must be an instance of PythonLSPServer')
+
+    # pylint: disable=import-outside-toplevel
+
+    # imports needed only for websockets based server
+    try:
+        import asyncio
+        from concurrent.futures import ThreadPoolExecutor
+        import websockets
+    except ImportError as e:
+        raise ImportError("websocket modules missing. Please run pip install 'python-lsp-server[websockets]") from e
+
+    with ThreadPoolExecutor(max_workers=10) as tpool:
+        async def pylsp_ws(websocket):
+            log.debug("Creating LSP object")
+
+            # creating a partial function and suppling the websocket connection
+            response_handler = partial(send_message, websocket=websocket)
+
+            # Not using default stream reader and writer.
+            # Instead using a consumer based approach to handle processed requests
+            pylsp_handler = handler_class(rx=None, tx=None, consumer=response_handler,
+                                          check_parent_process=check_parent_process)
+
+            async for message in websocket:
+                try:
+                    log.debug("consuming payload and feeding it to LSP handler")
+                    # pylint: disable=c-extension-no-member
+                    request = json.loads(message)
+                    loop = asyncio.get_running_loop()
+                    await loop.run_in_executor(tpool, pylsp_handler.consume, request)
+                except Exception as e:  # pylint: disable=broad-except
+                    log.exception("Failed to process request %s, %s", message, str(e))
+
+        def send_message(message, websocket):
+            """Handler to send responses of  processed requests to respective web socket clients"""
+            try:
+                # pylint: disable=c-extension-no-member
+                payload = json.dumps(message, ensure_ascii=False)
+                asyncio.run(websocket.send(payload))
+            except Exception as e:  # pylint: disable=broad-except
+                log.exception("Failed to write message %s, %s", message, str(e))
+
+        async def run_server():
+            async with websockets.serve(pylsp_ws, port=port):
+                # runs forever
+                await asyncio.Future()
+
+        asyncio.run(run_server())
+
+
 class PythonLSPServer(MethodDispatcher):
     """ Implementation of the Microsoft VSCode Language Server Protocol
     https://github.com/Microsoft/language-server-protocol/blob/master/versions/protocol-1-x.md
@@ -98,7 +152,7 @@ class PythonLSPServer(MethodDispatcher):
 
     # pylint: disable=too-many-public-methods,redefined-builtin
 
-    def __init__(self, rx, tx, check_parent_process=False):
+    def __init__(self, rx, tx, check_parent_process=False, consumer=None):
         self.workspace = None
         self.config = None
         self.root_uri = None
@@ -106,16 +160,35 @@ class PythonLSPServer(MethodDispatcher):
         self.workspaces = {}
         self.uri_workspace_mapper = {}
 
-        self._jsonrpc_stream_reader = JsonRpcStreamReader(rx)
-        self._jsonrpc_stream_writer = JsonRpcStreamWriter(tx)
         self._check_parent_process = check_parent_process
-        self._endpoint = Endpoint(self, self._jsonrpc_stream_writer.write, max_workers=MAX_WORKERS)
+
+        if rx is not None:
+            self._jsonrpc_stream_reader = JsonRpcStreamReader(rx)
+        else:
+            self._jsonrpc_stream_reader = None
+
+        if tx is not None:
+            self._jsonrpc_stream_writer = JsonRpcStreamWriter(tx)
+        else:
+            self._jsonrpc_stream_writer = None
+
+        # if consumer is None, it is assumed that the default streams-based approach is being used
+        if consumer is None:
+            self._endpoint = Endpoint(self, self._jsonrpc_stream_writer.write, max_workers=MAX_WORKERS)
+        else:
+            self._endpoint = Endpoint(self, consumer, max_workers=MAX_WORKERS)
+
         self._dispatchers = []
         self._shutdown = False
 
     def start(self):
         """Entry point for the server."""
         self._jsonrpc_stream_reader.listen(self._endpoint.consume)
+
+    def consume(self, message):
+        """Entry point for consumer based server. Alternative to stream listeners."""
+        # assuming message will be JSON
+        self._endpoint.consume(message)
 
     def __getitem__(self, item):
         """Override getitem to fallback through multiple dispatchers."""
@@ -137,12 +210,16 @@ class PythonLSPServer(MethodDispatcher):
         raise KeyError()
 
     def m_shutdown(self, **_kwargs):
+        for workspace in self.workspaces.values():
+            workspace.close()
         self._shutdown = True
 
     def m_exit(self, **_kwargs):
         self._endpoint.shutdown()
-        self._jsonrpc_stream_reader.close()
-        self._jsonrpc_stream_writer.close()
+        if self._jsonrpc_stream_reader is not None:
+            self._jsonrpc_stream_reader.close()
+        if self._jsonrpc_stream_writer is not None:
+            self._jsonrpc_stream_writer.close()
 
     def _match_uri_to_workspace(self, uri):
         workspace_uri = _utils.match_uri_to_workspace(uri, self.workspaces)
@@ -274,14 +351,17 @@ class PythonLSPServer(MethodDispatcher):
     def document_symbols(self, doc_uri):
         return flatten(self._hook('pylsp_document_symbols', doc_uri))
 
+    def document_did_save(self, doc_uri):
+        return self._hook("pylsp_document_did_save", doc_uri)
+
     def execute_command(self, command, arguments):
         return self._hook('pylsp_execute_command', command=command, arguments=arguments)
 
-    def format_document(self, doc_uri):
-        return self._hook('pylsp_format_document', doc_uri)
+    def format_document(self, doc_uri, options):
+        return self._hook('pylsp_format_document', doc_uri, options=options)
 
-    def format_range(self, doc_uri, range):
-        return self._hook('pylsp_format_range', doc_uri, range=range)
+    def format_range(self, doc_uri, range, options):
+        return self._hook('pylsp_format_range', doc_uri, range=range, options=options)
 
     def highlight(self, doc_uri, position):
         return flatten(self._hook('pylsp_document_highlight', doc_uri, position=position)) or None
@@ -340,6 +420,7 @@ class PythonLSPServer(MethodDispatcher):
 
     def m_text_document__did_save(self, textDocument=None, **_kwargs):
         self.lint(textDocument['uri'], is_saved=True)
+        self.document_did_save(textDocument['uri'])
 
     def m_text_document__code_action(self, textDocument=None, range=None, context=None, **_kwargs):
         return self.code_actions(textDocument['uri'], range, context)
@@ -362,9 +443,8 @@ class PythonLSPServer(MethodDispatcher):
     def m_text_document__document_symbol(self, textDocument=None, **_kwargs):
         return self.document_symbols(textDocument['uri'])
 
-    def m_text_document__formatting(self, textDocument=None, _options=None, **_kwargs):
-        # For now we're ignoring formatting options.
-        return self.format_document(textDocument['uri'])
+    def m_text_document__formatting(self, textDocument=None, options=None, **_kwargs):
+        return self.format_document(textDocument['uri'], options)
 
     def m_text_document__rename(self, textDocument=None, position=None, newName=None, **_kwargs):
         return self.rename(textDocument['uri'], position, newName)
@@ -372,9 +452,8 @@ class PythonLSPServer(MethodDispatcher):
     def m_text_document__folding_range(self, textDocument=None, **_kwargs):
         return self.folding(textDocument['uri'])
 
-    def m_text_document__range_formatting(self, textDocument=None, range=None, _options=None, **_kwargs):
-        # Again, we'll ignore formatting options for now.
-        return self.format_range(textDocument['uri'], range)
+    def m_text_document__range_formatting(self, textDocument=None, range=None, options=None, **_kwargs):
+        return self.format_range(textDocument['uri'], range, options)
 
     def m_text_document__references(self, textDocument=None, position=None, context=None, **_kwargs):
         exclude_declaration = not context['includeDeclaration']
