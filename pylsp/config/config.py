@@ -32,7 +32,7 @@ class PluginManager(pluggy.PluginManager):
         try:
             return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
         except Exception as e:  # pylint: disable=broad-except
-            log.warning(f"Failed to load hook {hook_name}: {e}")
+            log.warning(f"Failed to load hook {hook_name}: {e}", exc_info=True)
             return []
 
 
@@ -71,7 +71,7 @@ class Config:
             try:
                 entry_point.load()
             except Exception as e:  # pylint: disable=broad-except
-                log.warning("Failed to load %s entry point '%s': %s", PYLSP, entry_point.name, e)
+                log.info("Failed to load %s entry point '%s': %s", PYLSP, entry_point.name, e)
                 self._pm.set_blocked(entry_point.name)
 
         # Load the entry points into pluggy, having blocked any failing ones
@@ -81,7 +81,6 @@ class Config:
             if plugin is not None:
                 log.info("Loaded pylsp plugin %s from %s", name, plugin)
 
-        # pylint: disable=no-member
         for plugin_conf in self._pm.hook.pylsp_settings(config=self):
             self._plugin_settings = _utils.merge_dicts(self._plugin_settings, plugin_conf)
 
