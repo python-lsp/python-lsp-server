@@ -134,7 +134,7 @@ class Workspace:
         title: str,
         message: Optional[str] = None,
         percentage: Optional[int] = None,
-    ) -> Generator[Callable[[str, Optional[int]], None]]:
+    ) -> Generator[Callable[[str, Optional[int]], None], None, None]:
         token = self._progress_begin(title, message, percentage)
 
         def progress_message(message: str, percentage: Optional[int] = None) -> None:
