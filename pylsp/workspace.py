@@ -8,7 +8,7 @@ import os
 import re
 import uuid
 import functools
-from typing import Optional
+from typing import Optional, Generator, Callable
 from threading import RLock
 
 import jedi
@@ -129,10 +129,15 @@ class Workspace:
         self._endpoint.notify(self.M_PUBLISH_DIAGNOSTICS, params={'uri': doc_uri, 'diagnostics': diagnostics})
 
     @contextmanager
-    def report_progress(self, title: str, message: Optional[str]=None, percentage: Optional[int] = None):
+    def report_progress(
+        self,
+        title: str,
+        message: Optional[str] = None,
+        percentage: Optional[int] = None,
+    ) -> Generator[Callable[[str, Optional[int]], None]]:
         token = self._progress_begin(title, message, percentage)
 
-        def progress_message(message: str, percentage: Optional[int] = None):
+        def progress_message(message: str, percentage: Optional[int] = None) -> None:
             self._progress_report(token, message, percentage)
 
         try:
@@ -140,56 +145,66 @@ class Workspace:
         finally:
             self._progress_end(token)
 
-    def _progress_begin(self, title: str, message: Optional[str]=None, percentage: Optional[int] = None) -> str:
+    def _progress_begin(
+        self,
+        title: str,
+        message: Optional[str] = None,
+        percentage: Optional[int] = None,
+    ) -> str:
         token = str(uuid.uuid4())
         value = {
-            'kind': 'begin',
-            'title': title,
+            "kind": "begin",
+            "title": title,
         }
         if message:
-            value['message'] = message
+            value["message"] = message
         if percentage:
-            value['percentage'] = percentage
+            value["percentage"] = percentage
 
         self._endpoint.notify(
             self.M_PROGRESS,
             params={
-                'token': token,
-                'value': value,
-            }
+                "token": token,
+                "value": value,
+            },
         )
         return token
 
-    def _progress_report(self, token: str, message: Optional[str] = None, percentage: Optional[int] = None) -> None:
+    def _progress_report(
+        self,
+        token: str,
+        message: Optional[str] = None,
+        percentage: Optional[int] = None,
+    ) -> None:
         value = {
-            'kind': 'report',
+            "kind": "report",
         }
         if message:
-            value['message'] = message
+            value["message"] = message
         if percentage:
-            value['percentage'] = percentage
+            value["percentage"] = percentage
 
         self._endpoint.notify(
             self.M_PROGRESS,
             params={
-                'token': token,
-                'value': value,
-            }
+                "token": token,
+                "value": value,
+            },
         )
 
     def _progress_end(self, token: str, message: Optional[str] = None) -> None:
         value = {
-            'kind': 'end',
+            "kind": "end",
         }
         if message:
-            value['message'] = message
+            value["message"] = message
 
         self._endpoint.notify(
             self.M_PROGRESS,
             params={
-                'token': token,
-                'value': value,
-            }
+                "token": token,
+                "value": value,
+            },
         )
 
     def show_message(self, message, msg_type=lsp.MessageType.Info):
