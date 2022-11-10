@@ -30,7 +30,7 @@ def pylsp_settings():
 
 @hookimpl
 def pylsp_lint(workspace, document):
-    with workspace.report_progress("flake8"):
+    with workspace.report_progress("lint: flake8"):
         config = workspace._config
         settings = config.plugin_settings('flake8', document_path=document.path)
         log.debug("Got flake8 settings: %s", settings)
