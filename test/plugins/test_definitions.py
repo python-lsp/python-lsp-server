@@ -91,4 +91,6 @@ def foo():
     module_path = str(p)
     module_uri = uris.from_fs_path(module_path)
 
-    assert [{'uri': module_uri, 'range': def_range}] == pylsp_definitions(config, workspace_other_root_path, doc, cursor_pos)
+    assert [{"uri": module_uri, "range": def_range}] == pylsp_definitions(
+        config, workspace_other_root_path, doc, cursor_pos
+    )

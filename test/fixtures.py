@@ -64,12 +64,12 @@ def pylsp_w_workspace_folders(tmpdir):
 
 
 @pytest.fixture()
-def endpoint(dispatcher, consumer):
+def endpoint():
     return Endpoint({}, MagicMock(), id_generator=lambda: "id")
 
 
 @pytest.fixture
-def workspace(tmpdir, endpoint):
+def workspace(tmpdir, endpoint):  # pylint: disable=redefined-outer-name
     """Return a workspace."""
     ws = Workspace(uris.from_fs_path(str(tmpdir)), endpoint)
     ws._config = Config(ws.root_uri, {}, 0, {})
@@ -77,10 +77,8 @@ def workspace(tmpdir, endpoint):
     ws.close()
 
 
-
-
 @pytest.fixture
-def workspace_other_root_path(tmpdir, endpoint):
+def workspace_other_root_path(tmpdir, endpoint):  # pylint: disable=redefined-outer-name
     """Return a workspace with a root_path other than tmpdir."""
     ws_path = str(tmpdir.mkdir('test123').mkdir('test456'))
     ws = Workspace(uris.from_fs_path(ws_path), endpoint)
