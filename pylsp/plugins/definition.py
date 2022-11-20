@@ -9,7 +9,7 @@ log = logging.getLogger(__name__)
 
 @hookimpl
 def pylsp_definitions(config, workspace, document, position):
-    with workspace.report_progress("goto definitions"):
+    with workspace.report_progress("go to definitions"):
         settings = config.plugin_settings('jedi_definition')
         code_position = _utils.position_to_jedi_linecolumn(document, position)
         definitions = document.jedi_script(use_document_path=True).goto(
