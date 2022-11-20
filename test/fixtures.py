@@ -64,18 +64,8 @@ def pylsp_w_workspace_folders(tmpdir):
 
 
 @pytest.fixture()
-def dispatcher():
-    return {}
-
-
-@pytest.fixture()
-def consumer():
-    return MagicMock()
-
-
-@pytest.fixture()
 def endpoint(dispatcher, consumer):
-    return Endpoint(dispatcher, consumer, id_generator=lambda: "id")
+    return Endpoint({}, MagicMock(), id_generator=lambda: "id")
 
 
 @pytest.fixture
