@@ -64,8 +64,13 @@ def pylsp_w_workspace_folders(tmpdir):
 
 
 @pytest.fixture()
-def endpoint():
-    return Endpoint({}, MagicMock(), id_generator=lambda: "id")
+def consumer():
+    return MagicMock()
+
+
+@pytest.fixture()
+def endpoint(consumer):  # pylint: disable=redefined-outer-name
+    return Endpoint({}, consumer, id_generator=lambda: "id")
 
 
 @pytest.fixture
