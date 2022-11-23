@@ -29,7 +29,6 @@ class PylspJobSet(BaseJobSet):
 
     def finished_job(self) -> None:
         self.done += 1
-        log.debug(f"{self.done}/{self.count} {self.get_percent_done()}")
         if self.get_percent_done() is not None and int(self.get_percent_done()) >= 100:
             if self._report_iter is None:
                 return
@@ -55,7 +54,10 @@ class PylspJobSet(BaseJobSet):
         self._report()
 
     def _report(self):
-        self._reporter(self.job_name, int(self.get_percent_done()))
+        percent = int(self.get_percent_done())
+        message = f"{self.job_name} {self.done}/{self.count}"
+        log.debug(f"Reporting {message=} {percent=}")
+        self._reporter(message, percent)
 
 
 class PylspTaskHandle(BaseTaskHandle):
@@ -72,7 +74,7 @@ class PylspTaskHandle(BaseTaskHandle):
         self.observers = []
 
     def create_jobset(self, name="JobSet", count: Optional[int] = None):
-        report_iter = self.workspace.report_progress(name, name, 0)
+        report_iter = self.workspace.report_progress(name, None, None)
         result = PylspJobSet(count, report_iter)
         self.job_sets.append(result)
         self._inform_observers()

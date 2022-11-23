@@ -1,7 +1,7 @@
 # Copyright 2022- Python Language Server Contributors.
 
 import logging
-from typing import Any, Dict, Generator, List, Set
+from typing import Any, Dict, Generator, List, Set, Optional
 
 import parso
 from jedi import Script
@@ -196,26 +196,32 @@ def _sort_import(score: int) -> str:
     return "[z" + str(score).rjust(_score_pow, "0")
 
 
-@hookimpl
-def pylsp_initialize(config: Config, workspace: Workspace):
-    """Initialize AutoImport. Generates the cache for local and global items."""
+def _reload_cache(config: Config, workspace: Workspace, files: Optional[List[Document]] = None):
     memory: bool = config.plugin_settings("rope_autoimport").get(
         "memory", False)
     rope_config = config.settings().get("rope", {})
     autoimport = workspace._rope_autoimport(rope_config, memory)
     task_handle = PylspTaskHandle(workspace)
+    resources: Optional[List[Resource]] = None if files is None else [
+        document._rope_resource(rope_config) for document in files]
+    autoimport.generate_cache(task_handle=task_handle, resources=resources)
     autoimport.generate_modules_cache(task_handle=task_handle)
-    autoimport.generate_cache(task_handle=task_handle)
+
+
+@hookimpl
+def pylsp_initialize(config: Config, workspace: Workspace):
+    """Initialize AutoImport. Generates the cache for local and global items."""
+    _reload_cache(config, workspace)
+
+
+@hookimpl
+def pylsp_document_did_open(config: Config, workspace: Workspace):
+    """Initialize AutoImport. Generates the cache for local and global items."""
+    _reload_cache(config, workspace)
 
 
 @hookimpl
 def pylsp_document_did_save(config: Config, workspace: Workspace,
                             document: Document):
     """Update the names associated with this document."""
-    rope_config = config.settings().get("rope", {})
-    rope_doucment: Resource = document._rope_resource(rope_config)
-    task_handle = PylspTaskHandle(workspace)
-    autoimport = workspace._rope_autoimport(rope_config)
-    autoimport.generate_cache(resources=[rope_doucment], task_handle=task_handle)
-    # Might as well using saving the document as an indicator to regenerate the module cache
-    autoimport.generate_modules_cache(task_handle=task_handle)
+    _reload_cache(config, workspace, [document])
