@@ -1,27 +1,27 @@
 from __future__ import annotations
 
 import logging
-from typing import List, Optional, Sequence
+from typing import List, Optional, Sequence, Callable, ContextManager
 from rope.base.taskhandle import BaseJobSet, BaseTaskHandle
 
 from pylsp.workspace import Workspace
 
 
 log = logging.getLogger(__name__)
+Report = Callable[[str, int], None]
 
 
 class PylspJobSet(BaseJobSet):
-    name: str
-    count: int
+    count: int = 0
     done: int = 0
-    job_name: str = ""
-    handle: PylspTaskHandle
-    token: str
+    _reporter: Report
+    _report_iter: ContextManager
 
-    def __init__(self, handle: PylspTaskHandle, token: str, count: Optional[int]):
-        self.token = token
-        self.handle = handle
-        self.count = 0 if count is None else count
+    def __init__(self, count: Optional[int], report_iter: ContextManager):
+        if count is not None:
+            self.count = count
+        self._reporter = report_iter.__enter__()
+        self._report_iter = report_iter
 
     def started_job(self, name: Optional[str]) -> None:
         if name:
@@ -29,10 +29,14 @@ class PylspJobSet(BaseJobSet):
 
     def finished_job(self) -> None:
         self.done += 1
-        log.warn(f"{self.done}/{self.count}")
-        if self.get_percent_done() is not None and self.get_percent_done() >= 100:
-            self._workspace.progress_end(self.token, self.name)
-        self._workspace.progress_report(self.token, None, self.get_percent_done())
+        log.debug(f"{self.done}/{self.count} {self.get_percent_done()}")
+        if self.get_percent_done() is not None and int(self.get_percent_done()) >= 100:
+            if self._report_iter is None:
+                return
+            self._report_iter.__exit__(None, None, None)
+            self._report_iter = None
+        else:
+            self._report()
 
     def check_status(self) -> None:
         pass
@@ -48,11 +52,10 @@ class PylspJobSet(BaseJobSet):
         This is used if the number is not known ahead of time.
         """
         self.count += 1
-        self._workspace.progress_report(self.token, self.name, self.get_percent_done())
+        self._report()
 
-    @property
-    def _workspace(self) -> Workspace:
-        return self.handle.workspace
+    def _report(self):
+        self._reporter(self.job_name, int(self.get_percent_done()))
 
 
 class PylspTaskHandle(BaseTaskHandle):
@@ -61,6 +64,7 @@ class PylspTaskHandle(BaseTaskHandle):
     job_sets: List[PylspJobSet]
     stopped: bool
     workspace: Workspace
+    _report: Callable[[str, str], None]
 
     def __init__(self, workspace: Workspace):
         self.workspace = workspace
@@ -68,8 +72,8 @@ class PylspTaskHandle(BaseTaskHandle):
         self.observers = []
 
     def create_jobset(self, name="JobSet", count: Optional[int] = None):
-        token = self.workspace.progress_begin(name, name, 0)
-        result = PylspJobSet(self, token, count)
+        report_iter = self.workspace.report_progress(name, name, 0)
+        result = PylspJobSet(count, report_iter)
         self.job_sets.append(result)
         self._inform_observers()
         return result
