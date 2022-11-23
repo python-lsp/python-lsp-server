@@ -56,7 +56,7 @@ class PylspJobSet(BaseJobSet):
     def _report(self):
         percent = int(self.get_percent_done())
         message = f"{self.job_name} {self.done}/{self.count}"
-        log.debug(f"Reporting {message=} {percent=}")
+        log.debug(f"Reporting {message} {percent}%")
         self._reporter(message, percent)
 
 
