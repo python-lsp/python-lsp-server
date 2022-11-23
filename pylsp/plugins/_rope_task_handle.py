@@ -16,6 +16,7 @@ class PylspJobSet(BaseJobSet):
     done: int = 0
     _reporter: Report
     _report_iter: ContextManager
+    job_name: str = ""
 
     def __init__(self, count: Optional[int], report_iter: ContextManager):
         if count is not None:
