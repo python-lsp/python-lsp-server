@@ -35,6 +35,8 @@ def _should_insert(expr: tree.BaseNode, word_node: tree.Leaf) -> bool:
     Works for both correct and incorrect code. This is because the
     user is often working on the code as they write it.
     """
+    if not word_node:
+        return False
     if len(expr.children) == 0:
         return True
     first_child = expr.children[0]
