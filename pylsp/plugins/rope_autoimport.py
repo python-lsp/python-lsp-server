@@ -28,13 +28,15 @@ def pylsp_settings() -> Dict[str, Dict[str, Dict[str, Any]]]:
     return {"plugins": {"rope_autoimport": {"enabled": False, "memory": False}}}
 
 
-def _should_insert(expr: tree.BaseNode, word_node: tree.Leaf) -> bool:
+def _should_insert(expr: tree.BaseNode, word_node: tree.Leaf) -> bool:  # pylint: disable=too-many-return-statements
     """
     Check if we should insert the word_node on the given expr.
 
     Works for both correct and incorrect code. This is because the
     user is often working on the code as they write it.
     """
+    if not word_node:
+        return False
     if len(expr.children) == 0:
         return True
     first_child = expr.children[0]
