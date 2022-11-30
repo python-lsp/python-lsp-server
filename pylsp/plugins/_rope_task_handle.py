@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import logging
-from typing import List, Optional, Sequence, Callable, ContextManager
+from typing import Callable, ContextManager, List, Optional, Sequence
+
 from rope.base.taskhandle import BaseJobSet, BaseTaskHandle
 
 from pylsp.workspace import Workspace
-
 
 log = logging.getLogger(__name__)
 Report = Callable[[str, int], None]
@@ -49,6 +49,7 @@ class PylspJobSet(BaseJobSet):
     def increment(self) -> None:
         """
         Increment the number of tasks to complete.
+
         This is used if the number is not known ahead of time.
         """
         self.count += 1
