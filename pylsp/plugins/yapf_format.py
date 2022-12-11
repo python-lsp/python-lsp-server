@@ -17,12 +17,14 @@ log = logging.getLogger(__name__)
 
 @hookimpl
 def pylsp_format_document(workspace, document, options):
+    log.info("Formatting document %s with yapf", document)
     with workspace.report_progress("format: yapf"):
         return _format(document, options=options)
 
 
 @hookimpl
 def pylsp_format_range(workspace, document, range, options):  # pylint: disable=redefined-builtin
+    log.info("Formatting document %s in range %s with yapf", document, range)
     with workspace.report_progress("format_range: yapf"):
         # First we 'round' the range up/down to full lines only
         range['start']['character'] = 0
@@ -41,6 +43,11 @@ def pylsp_format_range(workspace, document, range, options):  # pylint: disable=
 
 
 def get_style_config(document_path, options=None):
+    # Exclude file if it follows the patterns for that
+    exclude_patterns_from_ignore_file = file_resources.GetExcludePatternsForDir(os.getcwd())
+    if file_resources.IsIgnored(document_path, exclude_patterns_from_ignore_file):
+        return []
+
     # Get the default styles as a string
     # for a preset configuration, i.e. "pep8"
     style_config = file_resources.GetDefaultStyleForDir(
