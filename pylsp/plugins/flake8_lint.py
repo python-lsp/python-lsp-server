@@ -92,6 +92,9 @@ def run_flake8(flake8_executable, args, document):
     args = [(i if not i.startswith('--ignore=') else FIX_IGNORES_RE.sub('', i))
             for i in args if i is not None]
 
+    if document.path and document.path.startswith(document._workspace.root_path):
+        args.extend(["--stdin-display-name", os.path.relpath(document.path, document._workspace.root_path)])
+
     # if executable looks like a path resolve it
     if not os.path.isfile(flake8_executable) and os.sep in flake8_executable:
         flake8_executable = os.path.abspath(
@@ -102,12 +105,14 @@ def run_flake8(flake8_executable, args, document):
     try:
         cmd = [flake8_executable]
         cmd.extend(args)
-        p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE, cwd=document._workspace.root_path)
     except IOError:
         log.debug("Can't execute %s. Trying with '%s -m flake8'", flake8_executable, sys.executable)
         cmd = [sys.executable, '-m', 'flake8']
         cmd.extend(args)
-        p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)  # pylint: disable=consider-using-with
+        p = Popen(  # pylint: disable=consider-using-with
+            cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE, cwd=document._workspace.root_path
+        )
     (stdout, stderr) = p.communicate(document.source.encode())
     if stderr:
         log.error("Error while running flake8 '%s'", stderr.decode())
