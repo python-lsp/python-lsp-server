@@ -26,7 +26,7 @@ jobs:
       - uses: actions/cache@v1
         with:
           path: ~\AppData\Local\pip\Cache
-          key: ${{ runner.os }}-${{ matrix.PYTHON_VERSION }}-pip-${{ hashFiles('setup.py') }}
+          key: ${{ runner.os }}-${{ matrix.PYTHON_VERSION }}-pip-${{ hashFiles('pyproject.toml') }}
           restore-keys: ${{ runner.os }}-${{ matrix.PYTHON_VERSION }}-pip-
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
