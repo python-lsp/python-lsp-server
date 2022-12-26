@@ -9,6 +9,10 @@ on:
     branches:
       - '*'
 
+concurrency:
+  group: test-mac-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     name: Mac Py${{ matrix.PYTHON_VERSION }}
@@ -41,7 +45,7 @@ jobs:
       - run: pip install -e .[all,test]
       - name: Show test environment
         run: pip list
-      - run: pytest -v test/
+      - run: pytest --color=yes -v test/
       # Enable this if SSH debugging is required
       # - name: Setup tmate session
       #   uses: mxschmitt/action-tmate@v3

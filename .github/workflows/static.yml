@@ -9,6 +9,10 @@ on:
     branches:
       - '*'
 
+concurrency:
+  group: static-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     name: Static code analysis
