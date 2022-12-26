@@ -122,8 +122,7 @@ def test_line_endings(workspace, newline):
     other than LF.
     """
     # Create simple source that should give false positives
-    source = "try:\n    1/0\nexcept Exception:\n    pass\n"
-    source = source.replace('\n', newline)
+    source = f"try:{newline}    1/0{newline}except Exception:{newline}    pass{newline}"
 
     # Create document
     doc = Document(DOC_URI, workspace, source)
