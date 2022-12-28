@@ -10,7 +10,6 @@ import re
 from subprocess import Popen, PIPE
 import os
 
-from pylint.epylint import py_run
 from pylsp import hookimpl, lsp
 
 try:
@@ -94,11 +93,20 @@ class PylintLinter:
 
         pylint_call = '{} -f json {}'.format(path, flags)
         log.debug("Calling pylint with '%s'", pylint_call)
-        json_out, err = py_run(pylint_call, return_std=True)
 
-        # Get strings
-        json_out = json_out.getvalue()
-        err = err.getvalue()
+        with Popen(
+                [
+                    'python',
+                    '-c',
+                    'import sys; from pylint.lint import Run; Run(sys.argv[1:])',
+                    '-f',
+                    'json',
+                    path
+                ] + (str(flags).split(' ') if flags else []),
+                stdout=PIPE, stderr=PIPE, cwd=document._workspace.root_path, universal_newlines=True) as process:
+            process.wait()
+            json_out = process.stdout.read()
+            err = process.stderr.read()
 
         if err != '':
             log.error("Error calling pylint: '%s'", err)
