@@ -84,26 +84,18 @@ class PylintLinter:
             # save.
             return cls.last_diags[document.path]
 
-        # py_run will call shlex.split on its arguments, and shlex.split does
-        # not handle Windows paths (it will try to perform escaping). Turn
-        # backslashes into forward slashes first to avoid this issue.
-        path = document.path
-        if sys.platform.startswith('win'):
-            path = path.replace('\\', '/')
+        cmd = [
+            'python',
+            '-c',
+            'import sys; from pylint.lint import Run; Run(sys.argv[1:])',
+            '-f',
+            'json',
+            document.path
+        ] + (str(flags).split(' ') if flags else [])
+        log.debug("Calling pylint with '%s'", ' '.join(cmd))
 
-        pylint_call = '{} -f json {}'.format(path, flags)
-        log.debug("Calling pylint with '%s'", pylint_call)
-
-        with Popen(
-                [
-                    'python',
-                    '-c',
-                    'import sys; from pylint.lint import Run; Run(sys.argv[1:])',
-                    '-f',
-                    'json',
-                    path
-                ] + (str(flags).split(' ') if flags else []),
-                stdout=PIPE, stderr=PIPE, cwd=document._workspace.root_path, universal_newlines=True) as process:
+        with Popen(cmd, stdout=PIPE, stderr=PIPE,
+                   cwd=document._workspace.root_path, universal_newlines=True) as process:
             process.wait()
             json_out = process.stdout.read()
             err = process.stderr.read()
