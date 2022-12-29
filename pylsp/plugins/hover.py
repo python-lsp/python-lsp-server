@@ -36,7 +36,7 @@ def pylsp_hover(config, document, position):
             x.to_string() for x in definition.get_signatures()
             if (x.name == word and x.type not in ["module"])
         ),
-         ''
+        ''
     )
 
     return {
