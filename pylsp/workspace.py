@@ -37,6 +37,7 @@ class Workspace:
 
     M_PUBLISH_DIAGNOSTICS = 'textDocument/publishDiagnostics'
     M_PROGRESS = '$/progress'
+    M_INITIALIZE_PROGRESS = 'window/workDoneProgress/create'
     M_APPLY_EDIT = 'workspace/applyEdit'
     M_SHOW_MESSAGE = 'window/showMessage'
 
@@ -152,6 +153,9 @@ class Workspace:
         percentage: Optional[int] = None,
     ) -> str:
         token = str(uuid.uuid4())
+
+        self._endpoint.request(self.M_INITIALIZE_PROGRESS, {'token': token}).result(_utils.CALL_TIMEOUT)
+
         value = {
             "kind": "begin",
             "title": title,

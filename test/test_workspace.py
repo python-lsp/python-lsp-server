@@ -299,13 +299,17 @@ def test_progress_simple(workspace, consumer):
     with workspace.report_progress("some_title"):
         pass
 
+    init_call, *progress_calls = consumer.call_args_list
+
+    assert init_call[0][0]['method'] == 'window/workDoneProgress/create'
+
     # same method for all calls
-    assert all(call[0][0]["method"] == "$/progress" for call in consumer.call_args_list)
+    assert all(call[0][0]["method"] == "$/progress" for call in progress_calls), consumer.call_args_list
 
     # same token used in all calls
-    assert len({call[0][0]["params"]["token"] for call in consumer.call_args_list}) == 1
+    assert len({call[0][0]["params"]["token"] for call in progress_calls} | {init_call[0][0]['params']['token']}) == 1
 
-    assert [call[0][0]["params"]["value"] for call in consumer.call_args_list] == [
+    assert [call[0][0]["params"]["value"] for call in progress_calls] == [
         {"kind": "begin", "title": "some_title"},
         {"kind": "end"},
     ]
@@ -319,13 +323,17 @@ def test_progress_with_percent(workspace, consumer):
         progress_message("fifty", 50)
         progress_message("ninety", 90)
 
-    # same method for all calls
-    assert all(call[0][0]["method"] == "$/progress" for call in consumer.call_args_list)
+    init_call, *progress_calls = consumer.call_args_list
+
+    assert init_call[0][0]['method'] == 'window/workDoneProgress/create'
+
+    # same method for all progress calls
+    assert all(call[0][0]["method"] == "$/progress" for call in progress_calls)
 
     # same token used in all calls
-    assert len({call[0][0]["params"]["token"] for call in consumer.call_args_list}) == 1
+    assert len({call[0][0]["params"]["token"] for call in progress_calls} | {init_call[0][0]['params']['token']}) == 1
 
-    assert [call[0][0]["params"]["value"] for call in consumer.call_args_list] == [
+    assert [call[0][0]["params"]["value"] for call in progress_calls] == [
         {
             "kind": "begin",
             "message": "initial message",
@@ -353,13 +361,16 @@ def test_progress_with_exception(workspace, consumer):
         # test.
         pass
 
+    init_call, *progress_calls = consumer.call_args_list
+    assert init_call[0][0]['method'] == 'window/workDoneProgress/create'
+
     # same method for all calls
-    assert all(call[0][0]["method"] == "$/progress" for call in consumer.call_args_list)
+    assert all(call[0][0]["method"] == "$/progress" for call in progress_calls)
 
     # same token used in all calls
-    assert len({call[0][0]["params"]["token"] for call in consumer.call_args_list}) == 1
+    assert len({call[0][0]["params"]["token"] for call in progress_calls} | {init_call[0][0]['params']['token']}) == 1
 
-    assert [call[0][0]["params"]["value"] for call in consumer.call_args_list] == [
+    assert [call[0][0]["params"]["value"] for call in progress_calls] == [
         {"kind": "begin", "title": "some_title"},
         {"kind": "end"},
     ]

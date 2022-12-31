@@ -152,7 +152,7 @@ class PythonLSPServer(MethodDispatcher):
 
     # pylint: disable=too-many-public-methods,redefined-builtin
 
-    def __init__(self, rx, tx, check_parent_process=False, consumer=None):
+    def __init__(self, rx, tx, check_parent_process=False, consumer=None, *, endpoint_cls=None):
         self.workspace = None
         self.config = None
         self.root_uri = None
@@ -172,11 +172,13 @@ class PythonLSPServer(MethodDispatcher):
         else:
             self._jsonrpc_stream_writer = None
 
+        endpoint_cls = endpoint_cls or Endpoint
+
         # if consumer is None, it is assumed that the default streams-based approach is being used
         if consumer is None:
-            self._endpoint = Endpoint(self, self._jsonrpc_stream_writer.write, max_workers=MAX_WORKERS)
+            self._endpoint = endpoint_cls(self, self._jsonrpc_stream_writer.write, max_workers=MAX_WORKERS)
         else:
-            self._endpoint = Endpoint(self, consumer, max_workers=MAX_WORKERS)
+            self._endpoint = endpoint_cls(self, consumer, max_workers=MAX_WORKERS)
 
         self._dispatchers = []
         self._shutdown = False
