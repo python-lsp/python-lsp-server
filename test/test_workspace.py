@@ -294,6 +294,7 @@ def test_settings_of_added_workspace(pylsp, tmpdir):
     workspace1_jedi_settings = workspace1_object._config.plugin_settings('jedi')
     assert workspace1_jedi_settings == server_settings['pylsp']['plugins']['jedi']
 
+
 def test_no_progress_without_capability(workspace, consumer):
     workspace._config.capabilities['window'] = {"workDoneProgress": False}
 

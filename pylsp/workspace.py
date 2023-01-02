@@ -137,7 +137,9 @@ class Workspace:
         percentage: Optional[int] = None,
     ) -> Generator[Callable[[str, Optional[int]], None], None, None]:
         if self._config:
-            client_supports_progress_reporting = self._config.capabilities.get("window", {}).get("workDoneProgress", False)
+            client_supports_progress_reporting = (
+                self._config.capabilities.get("window", {}).get("workDoneProgress", False)
+            )
         else:
             client_supports_progress_reporting = False
 
@@ -153,6 +155,7 @@ class Workspace:
                 self._progress_end(token)
         else:
             def dummy_progress_message(message: str, percentage: Optional[int] = None) -> None:
+                # pylint: disable=unused-argument
                 pass
 
             yield dummy_progress_message
