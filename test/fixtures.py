@@ -4,6 +4,7 @@
 import os
 from io import StringIO
 from unittest.mock import MagicMock
+
 import pytest
 from pylsp_jsonrpc.dispatchers import MethodDispatcher
 from pylsp_jsonrpc.endpoint import Endpoint
