@@ -12,8 +12,8 @@ from pylsp_jsonrpc.exceptions import JsonRpcMethodNotFound
 import pytest
 
 from pylsp.python_lsp import start_io_lang_server, PythonLSPServer
-from pylsp._utils import CALL_TIMEOUT
 
+CALL_TIMEOUT = 10
 RUNNING_IN_CI = bool(os.environ.get('CI'))
 
 

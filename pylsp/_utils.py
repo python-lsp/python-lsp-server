@@ -14,7 +14,6 @@ import docstring_to_markdown
 import jedi
 
 JEDI_VERSION = jedi.__version__
-CALL_TIMEOUT = 10
 
 # Eol chars accepted by the LSP protocol
 # the ordering affects performance
