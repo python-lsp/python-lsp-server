@@ -161,6 +161,13 @@ To run the test suite:
 pip install ".[test]" && pytest
 ```
 
+To run the linters: 
+```sh 
+pip install ".[lint]" && pre-commit run --all
+```
+You can also locally run `pre-commit install` in your repo to run 
+linters on changed files when committing.
+
 After adding configuration options to `schema.json`, refresh the `CONFIGURATION.md` file with
 
 ```
