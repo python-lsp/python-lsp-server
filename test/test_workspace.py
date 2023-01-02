@@ -294,8 +294,18 @@ def test_settings_of_added_workspace(pylsp, tmpdir):
     workspace1_jedi_settings = workspace1_object._config.plugin_settings('jedi')
     assert workspace1_jedi_settings == server_settings['pylsp']['plugins']['jedi']
 
+def test_no_progress_without_capability(workspace, consumer):
+    workspace._config.capabilities['window'] = {"workDoneProgress": False}
+
+    with workspace.report_progress("some_title"):
+        pass
+
+    assert len(consumer.call_args_list) == 0
+
 
 def test_progress_simple(workspace, consumer):
+    workspace._config.capabilities['window'] = {"workDoneProgress": True}
+
     with workspace.report_progress("some_title"):
         pass
 
@@ -316,6 +326,8 @@ def test_progress_simple(workspace, consumer):
 
 
 def test_progress_with_percent(workspace, consumer):
+    workspace._config.capabilities['window'] = {"workDoneProgress": True}
+
     with workspace.report_progress(
         "some_title", "initial message", percentage=1
     ) as progress_message:
@@ -348,6 +360,8 @@ def test_progress_with_percent(workspace, consumer):
 
 
 def test_progress_with_exception(workspace, consumer):
+    workspace._config.capabilities['window'] = {"workDoneProgress": True}
+
     class DummyError(Exception):
         pass
 

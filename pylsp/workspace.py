@@ -136,15 +136,26 @@ class Workspace:
         message: Optional[str] = None,
         percentage: Optional[int] = None,
     ) -> Generator[Callable[[str, Optional[int]], None], None, None]:
-        token = self._progress_begin(title, message, percentage)
+        if self._config:
+            client_supports_progress_reporting = self._config.capabilities.get("window", {}).get("workDoneProgress", False)
+        else:
+            client_supports_progress_reporting = False
 
-        def progress_message(message: str, percentage: Optional[int] = None) -> None:
-            self._progress_report(token, message, percentage)
+        if client_supports_progress_reporting:
+            token = self._progress_begin(title, message, percentage)
 
-        try:
-            yield progress_message
-        finally:
-            self._progress_end(token)
+            def progress_message(message: str, percentage: Optional[int] = None) -> None:
+                self._progress_report(token, message, percentage)
+
+            try:
+                yield progress_message
+            finally:
+                self._progress_end(token)
+        else:
+            def dummy_progress_message(message: str, percentage: Optional[int] = None) -> None:
+                pass
+
+            yield dummy_progress_message
 
     def _progress_begin(
         self,
@@ -154,7 +165,7 @@ class Workspace:
     ) -> str:
         token = str(uuid.uuid4())
 
-        self._endpoint.request(self.M_INITIALIZE_PROGRESS, {'token': token}).result(_utils.CALL_TIMEOUT)
+        self._endpoint.request(self.M_INITIALIZE_PROGRESS, {'token': token}).result()
 
         value = {
             "kind": "begin",
