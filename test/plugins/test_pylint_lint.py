@@ -91,9 +91,10 @@ def test_lint_free_pylint(config, workspace):
     # Can't use temp_document because it might give us a file that doesn't
     # match pylint's naming requirements. We should be keeping this file clean
     # though, so it works for a test of an empty lint.
-    ws = Workspace(str(Path(__file__).absolute().parents[2]), workspace._endpoint)
+    # pylint: disable-next=protected-access
+    wksp = Workspace(str(Path(__file__).absolute().parents[2]), workspace._endpoint)
     assert not pylint_lint.pylsp_lint(
-        config, ws, Document(uris.from_fs_path(__file__), ws), True)
+        config, wksp, Document(uris.from_fs_path(__file__), wksp), True)
 
 
 def test_lint_caching(workspace):
