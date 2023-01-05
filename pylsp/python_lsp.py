@@ -1,21 +1,21 @@
 # Copyright 2017-2020 Palantir Technologies, Inc.
 # Copyright 2021- Python Language Server Contributors.
 
-from functools import partial
 import logging
 import os
 import socketserver
 import threading
-import ujson as json
+from functools import partial
 
+import ujson as json
 from pylsp_jsonrpc.dispatchers import MethodDispatcher
 from pylsp_jsonrpc.endpoint import Endpoint
 from pylsp_jsonrpc.streams import JsonRpcStreamReader, JsonRpcStreamWriter
 
-from . import lsp, _utils, uris
+from . import _utils, lsp, uris
+from ._version import __version__
 from .config import config
 from .workspace import Workspace
-from ._version import __version__
 
 log = logging.getLogger(__name__)
 
@@ -23,8 +23,8 @@ log = logging.getLogger(__name__)
 LINT_DEBOUNCE_S = 0.5  # 500 ms
 PARENT_PROCESS_WATCH_INTERVAL = 10  # 10 s
 MAX_WORKERS = 64
-PYTHON_FILE_EXTENSIONS = ('.py', '.pyi')
-CONFIG_FILEs = ('pycodestyle.cfg', 'setup.cfg', 'tox.ini', '.flake8')
+PYTHON_FILE_EXTENSIONS = (".py", ".pyi")
+CONFIG_FILEs = ("pycodestyle.cfg", "setup.cfg", "tox.ini", ".flake8")
 
 
 class _StreamHandlerWrapper(socketserver.StreamRequestHandler):
@@ -40,7 +40,7 @@ class _StreamHandlerWrapper(socketserver.StreamRequestHandler):
         try:
             self.delegate.start()
         except OSError as e:
-            if os.name == 'nt':
+            if os.name == "nt":
                 # Catch and pass on ConnectionResetError when parent process
                 # dies
                 # pylint: disable=no-member, undefined-variable
@@ -52,23 +52,24 @@ class _StreamHandlerWrapper(socketserver.StreamRequestHandler):
 
 def start_tcp_lang_server(bind_addr, port, check_parent_process, handler_class):
     if not issubclass(handler_class, PythonLSPServer):
-        raise ValueError('Handler class must be an instance of PythonLSPServer')
+        raise ValueError("Handler class must be an instance of PythonLSPServer")
 
     def shutdown_server(check_parent_process, *args):
         # pylint: disable=unused-argument
         if check_parent_process:
-            log.debug('Shutting down server')
+            log.debug("Shutting down server")
             # Shutdown call must be done on a thread, to prevent deadlocks
             stop_thread = threading.Thread(target=server.shutdown)
             stop_thread.start()
 
     # Construct a custom wrapper class around the user's handler_class
     wrapper_class = type(
-        handler_class.__name__ + 'Handler',
+        handler_class.__name__ + "Handler",
         (_StreamHandlerWrapper,),
-        {'DELEGATE_CLASS': partial(handler_class,
-                                   check_parent_process=check_parent_process),
-         'SHUTDOWN_CALL': partial(shutdown_server, check_parent_process)}
+        {
+            "DELEGATE_CLASS": partial(handler_class, check_parent_process=check_parent_process),
+            "SHUTDOWN_CALL": partial(shutdown_server, check_parent_process),
+        },
     )
 
     server = socketserver.TCPServer((bind_addr, port), wrapper_class, bind_and_activate=False)
@@ -77,24 +78,24 @@ def start_tcp_lang_server(bind_addr, port, check_parent_process, handler_class):
     try:
         server.server_bind()
         server.server_activate()
-        log.info('Serving %s on (%s, %s)', handler_class.__name__, bind_addr, port)
+        log.info("Serving %s on (%s, %s)", handler_class.__name__, bind_addr, port)
         server.serve_forever()
     finally:
-        log.info('Shutting down')
+        log.info("Shutting down")
         server.server_close()
 
 
 def start_io_lang_server(rfile, wfile, check_parent_process, handler_class):
     if not issubclass(handler_class, PythonLSPServer):
-        raise ValueError('Handler class must be an instance of PythonLSPServer')
-    log.info('Starting %s IO language server', handler_class.__name__)
+        raise ValueError("Handler class must be an instance of PythonLSPServer")
+    log.info("Starting %s IO language server", handler_class.__name__)
     server = handler_class(rfile, wfile, check_parent_process)
     server.start()
 
 
 def start_ws_lang_server(port, check_parent_process, handler_class):
     if not issubclass(handler_class, PythonLSPServer):
-        raise ValueError('Handler class must be an instance of PythonLSPServer')
+        raise ValueError("Handler class must be an instance of PythonLSPServer")
 
     # pylint: disable=import-outside-toplevel
 
@@ -102,11 +103,13 @@ def start_ws_lang_server(port, check_parent_process, handler_class):
     try:
         import asyncio
         from concurrent.futures import ThreadPoolExecutor
+
         import websockets
     except ImportError as e:
         raise ImportError("websocket modules missing. Please run pip install 'python-lsp-server[websockets]") from e
 
     with ThreadPoolExecutor(max_workers=10) as tpool:
+
         async def pylsp_ws(websocket):
             log.debug("Creating LSP object")
 
@@ -115,8 +118,9 @@ def start_ws_lang_server(port, check_parent_process, handler_class):
 
             # Not using default stream reader and writer.
             # Instead using a consumer based approach to handle processed requests
-            pylsp_handler = handler_class(rx=None, tx=None, consumer=response_handler,
-                                          check_parent_process=check_parent_process)
+            pylsp_handler = handler_class(
+                rx=None, tx=None, consumer=response_handler, check_parent_process=check_parent_process
+            )
 
             async for message in websocket:
                 try:
@@ -146,7 +150,7 @@ def start_ws_lang_server(port, check_parent_process, handler_class):
 
 
 class PythonLSPServer(MethodDispatcher):
-    """ Implementation of the Microsoft VSCode Language Server Protocol
+    """Implementation of the Microsoft VSCode Language Server Protocol
     https://github.com/Microsoft/language-server-protocol/blob/master/versions/protocol-1-x.md
     """
 
@@ -192,7 +196,7 @@ class PythonLSPServer(MethodDispatcher):
 
     def __getitem__(self, item):
         """Override getitem to fallback through multiple dispatchers."""
-        if self._shutdown and item != 'exit':
+        if self._shutdown and item != "exit":
             # exit is the only allowed method during shutdown
             log.debug("Ignoring non-exit method during shutdown: %s", item)
             raise KeyError
@@ -234,77 +238,67 @@ class PythonLSPServer(MethodDispatcher):
 
     def capabilities(self):
         server_capabilities = {
-            'codeActionProvider': True,
-            'codeLensProvider': {
-                'resolveProvider': False,  # We may need to make this configurable
+            "codeActionProvider": True,
+            "codeLensProvider": {
+                "resolveProvider": False,  # We may need to make this configurable
             },
-            'completionProvider': {
-                'resolveProvider': True,  # We could know everything ahead of time, but this takes time to transfer
-                'triggerCharacters': ['.'],
+            "completionProvider": {
+                "resolveProvider": True,  # We could know everything ahead of time, but this takes time to transfer
+                "triggerCharacters": ["."],
             },
-            'documentFormattingProvider': True,
-            'documentHighlightProvider': True,
-            'documentRangeFormattingProvider': True,
-            'documentSymbolProvider': True,
-            'definitionProvider': True,
-            'executeCommandProvider': {
-                'commands': flatten(self._hook('pylsp_commands'))
-            },
-            'hoverProvider': True,
-            'referencesProvider': True,
-            'renameProvider': True,
-            'foldingRangeProvider': True,
-            'signatureHelpProvider': {
-                'triggerCharacters': ['(', ',', '=']
-            },
-            'textDocumentSync': {
-                'change': lsp.TextDocumentSyncKind.INCREMENTAL,
-                'save': {
-                    'includeText': True,
+            "documentFormattingProvider": True,
+            "documentHighlightProvider": True,
+            "documentRangeFormattingProvider": True,
+            "documentSymbolProvider": True,
+            "definitionProvider": True,
+            "executeCommandProvider": {"commands": flatten(self._hook("pylsp_commands"))},
+            "hoverProvider": True,
+            "referencesProvider": True,
+            "renameProvider": True,
+            "foldingRangeProvider": True,
+            "signatureHelpProvider": {"triggerCharacters": ["(", ",", "="]},
+            "textDocumentSync": {
+                "change": lsp.TextDocumentSyncKind.INCREMENTAL,
+                "save": {
+                    "includeText": True,
                 },
-                'openClose': True,
+                "openClose": True,
             },
-            'workspace': {
-                'workspaceFolders': {
-                    'supported': True,
-                    'changeNotifications': True
-                }
-            },
-            'experimental': merge(
-                self._hook('pylsp_experimental_capabilities'))
+            "workspace": {"workspaceFolders": {"supported": True, "changeNotifications": True}},
+            "experimental": merge(self._hook("pylsp_experimental_capabilities")),
         }
-        log.info('Server capabilities: %s', server_capabilities)
+        log.info("Server capabilities: %s", server_capabilities)
         return server_capabilities
 
-    def m_initialize(self, processId=None, rootUri=None, rootPath=None,
-                     initializationOptions=None, workspaceFolders=None, **_kwargs):
-        log.debug('Language server initialized with %s %s %s %s', processId, rootUri, rootPath, initializationOptions)
+    def m_initialize(
+        self, processId=None, rootUri=None, rootPath=None, initializationOptions=None, workspaceFolders=None, **_kwargs
+    ):
+        log.debug("Language server initialized with %s %s %s %s", processId, rootUri, rootPath, initializationOptions)
         if rootUri is None:
-            rootUri = uris.from_fs_path(rootPath) if rootPath is not None else ''
+            rootUri = uris.from_fs_path(rootPath) if rootPath is not None else ""
 
         self.workspaces.pop(self.root_uri, None)
         self.root_uri = rootUri
-        self.config = config.Config(rootUri, initializationOptions or {},
-                                    processId, _kwargs.get('capabilities', {}))
+        self.config = config.Config(rootUri, initializationOptions or {}, processId, _kwargs.get("capabilities", {}))
         self.workspace = Workspace(rootUri, self._endpoint, self.config)
         self.workspaces[rootUri] = self.workspace
         if workspaceFolders:
             for folder in workspaceFolders:
-                uri = folder['uri']
+                uri = folder["uri"]
                 if uri == rootUri:
                     # Already created
                     continue
                 workspace_config = config.Config(
-                    uri, self.config._init_opts,
-                    self.config._process_id, self.config._capabilities)
+                    uri, self.config._init_opts, self.config._process_id, self.config._capabilities
+                )
                 workspace_config.update(self.config._settings)
-                self.workspaces[uri] = Workspace(
-                    uri, self._endpoint, workspace_config)
+                self.workspaces[uri] = Workspace(uri, self._endpoint, workspace_config)
 
-        self._dispatchers = self._hook('pylsp_dispatchers')
-        self._hook('pylsp_initialize')
+        self._dispatchers = self._hook("pylsp_dispatchers")
+        self._hook("pylsp_initialize")
 
         if self._check_parent_process and processId is not None and self.watching_thread is None:
+
             def watch_parent_process(pid):
                 # exit when the given pid is not alive
                 if not _utils.is_process_alive(pid):
@@ -318,153 +312,142 @@ class PythonLSPServer(MethodDispatcher):
             self.watching_thread.start()
         # Get our capabilities
         return {
-            'capabilities': self.capabilities(),
-            'serverInfo': {
-                'name': 'pylsp',
-                'version': __version__,
+            "capabilities": self.capabilities(),
+            "serverInfo": {
+                "name": "pylsp",
+                "version": __version__,
             },
         }
 
     def m_initialized(self, **_kwargs):
-        self._hook('pylsp_initialized')
+        self._hook("pylsp_initialized")
 
     def code_actions(self, doc_uri, range, context):
-        return flatten(self._hook('pylsp_code_actions', doc_uri, range=range, context=context))
+        return flatten(self._hook("pylsp_code_actions", doc_uri, range=range, context=context))
 
     def code_lens(self, doc_uri):
-        return flatten(self._hook('pylsp_code_lens', doc_uri))
+        return flatten(self._hook("pylsp_code_lens", doc_uri))
 
     def completions(self, doc_uri, position):
-        completions = self._hook('pylsp_completions', doc_uri, position=position)
-        return {
-            'isIncomplete': False,
-            'items': flatten(completions)
-        }
+        completions = self._hook("pylsp_completions", doc_uri, position=position)
+        return {"isIncomplete": False, "items": flatten(completions)}
 
     def completion_item_resolve(self, completion_item):
-        doc_uri = completion_item.get('data', {}).get('doc_uri', None)
-        return self._hook('pylsp_completion_item_resolve', doc_uri, completion_item=completion_item)
+        doc_uri = completion_item.get("data", {}).get("doc_uri", None)
+        return self._hook("pylsp_completion_item_resolve", doc_uri, completion_item=completion_item)
 
     def definitions(self, doc_uri, position):
-        return flatten(self._hook('pylsp_definitions', doc_uri, position=position))
+        return flatten(self._hook("pylsp_definitions", doc_uri, position=position))
 
     def document_symbols(self, doc_uri):
-        return flatten(self._hook('pylsp_document_symbols', doc_uri))
+        return flatten(self._hook("pylsp_document_symbols", doc_uri))
 
     def document_did_save(self, doc_uri):
         return self._hook("pylsp_document_did_save", doc_uri)
 
     def execute_command(self, command, arguments):
-        return self._hook('pylsp_execute_command', command=command, arguments=arguments)
+        return self._hook("pylsp_execute_command", command=command, arguments=arguments)
 
     def format_document(self, doc_uri, options):
-        return self._hook('pylsp_format_document', doc_uri, options=options)
+        return self._hook("pylsp_format_document", doc_uri, options=options)
 
     def format_range(self, doc_uri, range, options):
-        return self._hook('pylsp_format_range', doc_uri, range=range, options=options)
+        return self._hook("pylsp_format_range", doc_uri, range=range, options=options)
 
     def highlight(self, doc_uri, position):
-        return flatten(self._hook('pylsp_document_highlight', doc_uri, position=position)) or None
+        return flatten(self._hook("pylsp_document_highlight", doc_uri, position=position)) or None
 
     def hover(self, doc_uri, position):
-        return self._hook('pylsp_hover', doc_uri, position=position) or {'contents': ''}
+        return self._hook("pylsp_hover", doc_uri, position=position) or {"contents": ""}
 
-    @_utils.debounce(LINT_DEBOUNCE_S, keyed_by='doc_uri')
+    @_utils.debounce(LINT_DEBOUNCE_S, keyed_by="doc_uri")
     def lint(self, doc_uri, is_saved):
         # Since we're debounced, the document may no longer be open
         workspace = self._match_uri_to_workspace(doc_uri)
         if doc_uri in workspace.documents:
-            workspace.publish_diagnostics(
-                doc_uri,
-                flatten(self._hook('pylsp_lint', doc_uri, is_saved=is_saved))
-            )
+            workspace.publish_diagnostics(doc_uri, flatten(self._hook("pylsp_lint", doc_uri, is_saved=is_saved)))
 
     def references(self, doc_uri, position, exclude_declaration):
-        return flatten(self._hook(
-            'pylsp_references', doc_uri, position=position,
-            exclude_declaration=exclude_declaration
-        ))
+        return flatten(
+            self._hook("pylsp_references", doc_uri, position=position, exclude_declaration=exclude_declaration)
+        )
 
     def rename(self, doc_uri, position, new_name):
-        return self._hook('pylsp_rename', doc_uri, position=position, new_name=new_name)
+        return self._hook("pylsp_rename", doc_uri, position=position, new_name=new_name)
 
     def signature_help(self, doc_uri, position):
-        return self._hook('pylsp_signature_help', doc_uri, position=position)
+        return self._hook("pylsp_signature_help", doc_uri, position=position)
 
     def folding(self, doc_uri):
-        return flatten(self._hook('pylsp_folding_range', doc_uri))
+        return flatten(self._hook("pylsp_folding_range", doc_uri))
 
     def m_completion_item__resolve(self, **completionItem):
         return self.completion_item_resolve(completionItem)
 
     def m_text_document__did_close(self, textDocument=None, **_kwargs):
-        workspace = self._match_uri_to_workspace(textDocument['uri'])
-        workspace.publish_diagnostics(textDocument['uri'], [])
-        workspace.rm_document(textDocument['uri'])
+        workspace = self._match_uri_to_workspace(textDocument["uri"])
+        workspace.publish_diagnostics(textDocument["uri"], [])
+        workspace.rm_document(textDocument["uri"])
 
     def m_text_document__did_open(self, textDocument=None, **_kwargs):
-        workspace = self._match_uri_to_workspace(textDocument['uri'])
-        workspace.put_document(textDocument['uri'], textDocument['text'], version=textDocument.get('version'))
-        self._hook('pylsp_document_did_open', textDocument['uri'])
-        self.lint(textDocument['uri'], is_saved=True)
+        workspace = self._match_uri_to_workspace(textDocument["uri"])
+        workspace.put_document(textDocument["uri"], textDocument["text"], version=textDocument.get("version"))
+        self._hook("pylsp_document_did_open", textDocument["uri"])
+        self.lint(textDocument["uri"], is_saved=True)
 
     def m_text_document__did_change(self, contentChanges=None, textDocument=None, **_kwargs):
-        workspace = self._match_uri_to_workspace(textDocument['uri'])
+        workspace = self._match_uri_to_workspace(textDocument["uri"])
         for change in contentChanges:
-            workspace.update_document(
-                textDocument['uri'],
-                change,
-                version=textDocument.get('version')
-            )
-        self.lint(textDocument['uri'], is_saved=False)
+            workspace.update_document(textDocument["uri"], change, version=textDocument.get("version"))
+        self.lint(textDocument["uri"], is_saved=False)
 
     def m_text_document__did_save(self, textDocument=None, **_kwargs):
-        self.lint(textDocument['uri'], is_saved=True)
-        self.document_did_save(textDocument['uri'])
+        self.lint(textDocument["uri"], is_saved=True)
+        self.document_did_save(textDocument["uri"])
 
     def m_text_document__code_action(self, textDocument=None, range=None, context=None, **_kwargs):
-        return self.code_actions(textDocument['uri'], range, context)
+        return self.code_actions(textDocument["uri"], range, context)
 
     def m_text_document__code_lens(self, textDocument=None, **_kwargs):
-        return self.code_lens(textDocument['uri'])
+        return self.code_lens(textDocument["uri"])
 
     def m_text_document__completion(self, textDocument=None, position=None, **_kwargs):
-        return self.completions(textDocument['uri'], position)
+        return self.completions(textDocument["uri"], position)
 
     def m_text_document__definition(self, textDocument=None, position=None, **_kwargs):
-        return self.definitions(textDocument['uri'], position)
+        return self.definitions(textDocument["uri"], position)
 
     def m_text_document__document_highlight(self, textDocument=None, position=None, **_kwargs):
-        return self.highlight(textDocument['uri'], position)
+        return self.highlight(textDocument["uri"], position)
 
     def m_text_document__hover(self, textDocument=None, position=None, **_kwargs):
-        return self.hover(textDocument['uri'], position)
+        return self.hover(textDocument["uri"], position)
 
     def m_text_document__document_symbol(self, textDocument=None, **_kwargs):
-        return self.document_symbols(textDocument['uri'])
+        return self.document_symbols(textDocument["uri"])
 
     def m_text_document__formatting(self, textDocument=None, options=None, **_kwargs):
-        return self.format_document(textDocument['uri'], options)
+        return self.format_document(textDocument["uri"], options)
 
     def m_text_document__rename(self, textDocument=None, position=None, newName=None, **_kwargs):
-        return self.rename(textDocument['uri'], position, newName)
+        return self.rename(textDocument["uri"], position, newName)
 
     def m_text_document__folding_range(self, textDocument=None, **_kwargs):
-        return self.folding(textDocument['uri'])
+        return self.folding(textDocument["uri"])
 
     def m_text_document__range_formatting(self, textDocument=None, range=None, options=None, **_kwargs):
-        return self.format_range(textDocument['uri'], range, options)
+        return self.format_range(textDocument["uri"], range, options)
 
     def m_text_document__references(self, textDocument=None, position=None, context=None, **_kwargs):
-        exclude_declaration = not context['includeDeclaration']
-        return self.references(textDocument['uri'], position, exclude_declaration)
+        exclude_declaration = not context["includeDeclaration"]
+        return self.references(textDocument["uri"], position, exclude_declaration)
 
     def m_text_document__signature_help(self, textDocument=None, position=None, **_kwargs):
-        return self.signature_help(textDocument['uri'], position)
+        return self.signature_help(textDocument["uri"], position)
 
     def m_workspace__did_change_configuration(self, settings=None):
         if self.config is not None:
-            self.config.update((settings or {}).get('pylsp', {}))
+            self.config.update((settings or {}).get("pylsp", {}))
         for workspace in self.workspaces.values():
             workspace.update_config(settings)
             for doc_uri in workspace.documents:
@@ -473,28 +456,27 @@ class PythonLSPServer(MethodDispatcher):
     def m_workspace__did_change_workspace_folders(self, event=None, **_kwargs):  # pylint: disable=too-many-locals
         if event is None:
             return
-        added = event.get('added', [])
-        removed = event.get('removed', [])
+        added = event.get("added", [])
+        removed = event.get("removed", [])
 
         for removed_info in removed:
-            if 'uri' in removed_info:
-                removed_uri = removed_info['uri']
+            if "uri" in removed_info:
+                removed_uri = removed_info["uri"]
                 self.workspaces.pop(removed_uri, None)
 
         for added_info in added:
-            if 'uri' in added_info:
-                added_uri = added_info['uri']
+            if "uri" in added_info:
+                added_uri = added_info["uri"]
                 workspace_config = config.Config(
-                    added_uri, self.config._init_opts,
-                    self.config._process_id, self.config._capabilities)
+                    added_uri, self.config._init_opts, self.config._process_id, self.config._capabilities
+                )
                 workspace_config.update(self.config._settings)
-                self.workspaces[added_uri] = Workspace(
-                    added_uri, self._endpoint, workspace_config)
+                self.workspaces[added_uri] = Workspace(added_uri, self._endpoint, workspace_config)
 
-        root_workspace_removed = any(removed_info['uri'] == self.root_uri for removed_info in removed)
-        workspace_added = len(added) > 0 and 'uri' in added[0]
+        root_workspace_removed = any(removed_info["uri"] == self.root_uri for removed_info in removed)
+        workspace_added = len(added) > 0 and "uri" in added[0]
         if root_workspace_removed and workspace_added:
-            added_uri = added[0]['uri']
+            added_uri = added[0]["uri"]
             self.root_uri = added_uri
             new_root_workspace = self.workspaces[added_uri]
             self.config = new_root_workspace._config
@@ -503,7 +485,7 @@ class PythonLSPServer(MethodDispatcher):
             # NOTE: Removing the root workspace can only happen when the server
             # is closed, thus the else condition of this if can never happen.
             if self.workspaces:
-                log.debug('Root workspace deleted!')
+                log.debug("Root workspace deleted!")
                 available_workspaces = sorted(self.workspaces)
                 first_workspace = available_workspaces[0]
                 new_root_workspace = self.workspaces[first_workspace]
@@ -522,10 +504,10 @@ class PythonLSPServer(MethodDispatcher):
     def m_workspace__did_change_watched_files(self, changes=None, **_kwargs):
         changed_py_files = set()
         config_changed = False
-        for d in (changes or []):
-            if d['uri'].endswith(PYTHON_FILE_EXTENSIONS):
-                changed_py_files.add(d['uri'])
-            elif d['uri'].endswith(CONFIG_FILEs):
+        for d in changes or []:
+            if d["uri"].endswith(PYTHON_FILE_EXTENSIONS):
+                changed_py_files.add(d["uri"])
+            elif d["uri"].endswith(CONFIG_FILEs):
                 config_changed = True
 
         if config_changed:

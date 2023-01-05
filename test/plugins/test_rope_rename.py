@@ -4,6 +4,7 @@
 import os
 
 import pytest
+
 from pylsp import uris
 from pylsp.plugins.rope_rename import pylsp_rename
 from pylsp.workspace import Document

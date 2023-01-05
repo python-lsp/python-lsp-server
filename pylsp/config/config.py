@@ -10,16 +10,15 @@ import pkg_resources
 import pluggy
 from pluggy._hooks import HookImpl
 
-from pylsp import _utils, hookspecs, uris, PYLSP
+from pylsp import PYLSP, _utils, hookspecs, uris
 
 log = logging.getLogger(__name__)
 
 # Sources of config, first source overrides next source
-DEFAULT_CONFIG_SOURCES = ['pycodestyle']
+DEFAULT_CONFIG_SOURCES = ["pycodestyle"]
 
 
 class PluginManager(pluggy.PluginManager):
-
     def _hookexec(
         self,
         hook_name: str,
@@ -50,12 +49,14 @@ class Config:
         self._config_sources = {}
         try:
             from .flake8_conf import Flake8Config
-            self._config_sources['flake8'] = Flake8Config(self._root_path)
+
+            self._config_sources["flake8"] = Flake8Config(self._root_path)
         except ImportError:
             pass
         try:
             from .pycodestyle_conf import PyCodeStyleConfig
-            self._config_sources['pycodestyle'] = PyCodeStyleConfig(self._root_path)
+
+            self._config_sources["pycodestyle"] = PyCodeStyleConfig(self._root_path)
         except ImportError:
             pass
 
@@ -123,7 +124,7 @@ class Config:
         settings.cache_clear() when the config is updated
         """
         settings = {}
-        sources = self._settings.get('configurationSources', DEFAULT_CONFIG_SOURCES)
+        sources = self._settings.get("configurationSources", DEFAULT_CONFIG_SOURCES)
 
         # Plugin configuration
         settings = _utils.merge_dicts(settings, self._plugin_settings)
@@ -158,7 +159,7 @@ class Config:
         return _utils.find_parents(root_path, path, names)
 
     def plugin_settings(self, plugin, document_path=None):
-        return self.settings(document_path=document_path).get('plugins', {}).get(plugin, {})
+        return self.settings(document_path=document_path).get("plugins", {}).get(plugin, {})
 
     def update(self, settings):
         """Recursively merge the given settings into the current settings."""
@@ -170,7 +171,8 @@ class Config:
     def _update_disabled_plugins(self):
         # All plugins default to enabled
         self._disabled_plugins = [
-            plugin for name, plugin in self.plugin_manager.list_name_plugin()
-            if not self.settings().get('plugins', {}).get(name, {}).get('enabled', True)
+            plugin
+            for name, plugin in self.plugin_manager.list_name_plugin()
+            if not self.settings().get("plugins", {}).get(name, {}).get("enabled", True)
         ]
         log.info("Disabled plugins: %s", self._disabled_plugins)

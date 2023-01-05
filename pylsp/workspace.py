@@ -1,44 +1,46 @@
 # Copyright 2017-2020 Palantir Technologies, Inc.
 # Copyright 2021- Python Language Server Contributors.
 
+import functools
 import io
 import logging
-from contextlib import contextmanager
 import os
 import re
 import uuid
-import functools
-from typing import Optional, Generator, Callable
+from contextlib import contextmanager
 from threading import RLock
+from typing import Callable, Generator, Optional
 
 import jedi
 
-from . import lsp, uris, _utils
+from . import _utils, lsp, uris
 
 log = logging.getLogger(__name__)
 
 DEFAULT_AUTO_IMPORT_MODULES = ["numpy"]
 
 # TODO: this is not the best e.g. we capture numbers
-RE_START_WORD = re.compile('[A-Za-z_0-9]*$')
-RE_END_WORD = re.compile('^[A-Za-z_0-9]*')
+RE_START_WORD = re.compile("[A-Za-z_0-9]*$")
+RE_END_WORD = re.compile("^[A-Za-z_0-9]*")
 
 
 def lock(method):
     """Define an atomic region over a method."""
+
     @functools.wraps(method)
     def wrapper(self, *args, **kwargs):
         with self._lock:
             return method(self, *args, **kwargs)
+
     return wrapper
 
 
 class Workspace:
 
-    M_PUBLISH_DIAGNOSTICS = 'textDocument/publishDiagnostics'
-    M_PROGRESS = '$/progress'
-    M_APPLY_EDIT = 'workspace/applyEdit'
-    M_SHOW_MESSAGE = 'window/showMessage'
+    M_PUBLISH_DIAGNOSTICS = "textDocument/publishDiagnostics"
+    M_PROGRESS = "$/progress"
+    M_APPLY_EDIT = "workspace/applyEdit"
+    M_SHOW_MESSAGE = "window/showMessage"
 
     def __init__(self, root_uri, endpoint, config=None):
         self._config = config
@@ -59,6 +61,7 @@ class Workspace:
     def _rope_autoimport(self, rope_config: Optional, memory: bool = False):
         # pylint: disable=import-outside-toplevel
         from rope.contrib.autoimport.sqlite import AutoImport
+
         if self.__rope_autoimport is None:
             project = self._rope_project_builder(rope_config)
             self.__rope_autoimport = AutoImport(project, memory=memory)
@@ -70,15 +73,14 @@ class Workspace:
 
         # TODO: we could keep track of dirty files and validate only those
         if self.__rope is None or self.__rope_config != rope_config:
-            rope_folder = rope_config.get('ropeFolder')
+            rope_folder = rope_config.get("ropeFolder")
             if rope_folder:
                 self.__rope = Project(self._root_path, ropefolder=rope_folder)
             else:
                 self.__rope = Project(self._root_path)
-            self.__rope.prefs.set('extension_modules',
-                                  rope_config.get('extensionModules', []))
-            self.__rope.prefs.set('ignore_syntax_errors', True)
-            self.__rope.prefs.set('ignore_bad_imports', True)
+            self.__rope.prefs.set("extension_modules", rope_config.get("extensionModules", []))
+            self.__rope.prefs.set("ignore_syntax_errors", True)
+            self.__rope.prefs.set("ignore_bad_imports", True)
         self.__rope.validate()
         return self.__rope
 
@@ -95,7 +97,7 @@ class Workspace:
         return self._root_uri
 
     def is_local(self):
-        return (self._root_uri_scheme in ['', 'file']) and os.path.exists(self._root_path)
+        return (self._root_uri_scheme in ["", "file"]) and os.path.exists(self._root_path)
 
     def get_document(self, doc_uri):
         """Return a managed document if-present, else create one pointing at disk.
@@ -118,15 +120,15 @@ class Workspace:
         self._docs[doc_uri].version = version
 
     def update_config(self, settings):
-        self._config.update((settings or {}).get('pylsp', {}))
+        self._config.update((settings or {}).get("pylsp", {}))
         for doc_uri in self.documents:
             self.get_document(doc_uri).update_config(settings)
 
     def apply_edit(self, edit):
-        return self._endpoint.request(self.M_APPLY_EDIT, {'edit': edit})
+        return self._endpoint.request(self.M_APPLY_EDIT, {"edit": edit})
 
     def publish_diagnostics(self, doc_uri, diagnostics):
-        self._endpoint.notify(self.M_PUBLISH_DIAGNOSTICS, params={'uri': doc_uri, 'diagnostics': diagnostics})
+        self._endpoint.notify(self.M_PUBLISH_DIAGNOSTICS, params={"uri": doc_uri, "diagnostics": diagnostics})
 
     @contextmanager
     def report_progress(
@@ -208,11 +210,11 @@ class Workspace:
         )
 
     def show_message(self, message, msg_type=lsp.MessageType.Info):
-        self._endpoint.notify(self.M_SHOW_MESSAGE, params={'type': msg_type, 'message': message})
+        self._endpoint.notify(self.M_SHOW_MESSAGE, params={"type": msg_type, "message": message})
 
     def source_roots(self, document_path):
         """Return the source roots for the given document."""
-        files = _utils.find_parents(self._root_path, document_path, ['setup.py', 'pyproject.toml']) or []
+        files = _utils.find_parents(self._root_path, document_path, ["setup.py", "pyproject.toml"]) or []
         return list({os.path.dirname(project_file) for project_file in files}) or [self._root_path]
 
     def _create_document(self, doc_uri, source=None, version=None):
@@ -232,9 +234,9 @@ class Workspace:
 
 
 class Document:
-
-    def __init__(self, uri, workspace, source=None, version=None, local=True, extra_sys_path=None,
-                 rope_project_builder=None):
+    def __init__(
+        self, uri, workspace, source=None, version=None, local=True, extra_sys_path=None, rope_project_builder=None
+    ):
         self.uri = uri
         self.version = version
         self.path = uris.to_fs_path(uri)
@@ -256,6 +258,7 @@ class Document:
     def _rope_resource(self, rope_config):
         # pylint: disable=import-outside-toplevel
         from rope.base import libutils
+
         return libutils.path_to_resource(self._rope_project_builder(rope_config), self.path)
 
     @property
@@ -267,28 +270,28 @@ class Document:
     @lock
     def source(self):
         if self._source is None:
-            with io.open(self.path, 'r', encoding='utf-8') as f:
+            with io.open(self.path, "r", encoding="utf-8") as f:
                 return f.read()
         return self._source
 
     def update_config(self, settings):
-        self._config.update((settings or {}).get('pylsp', {}))
+        self._config.update((settings or {}).get("pylsp", {}))
 
     @lock
     def apply_change(self, change):
         """Apply a change to the document."""
-        text = change['text']
-        change_range = change.get('range')
+        text = change["text"]
+        change_range = change.get("range")
 
         if not change_range:
             # The whole file has changed
             self._source = text
             return
 
-        start_line = change_range['start']['line']
-        start_col = change_range['start']['character']
-        end_line = change_range['end']['line']
-        end_col = change_range['end']['character']
+        start_line = change_range["start"]["line"]
+        start_col = change_range["start"]["character"]
+        end_line = change_range["end"]["line"]
+        end_col = change_range["end"]["character"]
 
         # Check for an edit occuring at the very end of the file
         if start_line == len(self.lines):
@@ -320,15 +323,15 @@ class Document:
 
     def offset_at_position(self, position):
         """Return the byte-offset pointed at by the given position."""
-        return position['character'] + len(''.join(self.lines[:position['line']]))
+        return position["character"] + len("".join(self.lines[: position["line"]]))
 
     def word_at_position(self, position):
         """Get the word under the cursor returning the start and end positions."""
-        if position['line'] >= len(self.lines):
-            return ''
+        if position["line"] >= len(self.lines):
+            return ""
 
-        line = self.lines[position['line']]
-        i = position['character']
+        line = self.lines[position["line"]]
+        i = position["character"]
         # Split word in two
         start = line[:i]
         end = line[i:]
@@ -343,8 +346,7 @@ class Document:
     @lock
     def jedi_names(self, all_scopes=False, definitions=True, references=False):
         script = self.jedi_script()
-        return script.get_names(all_scopes=all_scopes, definitions=definitions,
-                                references=references)
+        return script.get_names(all_scopes=all_scopes, definitions=definitions, references=references)
 
     @lock
     def jedi_script(self, position=None, use_document_path=False):
@@ -353,18 +355,17 @@ class Document:
         env_vars = None
 
         if self._config:
-            jedi_settings = self._config.plugin_settings('jedi', document_path=self.path)
-            jedi.settings.auto_import_modules = jedi_settings.get('auto_import_modules',
-                                                                  DEFAULT_AUTO_IMPORT_MODULES)
-            environment_path = jedi_settings.get('environment')
-            extra_paths = jedi_settings.get('extra_paths') or []
-            env_vars = jedi_settings.get('env_vars')
+            jedi_settings = self._config.plugin_settings("jedi", document_path=self.path)
+            jedi.settings.auto_import_modules = jedi_settings.get("auto_import_modules", DEFAULT_AUTO_IMPORT_MODULES)
+            environment_path = jedi_settings.get("environment")
+            extra_paths = jedi_settings.get("extra_paths") or []
+            env_vars = jedi_settings.get("env_vars")
 
         # Drop PYTHONPATH from env_vars before creating the environment because that makes
         # Jedi throw an error.
         if env_vars is None:
             env_vars = os.environ.copy()
-        env_vars.pop('PYTHONPATH', None)
+        env_vars.pop("PYTHONPATH", None)
 
         environment = self.get_enviroment(environment_path, env_vars=env_vars) if environment_path else None
         sys_path = self.sys_path(environment_path, env_vars=env_vars) + extra_paths
@@ -375,10 +376,10 @@ class Document:
             sys_path += [os.path.normpath(os.path.dirname(self.path))]
 
         kwargs = {
-            'code': self.source,
-            'path': self.path,
-            'environment': environment,
-            'project': jedi.Project(path=project_path, sys_path=sys_path),
+            "code": self.source,
+            "path": self.path,
+            "environment": environment,
+            "project": jedi.Project(path=project_path, sys_path=sys_path),
         }
 
         if position:
@@ -395,9 +396,9 @@ class Document:
             if environment_path in self._workspace._environments:
                 environment = self._workspace._environments[environment_path]
             else:
-                environment = jedi.api.environment.create_environment(path=environment_path,
-                                                                      safe=False,
-                                                                      env_vars=env_vars)
+                environment = jedi.api.environment.create_environment(
+                    path=environment_path, safe=False, env_vars=env_vars
+                )
                 self._workspace._environments[environment_path] = environment
 
         return environment
