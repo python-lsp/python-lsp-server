@@ -174,9 +174,9 @@ class Workspace:
             "kind": "begin",
             "title": title,
         }
-        if message:
+        if message is not None:
             value["message"] = message
-        if percentage:
+        if percentage is not None:
             value["percentage"] = percentage
 
         self._endpoint.notify(
