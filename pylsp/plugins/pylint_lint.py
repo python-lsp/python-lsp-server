@@ -132,6 +132,7 @@ class PylintLinter:
         #  * warning
         diagnostics = []
         for diag in json.loads(json_out):
+            log.debug("Pylint raw output entry: %s", diag)
             # pylint lines index from 1, pylsp lines index from 0
             line = diag['line'] - 1
 
