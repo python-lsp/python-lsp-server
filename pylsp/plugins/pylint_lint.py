@@ -126,6 +126,7 @@ class PylintLinter:
         # The type can be any of:
         #
         #  * convention
+        #  * information
         #  * error
         #  * fatal
         #  * refactor
@@ -150,6 +151,8 @@ class PylintLinter:
             }
 
             if diag['type'] == 'convention':
+                severity = lsp.DiagnosticSeverity.Information
+            elif diag['type'] == 'information':
                 severity = lsp.DiagnosticSeverity.Information
             elif diag['type'] == 'error':
                 severity = lsp.DiagnosticSeverity.Error
