@@ -3,7 +3,6 @@
 
 import logging
 import os
-import os.path as osp
 
 import parso
 
@@ -222,7 +221,7 @@ def _format_completion(d, markup_kind: str, include_params=True, resolve=False, 
 
     # Adjustments for file completions
     if d.type == 'path':
-        path = osp.normpath(d.name)
+        path = os.path.normpath(d.name)
         path = path.replace('\\', '\\\\')
         path = path.replace('/', '\\/')
 
@@ -230,11 +229,11 @@ def _format_completion(d, markup_kind: str, include_params=True, resolve=False, 
         # at the end to ease additional file completions.
         if d.name.endswith(os.sep):
             if os.name == 'nt':
-                completion['insertText'] = path + '\\\\'
+                path = path + '\\\\'
             else:
-                completion['insertText'] = path + '\\/'
-        else:
-            completion['insertText'] = path
+                path = path + '\\/'
+
+        completion['insertText'] = path
 
     if include_params and not is_exception_class(d.name):
         snippet = _snippet(d, resolve_label_or_snippet)
