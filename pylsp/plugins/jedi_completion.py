@@ -2,6 +2,7 @@
 # Copyright 2021- Python Language Server Contributors.
 
 import logging
+import os
 import os.path as osp
 
 import parso
@@ -219,11 +220,21 @@ def _format_completion(d, markup_kind: str, include_params=True, resolve=False, 
     if resolve:
         completion = _resolve_completion(completion, d, markup_kind)
 
+    # Adjustments for file completions
     if d.type == 'path':
         path = osp.normpath(d.name)
         path = path.replace('\\', '\\\\')
         path = path.replace('/', '\\/')
-        completion['insertText'] = path
+
+        # If the completion ends with os.sep, it means it's a directory. So we add an escaped os.sep
+        # at the end to ease additional file completions.
+        if d.name.endswith(os.sep):
+            if os.name == 'nt':
+                completion['insertText'] = path + '\\\\'
+            else:
+                completion['insertText'] = path + '\\/'
+        else:
+            completion['insertText'] = path
 
     if include_params and not is_exception_class(d.name):
         snippet = _snippet(d, resolve_label_or_snippet)
