@@ -9,6 +9,7 @@ import sys
 import re
 from subprocess import Popen, PIPE
 import os
+import shlex
 
 from pylsp import hookimpl, lsp
 
@@ -91,7 +92,7 @@ class PylintLinter:
             '-f',
             'json',
             document.path
-        ] + (str(flags).split(' ') if flags else [])
+        ] + (shlex.split(str(flags)) if flags else [])
         log.debug("Calling pylint with '%s'", ' '.join(cmd))
 
         with Popen(cmd, stdout=PIPE, stderr=PIPE,
