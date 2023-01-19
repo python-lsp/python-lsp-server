@@ -66,9 +66,19 @@ def pylsp_lint(config, workspace, document):
 
         # Will only yield a single filename, the document path
         diags = []
-        for filename, checked_codes, ignore_decorators, property_decorators in conf.get_files_to_check():
+        for (
+            filename,
+            checked_codes,
+            ignore_decorators,
+            property_decorators,
+            ignore_self_only_init,
+        ) in conf.get_files_to_check():
             errors = pydocstyle.checker.ConventionChecker().check_source(
-                document.source, filename, ignore_decorators=ignore_decorators, property_decorators=property_decorators
+                document.source,
+                filename,
+                ignore_decorators=ignore_decorators,
+                property_decorators=property_decorators,
+                ignore_self_only_init=ignore_self_only_init,
             )
 
             try:
