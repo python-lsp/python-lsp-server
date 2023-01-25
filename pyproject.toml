@@ -35,7 +35,8 @@ all = [
     "pyflakes>=2.5.0,<3.1.0",
     "pylint>=2.5.0,<3",
     "rope>1.2.0",
-    "yapf",
+    "yapf<=0.32.0",
+    "toml",
     "whatthepatch>=1.0.2,<2.0.0"
 ]
 autopep8 = ["autopep8>=1.6.0,<1.7.0"]
@@ -46,7 +47,7 @@ pydocstyle = ["pydocstyle>=6.2.0,<6.3.0"]
 pyflakes = ["pyflakes>=2.5.0,<3.1.0"]
 pylint = ["pylint>=2.5.0,<3"]
 rope = ["rope>1.2.0"]
-yapf = ["yapf", "whatthepatch>=1.0.2,<2.0.0"]
+yapf = ["yapf<=0.32.0", "whatthepatch>=1.0.2,<2.0.0", "toml"]
 websockets = ["websockets>=10.3"]
 test = [
     "pylint>=2.5.0,<3",
