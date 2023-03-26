@@ -360,7 +360,7 @@ class PythonLSPServer(MethodDispatcher):
         return self._hook('pylsp_execute_command', command=command, arguments=arguments)
 
     def format_document(self, doc_uri, options):
-        return self._hook('pylsp_format_document', doc_uri, options=options)
+        return lambda: self._hook('pylsp_format_document', doc_uri, options=options)
 
     def format_range(self, doc_uri, range, options):
         return self._hook('pylsp_format_range', doc_uri, range=range, options=options)
