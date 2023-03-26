@@ -144,21 +144,35 @@ class Workspace:
             client_supports_progress_reporting = False
 
         if client_supports_progress_reporting:
-            token = self._progress_begin(title, message, percentage)
-
-            def progress_message(message: str, percentage: Optional[int] = None) -> None:
-                self._progress_report(token, message, percentage)
-
             try:
-                yield progress_message
-            finally:
-                self._progress_end(token)
-        else:
-            def dummy_progress_message(message: str, percentage: Optional[int] = None) -> None:
-                # pylint: disable=unused-argument
-                pass
+                token = self._progress_begin(title, message, percentage)
+            except Exception:  # pylint: disable=broad-exception-caught
+                log.warning(
+                    "error while trying to initialize progress reporting."
+                    "Either the editor failed, was too slow to answer, or this LSP "
+                    "call is synchronous, which is not supported by progress reporting yet.",
+                    exc_info=True
+                )
 
-            yield dummy_progress_message
+            else:
+                def progress_message(message: str, percentage: Optional[int] = None) -> None:
+                    self._progress_report(token, message, percentage)
+
+                try:
+                    yield progress_message
+                finally:
+                    self._progress_end(token)
+
+                return
+
+        # FALLBACK:
+        # if the client doesn't support progress reporting, or if we failed to
+        # initialize it, we have a dummy method for the caller to use.
+        def dummy_progress_message(message: str, percentage: Optional[int] = None) -> None:
+            # pylint: disable=unused-argument
+            pass
+
+        yield dummy_progress_message
 
     def _progress_begin(
         self,
@@ -168,7 +182,7 @@ class Workspace:
     ) -> str:
         token = str(uuid.uuid4())
 
-        self._endpoint.request(self.M_INITIALIZE_PROGRESS, {'token': token}).result()
+        self._endpoint.request(self.M_INITIALIZE_PROGRESS, {'token': token}).result(timeout=1.0)
 
         value = {
             "kind": "begin",
