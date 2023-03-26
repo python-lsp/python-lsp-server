@@ -348,7 +348,7 @@ class PythonLSPServer(MethodDispatcher):
         return self._hook('pylsp_completion_item_resolve', doc_uri, completion_item=completion_item)
 
     def definitions(self, doc_uri, position):
-        return lambda: flatten(self._hook('pylsp_definitions', doc_uri, position=position))
+        return flatten(self._hook('pylsp_definitions', doc_uri, position=position))
 
     def document_symbols(self, doc_uri):
         return flatten(self._hook('pylsp_document_symbols', doc_uri))
@@ -360,10 +360,10 @@ class PythonLSPServer(MethodDispatcher):
         return self._hook('pylsp_execute_command', command=command, arguments=arguments)
 
     def format_document(self, doc_uri, options):
-        return lambda: self._hook('pylsp_format_document', doc_uri, options=options)
+        return self._hook('pylsp_format_document', doc_uri, options=options)
 
     def format_range(self, doc_uri, range, options):
-        return lambda: self._hook('pylsp_format_range', doc_uri, range=range, options=options)
+        return self._hook('pylsp_format_range', doc_uri, range=range, options=options)
 
     def highlight(self, doc_uri, position):
         return flatten(self._hook('pylsp_document_highlight', doc_uri, position=position)) or None
@@ -382,13 +382,13 @@ class PythonLSPServer(MethodDispatcher):
             )
 
     def references(self, doc_uri, position, exclude_declaration):
-        return lambda: flatten(self._hook(
+        return flatten(self._hook(
             'pylsp_references', doc_uri, position=position,
             exclude_declaration=exclude_declaration
         ))
 
     def rename(self, doc_uri, position, new_name):
-        return lambda: self._hook('pylsp_rename', doc_uri, position=position, new_name=new_name)
+        return self._hook('pylsp_rename', doc_uri, position=position, new_name=new_name)
 
     def signature_help(self, doc_uri, position):
         return self._hook('pylsp_signature_help', doc_uri, position=position)
