@@ -9,7 +9,7 @@ log = logging.getLogger(__name__)
 
 
 @hookimpl
-def pylsp_rename(config, workspace, document, position, new_name):  # pylint: disable=unused-argument,too-many-locals
+def pylsp_rename(config, workspace, document, position, new_name):  # pylint: disable=unused-argument
     log.debug('Executing rename of %s to %s', document.word_at_position(position), new_name)
     kwargs = _utils.position_to_jedi_linecolumn(document, position)
     kwargs['new_name'] = new_name
@@ -23,7 +23,7 @@ def pylsp_rename(config, workspace, document, position, new_name):  # pylint: di
     changes = []
 
     changed_files = refactoring.get_changed_files()
-    for n, (file_path, changed_file) in enumerate(changed_files.items()):
+    for file_path, changed_file in changed_files.items():
         uri = uris.from_fs_path(str(file_path))
         doc = workspace.get_maybe_document(uri)
         changes.append({

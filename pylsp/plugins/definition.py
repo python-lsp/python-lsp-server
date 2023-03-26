@@ -8,7 +8,7 @@ log = logging.getLogger(__name__)
 
 
 @hookimpl
-def pylsp_definitions(config, workspace, document, position):
+def pylsp_definitions(config, document, position):
     settings = config.plugin_settings('jedi_definition')
     code_position = _utils.position_to_jedi_linecolumn(document, position)
     definitions = document.jedi_script(use_document_path=True).goto(
