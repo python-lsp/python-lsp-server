@@ -149,8 +149,8 @@ class Workspace:
             except Exception:  # pylint: disable=broad-exception-caught
                 log.warning(
                     "There was an error while trying to initialize progress reporting."
-                    "Either the editor failed, was too slow to answer, or this LSP "
-                    "call is synchronous, which is not supported by progress reporting yet.",
+                    "Likely progress reporting was used in a synchronous LSP handler, "
+                    "which is not supported by progress reporting yet.",
                     exc_info=True
                 )
 
