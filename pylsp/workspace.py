@@ -148,7 +148,7 @@ class Workspace:
                 token = self._progress_begin(title, message, percentage)
             except Exception:  # pylint: disable=broad-exception-caught
                 log.warning(
-                    "error while trying to initialize progress reporting."
+                    "There was an error while trying to initialize progress reporting."
                     "Either the editor failed, was too slow to answer, or this LSP "
                     "call is synchronous, which is not supported by progress reporting yet.",
                     exc_info=True
@@ -166,7 +166,7 @@ class Workspace:
                 return
 
         # FALLBACK:
-        # if the client doesn't support progress reporting, or if we failed to
+        # If the client doesn't support progress reporting, or if we failed to
         # initialize it, we have a dummy method for the caller to use.
         def dummy_progress_message(message: str, percentage: Optional[int] = None) -> None:
             # pylint: disable=unused-argument
