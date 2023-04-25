@@ -95,8 +95,13 @@ class PylintLinter:
         ] + (shlex.split(str(flags)) if flags else [])
         log.debug("Calling pylint with '%s'", ' '.join(cmd))
 
+        cwd = document._workspace.root_path
+
+        if not cwd:
+            cwd = os.path.dirname(__file__)
+
         with Popen(cmd, stdout=PIPE, stderr=PIPE,
-                   cwd=document._workspace.root_path, universal_newlines=True) as process:
+                   cwd=cwd, universal_newlines=True) as process:
             process.wait()
             json_out = process.stdout.read()
             err = process.stderr.read()
