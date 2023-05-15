@@ -1,5 +1,23 @@
 # History of changes
 
+## Version 1.7.3 (2023/05/15)
+
+### Issues Closed
+
+* [Issue 369](https://github.com/python-lsp/python-lsp-server/issues/369) - Failed to load hook pylsp_lint: [Errno 2] No such file or directory: '' ([PR 371](https://github.com/python-lsp/python-lsp-server/pull/371) by [@Ultimator14](https://github.com/Ultimator14))
+
+In this release 1 issue was closed.
+
+### Pull Requests Merged
+
+* [PR 377](https://github.com/python-lsp/python-lsp-server/pull/377) - Update yapf requirement to 0.33+, by [@bnavigator](https://github.com/bnavigator)
+* [PR 371](https://github.com/python-lsp/python-lsp-server/pull/371) - Fix empty cwd value for pylint, by [@Ultimator14](https://github.com/Ultimator14) ([369](https://github.com/python-lsp/python-lsp-server/issues/369))
+* [PR 364](https://github.com/python-lsp/python-lsp-server/pull/364) - Add Arch Linux installation command to Readme, by [@GNVageesh](https://github.com/GNVageesh)
+
+In this release 3 pull requests were closed.
+
+----
+
 ## Version 1.7.2 (2023/04/02)
 
 ### Issues Closed
