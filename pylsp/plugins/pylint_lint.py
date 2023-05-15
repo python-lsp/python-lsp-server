@@ -48,7 +48,7 @@ class PylintLinter:
     last_diags = collections.defaultdict(list)
 
     @classmethod
-    def lint(cls, document, is_saved, flags=''):
+    def lint(cls, document, is_saved, flags=''):  # pylint: disable=too-many-locals,too-many-branches
         """Plugin interface to pylsp linter.
 
         Args:
@@ -96,7 +96,6 @@ class PylintLinter:
         log.debug("Calling pylint with '%s'", ' '.join(cmd))
 
         cwd = document._workspace.root_path
-
         if not cwd:
             cwd = os.path.dirname(__file__)
 
