@@ -101,9 +101,7 @@ class PylintLinter:
 
         with Popen(cmd, stdout=PIPE, stderr=PIPE,
                    cwd=cwd, universal_newlines=True) as process:
-            process.wait()
-            json_out = process.stdout.read()
-            err = process.stderr.read()
+            json_out, err = process.communicate()
 
         if err != '':
             log.error("Error calling pylint: '%s'", err)
