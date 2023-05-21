@@ -145,7 +145,7 @@ class Workspace:
         is used from a synchronous LSP handler, the token initialization
         will time out because we can't receive the response.
 
-        Many editors will still correctly show the progress messages, which
+        Many editors will still correctly show the progress messages though, which
         is why we are giving progress users the option to skip the initialization
         of the progress token.
         """
@@ -170,8 +170,8 @@ class Workspace:
             return
 
         # FALLBACK:
-        # If the client doesn't support progress reporting,
-        # we have a dummy method for the caller to use.
+        # If the client doesn't support progress reporting, we have a dummy method
+        # for the caller to use.
         def dummy_progress_message(message: str, percentage: Optional[int] = None) -> None:
             # pylint: disable=unused-argument
             pass
