@@ -89,7 +89,7 @@ def pylsp_format_range(config, workspace, document, range, options):
     pass
 
 
-@hookspec(firstresult=True)
+@hookspec
 def pylsp_hover(config, workspace, document, position):
     pass
 
