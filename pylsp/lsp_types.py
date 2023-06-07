@@ -7,10 +7,11 @@ See: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.1
 """
 
 URI = NewType('URI', str)
+DocumentUri = NewType('DocumentUri', str)
 
 NotebookCell = TypedDict('NotebookCell', {
     'kind': str,
-    'document': URI,
+    'document': DocumentUri,
     'metadata': Optional[dict],
     'executionSummary': Optional[dict],
 })
