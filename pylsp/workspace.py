@@ -105,11 +105,20 @@ class Workspace:
         """
         return self._docs.get(doc_uri) or self._create_document(doc_uri)
 
+    def get_cell_document(self, doc_uri):
+        return self._docs.get(doc_uri)
+
     def get_maybe_document(self, doc_uri):
         return self._docs.get(doc_uri)
 
     def put_document(self, doc_uri, source, version=None):
         self._docs[doc_uri] = self._create_document(doc_uri, source=source, version=version)
+
+    def put_notebook_document(self, doc_uri, notebook_type, cells, version=None, metadata=None):
+        self._docs[doc_uri] = self._create_notebook_document(doc_uri, notebook_type, cells, version, metadata)
+
+    def put_cell_document(self, doc_uri, language_id, source, version=None):
+        self._docs[doc_uri] = self._create_cell_document(doc_uri, language_id, source, version)
 
     def rm_document(self, doc_uri):
         self._docs.pop(doc_uri)
@@ -252,6 +261,29 @@ class Workspace:
         return Document(
             doc_uri,
             self,
+            source=source,
+            version=version,
+            extra_sys_path=self.source_roots(path),
+            rope_project_builder=self._rope_project_builder,
+        )
+    
+    def _create_notebook_document(self, doc_uri, notebook_type, cells, version=None, metadata=None):
+        return Notebook(
+            doc_uri,
+            notebook_type,
+            self,
+            cells=cells,
+            version=version,
+            metadata=metadata
+        )
+
+    def _create_cell_document(self, doc_uri, language_id, source=None, version=None):
+        # TODO: remove what is unnecessary here.
+        path = uris.to_fs_path(doc_uri)
+        return Cell(
+            doc_uri,
+            language_id=language_id,
+            workspace=self,
             source=source,
             version=version,
             extra_sys_path=self.source_roots(path),
@@ -441,3 +473,27 @@ class Document:
         environment = self.get_enviroment(environment_path=environment_path, env_vars=env_vars)
         path.extend(environment.get_sys_path())
         return path
+
+
+class Notebook:
+    """Represents a notebook."""
+    def __init__(self, uri, notebook_type, workspace, cells=None, version=None, metadata=None):
+        self.uri = uri
+        self.notebook_type = notebook_type
+        self.workspace = workspace
+        self.version = version
+        self.cells = cells or []
+        self.metadata = metadata or {}
+
+    def __str__(self):
+        return "Notebook with URI '%s'" % str(self.uri)
+
+# We inherit from Document for now to get the same API. However, cell document differ from the text documents in that
+# as they have a language id.
+class Cell(Document):
+    """Represents a cell in a notebook."""
+
+    def __init__(self, uri, language_id, workspace, source=None, version=None, local=True, extra_sys_path=None,
+                 rope_project_builder=None):
+        super().__init__(uri, workspace, source, version, local, extra_sys_path, rope_project_builder)
+        self.language_id = language_id

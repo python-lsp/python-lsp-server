@@ -90,3 +90,8 @@ class TextDocumentSyncKind:
     NONE = 0
     FULL = 1
     INCREMENTAL = 2
+
+
+class NotebookCellKind:
+    Markup = 1
+    Code = 2

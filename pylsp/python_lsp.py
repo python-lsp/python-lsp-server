@@ -7,15 +7,20 @@ import os
 import socketserver
 import threading
 import ujson as json
+import uuid
+
 
 from pylsp_jsonrpc.dispatchers import MethodDispatcher
 from pylsp_jsonrpc.endpoint import Endpoint
 from pylsp_jsonrpc.streams import JsonRpcStreamReader, JsonRpcStreamWriter
 
+from typing import List, Dict, Any
+
 from . import lsp, _utils, uris
 from .config import config
-from .workspace import Workspace
+from .workspace import Workspace, Document, Cell, Notebook
 from ._version import __version__
+from .lsp_types import Diagnostic
 
 log = logging.getLogger(__name__)
 
@@ -266,6 +271,10 @@ class PythonLSPServer(MethodDispatcher):
                 },
                 'openClose': True,
             },
+            # TODO: add notebookDocumentSync when we support it
+            # 'notebookDocumentSync' : {
+            #     'notebook': '*',
+            # },
             'workspace': {
                 'workspaceFolders': {
                     'supported': True,
@@ -375,11 +384,74 @@ class PythonLSPServer(MethodDispatcher):
     def lint(self, doc_uri, is_saved):
         # Since we're debounced, the document may no longer be open
         workspace = self._match_uri_to_workspace(doc_uri)
-        if doc_uri in workspace.documents:
-            workspace.publish_diagnostics(
-                doc_uri,
-                flatten(self._hook('pylsp_lint', doc_uri, is_saved=is_saved))
-            )
+        document_object = workspace.documents.get(doc_uri, None)
+        if isinstance(document_object, Document):
+            self._lint_text_document(doc_uri, workspace, is_saved=is_saved)
+        elif isinstance(document_object, Notebook):
+            self._lint_notebook_document(document_object, workspace)
+
+    def _lint_text_document(self, doc_uri, workspace, is_saved):
+        workspace.publish_diagnostics(
+            doc_uri,
+            flatten(self._hook('pylsp_lint', doc_uri, is_saved=is_saved))
+        )
+
+    def _lint_notebook_document(self, notebook_document, workspace):
+        """
+        Lint a notebook document.
+        
+        This is a bit more complicated than linting a text document, because we need to
+        send the entire notebook document to the pylsp_lint hook, but we need to send
+        the diagnostics back to the client on a per-cell basis.
+        """
+
+        # First, we create a temp TextDocument that represents the whole notebook
+        # contents. We'll use this to send to the pylsp_lint hook.
+        random_uri = str(uuid.uuid4())
+
+        # cell_list helps us map the diagnostics back to the correct cell later.
+        cell_list: List[Dict[str, Any]] = []
+        
+        offset = 0
+        total_source = ""
+        for cell in notebook_document.cells:
+            cell_uri = cell['document']
+            cell_document = workspace.get_cell_document(cell_uri)
+
+            lines = cell_document.lines
+            num_lines = len(lines)
+            start = offset + 1
+            end = offset + num_lines
+            offset += num_lines
+
+            data = {
+                'uri': cell_uri,
+                'line_start': start,
+                'line_end': end,
+                'source': cell_document.source
+            }
+
+            cell_list.append(data)
+            total_source = total_source + "\n" + cell_document.source
+        
+        workspace.put_document(random_uri, total_source) 
+        document_diagnostics: List[Diagnostic] = flatten(self._hook('pylsp_lint', random_uri, is_saved=True))
+    
+        # Now we need to map the diagnostics back to the correct cell and
+        # publish them.
+        for cell in cell_list:
+            cell_diagnostics: List[Diagnostic] = []
+            for diagnostic in document_diagnostics:
+                if diagnostic['range']['start']['line'] > cell['line_end']:
+                    break
+                diagnostic['range']['start']['line'] = diagnostic['range']['start']['line'] - cell['line_start'] + 1
+                diagnostic['range']['end']['line'] = diagnostic['range']['end']['line'] - cell['line_start'] + 1
+                cell_diagnostics.append(diagnostic)
+                document_diagnostics.pop(0)
+
+            workspace.publish_diagnostics(cell['uri'], cell_diagnostics)
+        
+        workspace.remove_document(random_uri)
 
     def references(self, doc_uri, position, exclude_declaration):
         return flatten(self._hook(
@@ -403,6 +475,16 @@ class PythonLSPServer(MethodDispatcher):
         workspace = self._match_uri_to_workspace(textDocument['uri'])
         workspace.publish_diagnostics(textDocument['uri'], [])
         workspace.rm_document(textDocument['uri'])
+
+    # TODO define params
+    def m_notebook_document__did_open(self, notebookDocument=None, cellTextDocuments=[], **_kwargs):
+        workspace = self._match_uri_to_workspace(notebookDocument['uri'])
+        workspace.put_notebook_document(notebookDocument['uri'], notebookDocument['notebookType'], cells=notebookDocument['cells'], version=notebookDocument.get('version'), metadata=notebookDocument.get('metadata'))
+        log.debug(f">>> cellTextDocuments: {cellTextDocuments}")
+        for cell in cellTextDocuments:
+            workspace.put_cell_document(cell['uri'], cell['languageId'], cell['text'], version=cell.get('version'))
+        # self._hook('pylsp_document_did_open', textDocument['uri'])  # This hook seems only relevant for rope
+        self.lint(notebookDocument['uri'], is_saved=True)
 
     def m_text_document__did_open(self, textDocument=None, **_kwargs):
         workspace = self._match_uri_to_workspace(textDocument['uri'])

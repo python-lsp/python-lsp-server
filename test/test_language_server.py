@@ -12,6 +12,7 @@ from pylsp_jsonrpc.exceptions import JsonRpcMethodNotFound
 import pytest
 
 from pylsp.python_lsp import start_io_lang_server, PythonLSPServer
+from pylsp.lsp import NotebookCellKind
 
 CALL_TIMEOUT = 10
 RUNNING_IN_CI = bool(os.environ.get('CI'))
@@ -118,3 +119,70 @@ def test_not_exit_without_check_parent_process_flag(client_server):  # pylint: d
 def test_missing_message(client_server):  # pylint: disable=redefined-outer-name
     with pytest.raises(JsonRpcMethodNotFound):
         client_server._endpoint.request('unknown_method').result(timeout=CALL_TIMEOUT)
+
+
+# TODO: make this assert on content of diagnostics message
+# Run this test if you want to see the diagnostics messages of an LSP server
+def test_text_document__did_open(client_server):
+    client_server._endpoint.request('initialize', {
+        'processId': 1234,
+        'rootPath': os.path.dirname(__file__),
+        'initializationOptions': {}
+    }).result(timeout=CALL_TIMEOUT)
+    client_server._endpoint.notify('textDocument/didOpen', {
+        'textDocument': {
+            'uri': os.path.join(os.path.dirname(__file__)),
+            'version': 1,
+            'text': 'import sys\nx=2\ny=x+2'
+        }
+    })
+
+# TODO: flesh the unit test out so that it tests the following:
+# The workspace is updated with the new notebook document and two cell documents
+def test_notebook_document__did_open(client_server):
+    client_server._endpoint.request('initialize', {
+        'processId': 1234,
+        'rootPath': os.path.dirname(__file__),
+        'initializationOptions': {}
+    }).result(timeout=CALL_TIMEOUT)
+    client_server._endpoint.notify('notebookDocument/didOpen', {
+        'notebookDocument': {
+            'uri': 'notebook_uri',
+            'notebookType': 'jupyter-notebook',
+            'cells': [
+                {
+                    'kind': NotebookCellKind.Code,
+                    'document': "cell_1_uri",
+                },
+                # TODO: add markdown cell support later
+                # {
+                #     'kind': NotebookCellKind.Markup,
+                #     'document': "cell_2_uri",
+                # },
+                {
+                    'kind': NotebookCellKind.Code,
+                    'document': "cell_3_uri",
+                }
+            ]
+        },
+        'cellTextDocuments': [
+            {
+                'uri': 'cell_1_uri',
+                'languageId': 'python',
+                'text': 'import sys',
+            },
+            # {
+            #     'uri': 'cell_2_uri',
+            #     'languageId': 'markdown',
+            #     'text': '# Title\n\n Some text',
+            # },
+            {
+                'uri': 'cell_3_uri',
+                'languageId': 'python',
+                'text': 'x = 2\ny = x + 2\nprint(z)',
+            }
+        ]
+    })
+#     time.sleep(0.1)
+#     # Assert that the documents are created in the workspace
+#     assert len(client_server.workspaces) == 1
