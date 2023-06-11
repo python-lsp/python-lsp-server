@@ -14,13 +14,13 @@ from pylsp_jsonrpc.dispatchers import MethodDispatcher
 from pylsp_jsonrpc.endpoint import Endpoint
 from pylsp_jsonrpc.streams import JsonRpcStreamReader, JsonRpcStreamWriter
 
+
 from typing import List, Dict, Any
 
 from . import lsp, _utils, uris
 from .config import config
 from .workspace import Workspace, Document, Cell, Notebook
 from ._version import __version__
-from .lsp_types import Diagnostic
 
 log = logging.getLogger(__name__)
 
@@ -385,7 +385,9 @@ class PythonLSPServer(MethodDispatcher):
         # Since we're debounced, the document may no longer be open
         workspace = self._match_uri_to_workspace(doc_uri)
         document_object = workspace.documents.get(doc_uri, None)
-        if isinstance(document_object, Document):
+        if isinstance(document_object, Cell):
+            self._lint_notebook_document(document_object.parent, workspace)
+        elif isinstance(document_object, Document):
             self._lint_text_document(doc_uri, workspace, is_saved=is_saved)
         elif isinstance(document_object, Notebook):
             self._lint_notebook_document(document_object, workspace)
@@ -435,12 +437,12 @@ class PythonLSPServer(MethodDispatcher):
             total_source = total_source + "\n" + cell_document.source
         
         workspace.put_document(random_uri, total_source) 
-        document_diagnostics: List[Diagnostic] = flatten(self._hook('pylsp_lint', random_uri, is_saved=True))
+        document_diagnostics = flatten(self._hook('pylsp_lint', random_uri, is_saved=True))
     
         # Now we need to map the diagnostics back to the correct cell and
         # publish them.
         for cell in cell_list:
-            cell_diagnostics: List[Diagnostic] = []
+            cell_diagnostics = []
             for diagnostic in document_diagnostics:
                 if diagnostic['range']['start']['line'] > cell['line_end']:
                     break
@@ -471,20 +473,85 @@ class PythonLSPServer(MethodDispatcher):
     def m_completion_item__resolve(self, **completionItem):
         return self.completion_item_resolve(completionItem)
 
+    # TODO: add m_notebook_document__did_close
+    def m_notebook_document__did_open(self, notebookDocument=None, cellTextDocuments=[], **_kwargs):
+        workspace = self._match_uri_to_workspace(notebookDocument['uri'])
+        workspace.put_notebook_document(notebookDocument['uri'], notebookDocument['notebookType'], 
+                                        cells=notebookDocument['cells'], version=notebookDocument.get('version'), 
+                                        metadata=notebookDocument.get('metadata'))
+        for cell in cellTextDocuments:
+            workspace.put_cell_document(cell['uri'], cell['languageId'], notebookDocument['uri'], cell['text'], 
+                                        version=cell.get('version'))
+        # self._hook('pylsp_document_did_open', textDocument['uri'])  # This hook seems only relevant for rope
+        self.lint(notebookDocument['uri'], is_saved=True)
+
+    def m_notebook_document__did_change(self, notebookDocument=None, contentChanges=None, **_kwargs):
+        """
+        Changes to the notebook document.
+        
+        This could be one of the following:
+        1. Notebook metadata changed
+        2. Cell(s) added
+        3. Cell(s) deleted
+        4. Cell(s) data changed
+            4.1 Cell metadata changed
+            4.2 Cell source changed
+        """
+        workspace = self._match_uri_to_workspace(notebookDocument['uri'])
+
+        notebook_metadata = contentChanges.get('metadata')
+        if notebook_metadata:
+            # Case 1
+            workspace.update_notebook_metadata(notebookDocument['uri'], notebook_metadata)
+
+        cells = contentChanges.get('cells')
+        if cells:
+            # Change to cells
+            structure = cells.get('structure')
+            if structure:
+                # Case 2 or 3
+                notebook_cell_array_change = structure['array']
+                start = notebook_cell_array_change['start']
+                cell_delete_count = notebook_cell_array_change['deleteCount']
+                if cell_delete_count == 0:
+                    # Case 2
+                    # Cell documents
+                    opened_cells = structure['didOpen']
+                    for cell_document in opened_cells:
+                        workspace.put_cell_document(cell_document['uri'], cell_document['languageId'], notebookDocument['uri'], 
+                                                    cell_document['text'], cell_document.get('version'))
+                    # Cell metadata which is added to Notebook
+                    opened_cells = notebook_cell_array_change['cells']
+                    workspace.add_notebook_cells(notebookDocument['uri'], opened_cells, start)
+                else:
+                    # Case 3
+                    # Cell documents
+                    closed_cells = structure['didClose']
+                    for cell_document in closed_cells:
+                        workspace.rm_cell_document(cell_document['uri'])
+                    # Cell metadata which is removed from Notebook
+                    workspace.remove_notebook_cells(notebookDocument['uri'], start, cell_delete_count)
+            
+            data = cells.get('data')
+            if data:
+                # Case 4.1
+                for cell in data:
+                    # update NotebookDocument.cells properties
+                    pass
+
+            text_content = cells.get('textContent')
+            if text_content:
+                # Case 4.2
+                for cell in text_content:
+                    cell_uri = cell['document']['uri']
+                    # Even though the protocol says that changes is an array, we assume that it's always a single
+                    # element array that contains the last change to the cell source.
+                    workspace.update_document(cell_uri, cell['changes'][0])
+
     def m_text_document__did_close(self, textDocument=None, **_kwargs):
         workspace = self._match_uri_to_workspace(textDocument['uri'])
         workspace.publish_diagnostics(textDocument['uri'], [])
         workspace.rm_document(textDocument['uri'])
-
-    # TODO define params
-    def m_notebook_document__did_open(self, notebookDocument=None, cellTextDocuments=[], **_kwargs):
-        workspace = self._match_uri_to_workspace(notebookDocument['uri'])
-        workspace.put_notebook_document(notebookDocument['uri'], notebookDocument['notebookType'], cells=notebookDocument['cells'], version=notebookDocument.get('version'), metadata=notebookDocument.get('metadata'))
-        log.debug(f">>> cellTextDocuments: {cellTextDocuments}")
-        for cell in cellTextDocuments:
-            workspace.put_cell_document(cell['uri'], cell['languageId'], cell['text'], version=cell.get('version'))
-        # self._hook('pylsp_document_did_open', textDocument['uri'])  # This hook seems only relevant for rope
-        self.lint(notebookDocument['uri'], is_saved=True)
 
     def m_text_document__did_open(self, textDocument=None, **_kwargs):
         workspace = self._match_uri_to_workspace(textDocument['uri'])

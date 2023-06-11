@@ -121,7 +121,6 @@ def test_missing_message(client_server):  # pylint: disable=redefined-outer-name
         client_server._endpoint.request('unknown_method').result(timeout=CALL_TIMEOUT)
 
 
-# TODO: make this assert on content of diagnostics message
 # Run this test if you want to see the diagnostics messages of an LSP server
 def test_text_document__did_open(client_server):
     client_server._endpoint.request('initialize', {
@@ -136,9 +135,10 @@ def test_text_document__did_open(client_server):
             'text': 'import sys\nx=2\ny=x+2'
         }
     })
+    # TODO: assert on the content of diagnostics message
 
-# TODO: flesh the unit test out so that it tests the following:
-# The workspace is updated with the new notebook document and two cell documents
+
+# Run this test if you want to see the diagnostics messages of an LSP server
 def test_notebook_document__did_open(client_server):
     client_server._endpoint.request('initialize', {
         'processId': 1234,
@@ -183,6 +183,62 @@ def test_notebook_document__did_open(client_server):
             }
         ]
     })
-#     time.sleep(0.1)
-#     # Assert that the documents are created in the workspace
-#     assert len(client_server.workspaces) == 1
+    # TODO: assert on the content of diagnostics message
+
+
+# Run this test if you want to see the diagnostics messages of an LSP server
+def test_notebook_document__did_change(client_server):
+    client_server._endpoint.request('initialize', {
+        'processId': 1234,
+        'rootPath': os.path.dirname(__file__),
+        'initializationOptions': {}
+    }).result(timeout=CALL_TIMEOUT)
+    client_server._endpoint.notify('notebookDocument/didOpen', {
+        'notebookDocument': {
+            'uri': 'notebook_uri',
+            'notebookType': 'jupyter-notebook',
+            'cells': [
+                {
+                    'kind': NotebookCellKind.Code,
+                    'document': "cell_1_uri",
+                },
+                {
+                    'kind': NotebookCellKind.Code,
+                    'document': "cell_2_uri",
+                }
+            ]
+        },
+        'cellTextDocuments': [
+            {
+                'uri': 'cell_1_uri',
+                'languageId': 'python',
+                'text': 'import sys',
+            },
+            {
+                'uri': 'cell_2_uri',
+                'languageId': 'python',
+                'text': '',
+            }
+        ]
+    })
+    # TODO: assert diagnostics complains about sys being imported but not used
+    client_server._endpoint.notify('notebookDocument/didChange', {
+        'notebookDocument': {
+            'uri': 'notebook_uri',
+        },
+        'change': {
+            'textContent': [ 
+                {
+                    'document': {
+                        'uri': 'cell_2_uri',
+                    },
+                    'changes': [ 
+                        {
+                            'text': 'sys.path'
+                        }
+                    ]	
+                }
+            ]
+        }
+    })
+    # TODO: assert that diagnostics is gone
