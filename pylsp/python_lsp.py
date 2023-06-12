@@ -385,9 +385,7 @@ class PythonLSPServer(MethodDispatcher):
         # Since we're debounced, the document may no longer be open
         workspace = self._match_uri_to_workspace(doc_uri)
         document_object = workspace.documents.get(doc_uri, None)
-        if isinstance(document_object, Cell):
-            self._lint_notebook_document(document_object.parent, workspace)
-        elif isinstance(document_object, Document):
+        if isinstance(document_object, Document):
             self._lint_text_document(doc_uri, workspace, is_saved=is_saved)
         elif isinstance(document_object, Notebook):
             self._lint_notebook_document(document_object, workspace)
@@ -413,7 +411,7 @@ class PythonLSPServer(MethodDispatcher):
 
         # cell_list helps us map the diagnostics back to the correct cell later.
         cell_list: List[Dict[str, Any]] = []
-        
+
         offset = 0
         total_source = ""
         for cell in notebook_document.cells:
@@ -435,10 +433,10 @@ class PythonLSPServer(MethodDispatcher):
 
             cell_list.append(data)
             total_source = total_source + "\n" + cell_document.source
-        
-        workspace.put_document(random_uri, total_source) 
+
+        workspace.put_document(random_uri, total_source)
         document_diagnostics = flatten(self._hook('pylsp_lint', random_uri, is_saved=True))
-    
+
         # Now we need to map the diagnostics back to the correct cell and
         # publish them.
         for cell in cell_list:
@@ -452,7 +450,7 @@ class PythonLSPServer(MethodDispatcher):
                 document_diagnostics.pop(0)
 
             workspace.publish_diagnostics(cell['uri'], cell_diagnostics)
-        
+
         workspace.remove_document(random_uri)
 
     def references(self, doc_uri, position, exclude_declaration):
@@ -485,7 +483,7 @@ class PythonLSPServer(MethodDispatcher):
         # self._hook('pylsp_document_did_open', textDocument['uri'])  # This hook seems only relevant for rope
         self.lint(notebookDocument['uri'], is_saved=True)
 
-    def m_notebook_document__did_change(self, notebookDocument=None, contentChanges=None, **_kwargs):
+    def m_notebook_document__did_change(self, notebookDocument=None, change=None, **_kwargs):
         """
         Changes to the notebook document.
         
@@ -499,12 +497,12 @@ class PythonLSPServer(MethodDispatcher):
         """
         workspace = self._match_uri_to_workspace(notebookDocument['uri'])
 
-        notebook_metadata = contentChanges.get('metadata')
+        notebook_metadata = change.get('metadata')
         if notebook_metadata:
             # Case 1
             workspace.update_notebook_metadata(notebookDocument['uri'], notebook_metadata)
 
-        cells = contentChanges.get('cells')
+        cells = change.get('cells')
         if cells:
             # Change to cells
             structure = cells.get('structure')
@@ -518,8 +516,9 @@ class PythonLSPServer(MethodDispatcher):
                     # Cell documents
                     opened_cells = structure['didOpen']
                     for cell_document in opened_cells:
-                        workspace.put_cell_document(cell_document['uri'], cell_document['languageId'], notebookDocument['uri'], 
-                                                    cell_document['text'], cell_document.get('version'))
+                        workspace.put_cell_document(cell_document['uri'], cell_document['languageId'],
+                                                    notebookDocument['uri'], cell_document['text'],
+                                                    cell_document.get('version'))
                     # Cell metadata which is added to Notebook
                     opened_cells = notebook_cell_array_change['cells']
                     workspace.add_notebook_cells(notebookDocument['uri'], opened_cells, start)
@@ -528,10 +527,10 @@ class PythonLSPServer(MethodDispatcher):
                     # Cell documents
                     closed_cells = structure['didClose']
                     for cell_document in closed_cells:
-                        workspace.rm_cell_document(cell_document['uri'])
+                        workspace.rm_document(cell_document['uri'])
                     # Cell metadata which is removed from Notebook
                     workspace.remove_notebook_cells(notebookDocument['uri'], start, cell_delete_count)
-            
+
             data = cells.get('data')
             if data:
                 # Case 4.1
@@ -544,9 +543,10 @@ class PythonLSPServer(MethodDispatcher):
                 # Case 4.2
                 for cell in text_content:
                     cell_uri = cell['document']['uri']
-                    # Even though the protocol says that changes is an array, we assume that it's always a single
+                    # Even though the protocol says that `changes` is an array, we assume that it's always a single
                     # element array that contains the last change to the cell source.
                     workspace.update_document(cell_uri, cell['changes'][0])
+        self.lint(notebookDocument['uri'], is_saved=True)
 
     def m_text_document__did_close(self, textDocument=None, **_kwargs):
         workspace = self._match_uri_to_workspace(textDocument['uri'])

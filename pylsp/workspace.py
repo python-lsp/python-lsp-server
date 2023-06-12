@@ -132,7 +132,6 @@ class Workspace:
     def rm_document(self, doc_uri):
         self._docs.pop(doc_uri)
 
-
     def update_document(self, doc_uri, change, version=None):
         self._docs[doc_uri].apply_change(change)
         self._docs[doc_uri].version = version

@@ -187,7 +187,7 @@ def test_notebook_document__did_open(client_server):
 
 
 # Run this test if you want to see the diagnostics messages of an LSP server
-def test_notebook_document__did_change(client_server):
+def test_notebook_document__did_change__edit_content(client_server):
     client_server._endpoint.request('initialize', {
         'processId': 1234,
         'rootPath': os.path.dirname(__file__),
@@ -221,24 +221,183 @@ def test_notebook_document__did_change(client_server):
             }
         ]
     })
+    time.sleep(1)
     # TODO: assert diagnostics complains about sys being imported but not used
     client_server._endpoint.notify('notebookDocument/didChange', {
         'notebookDocument': {
             'uri': 'notebook_uri',
         },
         'change': {
-            'textContent': [ 
-                {
-                    'document': {
-                        'uri': 'cell_2_uri',
-                    },
-                    'changes': [ 
-                        {
-                            'text': 'sys.path'
-                        }
-                    ]	
-                }
-            ]
+            'cells': {
+                'textContent': [ 
+                    {
+                        'document': {
+                            'uri': 'cell_2_uri',
+                        },
+                        'changes': [ 
+                            {
+                                'text': 'sys.path'
+                            }
+                        ]	
+                    }
+                ]
+            }
         }
     })
+    time.sleep(1)
     # TODO: assert that diagnostics is gone
+    # TODO: assert that the virtualized document has been removed to avoid memory leak
+
+
+def test_notebook_document__did_change__add_new_cell(client_server):
+    client_server._endpoint.request('initialize', {
+        'processId': 1234,
+        'rootPath': os.path.dirname(__file__),
+        'initializationOptions': {}
+    }).result(timeout=CALL_TIMEOUT)
+    client_server._endpoint.notify('notebookDocument/didOpen', {
+        'notebookDocument': {
+            'uri': 'notebook_uri',
+            'notebookType': 'jupyter-notebook',
+            'cells': [
+                {
+                    'kind': NotebookCellKind.Code,
+                    'document': "cell_1_uri",
+                },
+            ]
+        },
+        'cellTextDocuments': [
+            {
+                'uri': 'cell_1_uri',
+                'languageId': 'python',
+                'text': 'import sys',
+            },
+        ]
+    })
+    time.sleep(1)
+    # TODO: assert diagnostics complains about sys being imported but not used
+    client_server._endpoint.notify('notebookDocument/didChange', {
+        'notebookDocument': {
+            'uri': 'notebook_uri',
+        },
+        'change': {
+            'cells': {
+                'structure': {
+                    'array': {
+                        'start': 1,
+                        'deleteCount': 0,
+                        'cells': [
+                            {
+                                'kind': NotebookCellKind.Code,
+                                'document': "cell_2_uri",
+                            }
+                        ]
+                    },
+                    'didOpen': [
+                        {
+                            'uri': 'cell_2_uri',
+                            'languageId': 'python',
+                            'text': 'sys.path',
+                        }
+                    ]
+                },
+            }
+        }
+    })
+    time.sleep(1)
+    # TODO: assert that diagnostics is gone
+    # TODO: assert that the virtualized document has been removed to avoid memory leak
+    # Inserting a cell between cell 1 and 2
+    client_server._endpoint.notify('notebookDocument/didChange', {
+        'notebookDocument': {
+            'uri': 'notebook_uri',
+        },
+        'change': {
+            'cells': {
+                'structure': {
+                    'array': {
+                        'start': 1,
+                        'deleteCount': 0,
+                        'cells': [
+                            {
+                                'kind': NotebookCellKind.Code,
+                                'document': "cell_3_uri",
+                            }
+                        ]
+                    },
+                    'didOpen': [
+                        {
+                            'uri': 'cell_3_uri',
+                            'languageId': 'python',
+                            'text': 'x',
+                        }
+                    ]
+                },
+            }
+        }
+    })
+    time.sleep(1)
+    # TODO: assert that the cells are in the right order
+
+
+def test_notebook_document__did_change__delete_cell(client_server):
+    client_server._endpoint.request('initialize', {
+        'processId': 1234,
+        'rootPath': os.path.dirname(__file__),
+        'initializationOptions': {}
+    }).result(timeout=CALL_TIMEOUT)
+    client_server._endpoint.notify('notebookDocument/didOpen', {
+        'notebookDocument': {
+            'uri': 'notebook_uri',
+            'notebookType': 'jupyter-notebook',
+            'cells': [
+                {
+                    'kind': NotebookCellKind.Code,
+                    'document': "cell_1_uri",
+                },
+                {
+                    'kind': NotebookCellKind.Code,
+                    'document': "cell_2_uri",
+                }
+            ]
+        },
+        'cellTextDocuments': [
+            {
+                'uri': 'cell_1_uri',
+                'languageId': 'python',
+                'text': 'import sys',
+            },
+            {
+                'uri': 'cell_2_uri',
+                'languageId': 'python',
+                'text': 'sys.path',
+            }
+        ]
+    })
+    time.sleep(1)
+    # TODO: assert diagnostics should not complain
+    # Delete cell 2
+    client_server._endpoint.notify('notebookDocument/didChange', {
+        'notebookDocument': {
+            'uri': 'notebook_uri',
+        },
+        'change': {
+            'cells': {
+                'structure': {
+                    'array': {
+                        'start': 1,
+                        'deleteCount': 1,
+                    },
+                    'didClose': [
+                        {
+                            'uri': 'cell_2_uri',
+                        }
+                    ]
+                },
+            }
+        }
+    })
+    time.sleep(1)
+    # TODO: assert that diagnostics comaplains about sys being imported but not used
+    # TODO: assert that the CellDocument has been removed from workspace.documents and notebook.cells
+    assert 0
