@@ -389,6 +389,12 @@ class Document:
             jedi.settings.auto_import_modules = jedi_settings.get('auto_import_modules',
                                                                   DEFAULT_AUTO_IMPORT_MODULES)
             environment_path = jedi_settings.get('environment')
+            # Jedi itself cannot deal with homedir-relative paths.
+            # On systems, where it is expected, expand the home directory.
+            import ipdb; ipdb.set_trace()
+            if environment_path and os.name != 'nt':
+                environment_path = os.path.expanduser(environment_path)
+
             extra_paths = jedi_settings.get('extra_paths') or []
             env_vars = jedi_settings.get('env_vars')
 
