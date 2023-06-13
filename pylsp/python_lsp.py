@@ -451,7 +451,7 @@ class PythonLSPServer(MethodDispatcher):
 
             workspace.publish_diagnostics(cell['uri'], cell_diagnostics)
 
-        workspace.remove_document(random_uri)
+        workspace.rm_document(random_uri)
 
     def references(self, doc_uri, position, exclude_declaration):
         return flatten(self._hook(
