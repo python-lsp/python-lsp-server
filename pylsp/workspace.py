@@ -391,7 +391,6 @@ class Document:
             environment_path = jedi_settings.get('environment')
             # Jedi itself cannot deal with homedir-relative paths.
             # On systems, where it is expected, expand the home directory.
-            import ipdb; ipdb.set_trace()
             if environment_path and os.name != 'nt':
                 environment_path = os.path.expanduser(environment_path)
 
