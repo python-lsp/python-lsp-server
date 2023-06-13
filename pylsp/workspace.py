@@ -125,9 +125,9 @@ class Workspace:
 
     def update_notebook_metadata(self, doc_uri, metadata):
         self._docs[doc_uri].metadata = metadata
- 
-    def put_cell_document(self, doc_uri, language_id, parent, source, version=None):
-        self._docs[doc_uri] = self._create_cell_document(doc_uri, language_id, parent, source, version)
+
+    def put_cell_document(self, doc_uri, language_id, source, version=None):
+        self._docs[doc_uri] = self._create_cell_document(doc_uri, language_id, source, version)
 
     def rm_document(self, doc_uri):
         self._docs.pop(doc_uri)
@@ -275,7 +275,7 @@ class Workspace:
             extra_sys_path=self.source_roots(path),
             rope_project_builder=self._rope_project_builder,
         )
-    
+
     def _create_notebook_document(self, doc_uri, notebook_type, cells, version=None, metadata=None):
         return Notebook(
             doc_uri,
@@ -286,14 +286,13 @@ class Workspace:
             metadata=metadata
         )
 
-    def _create_cell_document(self, doc_uri, language_id, parent, source=None, version=None):
+    def _create_cell_document(self, doc_uri, language_id, source=None, version=None):
         # TODO: remove what is unnecessary here.
         path = uris.to_fs_path(doc_uri)
         return Cell(
             doc_uri,
             language_id=language_id,
             workspace=self,
-            parent=parent,
             source=source,
             version=version,
             extra_sys_path=self.source_roots(path),
@@ -497,7 +496,7 @@ class Notebook:
 
     def __str__(self):
         return "Notebook with URI '%s'" % str(self.uri)
-    
+
     def add_cells(self, new_cells: List, start: int) -> None:
         self.cells[start:start] = new_cells
 
@@ -509,8 +508,7 @@ class Notebook:
 class Cell(Document):
     """Represents a cell in a notebook."""
 
-    def __init__(self, uri, language_id, workspace, parent, source=None, version=None, local=True, extra_sys_path=None,
+    def __init__(self, uri, language_id, workspace, source=None, version=None, local=True, extra_sys_path=None,
                  rope_project_builder=None):
         super().__init__(uri, workspace, source, version, local, extra_sys_path, rope_project_builder)
         self.language_id = language_id
-        self.parent = parent

@@ -6,16 +6,13 @@ import logging
 import os
 import socketserver
 import threading
-import ujson as json
 import uuid
-
+from typing import List, Dict, Any
+import ujson as json
 
 from pylsp_jsonrpc.dispatchers import MethodDispatcher
 from pylsp_jsonrpc.endpoint import Endpoint
 from pylsp_jsonrpc.streams import JsonRpcStreamReader, JsonRpcStreamWriter
-
-
-from typing import List, Dict, Any
 
 from . import lsp, _utils, uris
 from .config import config
@@ -474,11 +471,11 @@ class PythonLSPServer(MethodDispatcher):
     # TODO: add m_notebook_document__did_close
     def m_notebook_document__did_open(self, notebookDocument=None, cellTextDocuments=[], **_kwargs):
         workspace = self._match_uri_to_workspace(notebookDocument['uri'])
-        workspace.put_notebook_document(notebookDocument['uri'], notebookDocument['notebookType'], 
-                                        cells=notebookDocument['cells'], version=notebookDocument.get('version'), 
+        workspace.put_notebook_document(notebookDocument['uri'], notebookDocument['notebookType'],
+                                        cells=notebookDocument['cells'], version=notebookDocument.get('version'),
                                         metadata=notebookDocument.get('metadata'))
         for cell in cellTextDocuments:
-            workspace.put_cell_document(cell['uri'], cell['languageId'], notebookDocument['uri'], cell['text'], 
+            workspace.put_cell_document(cell['uri'], cell['languageId'], notebookDocument['uri'], cell['text'],
                                         version=cell.get('version'))
         # self._hook('pylsp_document_did_open', textDocument['uri'])  # This hook seems only relevant for rope
         self.lint(notebookDocument['uri'], is_saved=True)
