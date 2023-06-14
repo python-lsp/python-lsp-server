@@ -415,21 +415,19 @@ class PythonLSPServer(MethodDispatcher):
             cell_uri = cell['document']
             cell_document = workspace.get_cell_document(cell_uri)
 
-            lines = cell_document.lines
-            num_lines = len(lines)
-            start = offset + 1
-            end = offset + num_lines
-            offset += num_lines
+            num_lines = len(cell_document.lines)
 
             data = {
                 'uri': cell_uri,
-                'line_start': start,
-                'line_end': end,
+                'line_start': offset + 1,
+                'line_end': offset + num_lines,
                 'source': cell_document.source
             }
 
             cell_list.append(data)
             total_source = total_source + "\n" + cell_document.source
+
+            offset += num_lines
 
         workspace.put_document(random_uri, total_source)
         document_diagnostics = flatten(self._hook('pylsp_lint', random_uri, is_saved=True))
@@ -492,10 +490,9 @@ class PythonLSPServer(MethodDispatcher):
         """
         workspace = self._match_uri_to_workspace(notebookDocument['uri'])
 
-        notebook_metadata = change.get('metadata')
-        if notebook_metadata:
+        if change.get('metadata'):
             # Case 1
-            workspace.update_notebook_metadata(notebookDocument['uri'], notebook_metadata)
+            workspace.update_notebook_metadata(notebookDocument['uri'], change.get('metadata'))
 
         cells = change.get('cells')
         if cells:
@@ -509,18 +506,15 @@ class PythonLSPServer(MethodDispatcher):
                 if cell_delete_count == 0:
                     # Case 2
                     # Cell documents
-                    opened_cells = structure['didOpen']
-                    for cell_document in opened_cells:
+                    for cell_document in structure['didOpen']:
                         workspace.put_cell_document(cell_document['uri'], cell_document['languageId'],
                                                     cell_document['text'], cell_document.get('version'))
                     # Cell metadata which is added to Notebook
-                    opened_cells = notebook_cell_array_change['cells']
-                    workspace.add_notebook_cells(notebookDocument['uri'], opened_cells, start)
+                    workspace.add_notebook_cells(notebookDocument['uri'], notebook_cell_array_change['cells'], start)
                 else:
                     # Case 3
                     # Cell documents
-                    closed_cells = structure['didClose']
-                    for cell_document in closed_cells:
+                    for cell_document in structure['didClose']:
                         workspace.rm_document(cell_document['uri'])
                     # Cell metadata which is removed from Notebook
                     workspace.remove_notebook_cells(notebookDocument['uri'], start, cell_delete_count)

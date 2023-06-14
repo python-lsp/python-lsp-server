@@ -47,18 +47,18 @@ class ClientServerPair:
 @pytest.fixture
 def client_server_pair():
     """A fixture that sets up a client/server pair and shuts down the server"""
-    client_server_pair = ClientServerPair()
+    client_server_pair_obj = ClientServerPair()
 
-    yield (client_server_pair.client, client_server_pair.server)
+    yield (client_server_pair_obj.client, client_server_pair_obj.server)
 
-    shutdown_response = client_server_pair.client._endpoint.request("shutdown").result(
+    shutdown_response = client_server_pair_obj.client._endpoint.request("shutdown").result(
         timeout=CALL_TIMEOUT
     )
     assert shutdown_response is None
-    client_server_pair.client._endpoint.notify("exit")
+    client_server_pair_obj.client._endpoint.notify("exit")
 
 
-def test_initialize(client_server_pair):
+def test_initialize(client_server_pair): # pylint: disable=redefined-outer-name
     client, server = client_server_pair
     response = client._endpoint.request(
         "initialize",
@@ -73,7 +73,7 @@ def test_initialize(client_server_pair):
     # TODO: assert that notebook capabilities are in response
 
 
-def test_notebook_document__did_open(client_server_pair):
+def test_notebook_document__did_open(client_server_pair): # pylint: disable=redefined-outer-name
     client, server = client_server_pair
     client._endpoint.request(
         "initialize",
@@ -157,7 +157,7 @@ def test_notebook_document__did_open(client_server_pair):
         mock_notify.assert_has_calls(expected_call_args)
 
 
-def test_notebook_document__did_change(client_server_pair):
+def test_notebook_document__did_change(client_server_pair): # pylint: disable=redefined-outer-name
     client, server = client_server_pair
     client._endpoint.request(
         "initialize",
