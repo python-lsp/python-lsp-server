@@ -16,7 +16,7 @@ from pylsp_jsonrpc.streams import JsonRpcStreamReader, JsonRpcStreamWriter
 
 from . import lsp, _utils, uris
 from .config import config
-from .workspace import Workspace, Document, Cell, Notebook
+from .workspace import Workspace, Document, Notebook
 from ._version import __version__
 
 log = logging.getLogger(__name__)
@@ -469,15 +469,13 @@ class PythonLSPServer(MethodDispatcher):
         return self.completion_item_resolve(completionItem)
 
     # TODO: add m_notebook_document__did_close
-    def m_notebook_document__did_open(self, notebookDocument=None, cellTextDocuments=[], **_kwargs):
+    def m_notebook_document__did_open(self, notebookDocument=None, cellTextDocuments=None, **_kwargs):
         workspace = self._match_uri_to_workspace(notebookDocument['uri'])
         workspace.put_notebook_document(notebookDocument['uri'], notebookDocument['notebookType'],
                                         cells=notebookDocument['cells'], version=notebookDocument.get('version'),
                                         metadata=notebookDocument.get('metadata'))
-        for cell in cellTextDocuments:
-            workspace.put_cell_document(cell['uri'], cell['languageId'], notebookDocument['uri'], cell['text'],
-                                        version=cell.get('version'))
-        # self._hook('pylsp_document_did_open', textDocument['uri'])  # This hook seems only relevant for rope
+        for cell in (cellTextDocuments or []):
+            workspace.put_cell_document(cell['uri'], cell['languageId'], cell['text'], version=cell.get('version'))
         self.lint(notebookDocument['uri'], is_saved=True)
 
     def m_notebook_document__did_change(self, notebookDocument=None, change=None, **_kwargs):
@@ -514,8 +512,7 @@ class PythonLSPServer(MethodDispatcher):
                     opened_cells = structure['didOpen']
                     for cell_document in opened_cells:
                         workspace.put_cell_document(cell_document['uri'], cell_document['languageId'],
-                                                    notebookDocument['uri'], cell_document['text'],
-                                                    cell_document.get('version'))
+                                                    cell_document['text'], cell_document.get('version'))
                     # Cell metadata which is added to Notebook
                     opened_cells = notebook_cell_array_change['cells']
                     workspace.add_notebook_cells(notebookDocument['uri'], opened_cells, start)
