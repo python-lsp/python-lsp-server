@@ -466,7 +466,6 @@ class PythonLSPServer(MethodDispatcher):
     def m_completion_item__resolve(self, **completionItem):
         return self.completion_item_resolve(completionItem)
 
-    # TODO: add m_notebook_document__did_close
     def m_notebook_document__did_open(self, notebookDocument=None, cellTextDocuments=None, **_kwargs):
         workspace = self._match_uri_to_workspace(notebookDocument['uri'])
         workspace.put_notebook_document(notebookDocument['uri'], notebookDocument['notebookType'],
@@ -475,6 +474,13 @@ class PythonLSPServer(MethodDispatcher):
         for cell in (cellTextDocuments or []):
             workspace.put_cell_document(cell['uri'], cell['languageId'], cell['text'], version=cell.get('version'))
         self.lint(notebookDocument['uri'], is_saved=True)
+
+    def m_notebook_document__did_close(self, notebookDocument=None, cellTextDocuments=None, **_kwargs):
+        workspace = self._match_uri_to_workspace(notebookDocument['uri'])
+        for cell in (cellTextDocuments or []):
+            workspace.publish_diagnostics(cell['uri'], [])
+            workspace.rm_document(cell['uri'])
+        workspace.rm_document(notebookDocument['uri'])
 
     def m_notebook_document__did_change(self, notebookDocument=None, change=None, **_kwargs):
         """

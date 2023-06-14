@@ -33,9 +33,9 @@ def lock(method):
     return wrapper
 
 
-# pylint: disable=too-many-public-methods
 class Workspace:
 
+    # pylint: disable=too-many-public-methods
 
     M_PUBLISH_DIAGNOSTICS = 'textDocument/publishDiagnostics'
     M_PROGRESS = '$/progress'

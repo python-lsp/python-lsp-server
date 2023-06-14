@@ -404,3 +404,74 @@ def test_notebook_document__did_change(client_server_pair): # pylint: disable=re
             ),
         ]
         mock_notify.assert_has_calls(expected_call_args)
+
+
+def test_notebook__did_close(client_server_pair):  # pylint: disable=redefined-outer-name
+    client, server = client_server_pair
+    client._endpoint.request(
+        "initialize",
+        {
+            "processId": 1234,
+            "rootPath": os.path.dirname(__file__),
+            "initializationOptions": {},
+        },
+    ).result(timeout=CALL_TIMEOUT)
+
+    # Open notebook
+    with patch.object(server._endpoint, "notify") as mock_notify:
+        client._endpoint.notify(
+            "notebookDocument/didOpen",
+            {
+                "notebookDocument": {
+                    "uri": "notebook_uri",
+                    "notebookType": "jupyter-notebook",
+                    "cells": [
+                        {
+                            "kind": NotebookCellKind.Code,
+                            "document": "cell_1_uri",
+                        },
+                        {
+                            "kind": NotebookCellKind.Code,
+                            "document": "cell_2_uri",
+                        },
+                    ],
+                },
+                "cellTextDocuments": [
+                    {
+                        "uri": "cell_1_uri",
+                        "languageId": "python",
+                        "text": "import sys",
+                    },
+                    {
+                        "uri": "cell_2_uri",
+                        "languageId": "python",
+                        "text": "",
+                    },
+                ],
+            },
+        )
+        wait_for_condition(lambda: mock_notify.call_count >= 2)
+        assert len(server.workspace.documents) == 3
+        for uri in ["cell_1_uri", "cell_2_uri", "notebook_uri"]:
+            assert uri in server.workspace.documents
+
+    # Close notebook
+    with patch.object(server._endpoint, "notify") as mock_notify:
+        client._endpoint.notify(
+            "notebookDocument/didClose",
+            {
+                "notebookDocument": {
+                    "uri": "notebook_uri",
+                },
+                "cellTextDocuments": [
+                    {
+                        "uri": "cell_1_uri",
+                    },
+                    {
+                        "uri": "cell_2_uri",
+                    },
+                ],
+            },
+        )
+        wait_for_condition(lambda: mock_notify.call_count >= 2)
+        assert len(server.workspace.documents) == 0
