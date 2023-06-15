@@ -268,10 +268,11 @@ class PythonLSPServer(MethodDispatcher):
                 },
                 'openClose': True,
             },
-            # TODO: add notebookDocumentSync when we support it
-            # 'notebookDocumentSync' : {
-            #     'notebook': '*',
-            # },
+            'notebookDocumentSync' : {
+                'notebookSelector': {
+                    'cells': [{ 'language': 'python' }]
+                }
+            },
             'workspace': {
                 'workspaceFolders': {
                     'supported': True,
