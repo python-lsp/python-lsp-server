@@ -268,9 +268,9 @@ class PythonLSPServer(MethodDispatcher):
                 },
                 'openClose': True,
             },
-            'notebookDocumentSync' : {
+            'notebookDocumentSync': {
                 'notebookSelector': {
-                    'cells': [{ 'language': 'python' }]
+                    'cells': [{'language': 'python'}]
                 }
             },
             'workspace': {
@@ -397,7 +397,7 @@ class PythonLSPServer(MethodDispatcher):
     def _lint_notebook_document(self, notebook_document, workspace):
         """
         Lint a notebook document.
-        
+
         This is a bit more complicated than linting a text document, because we need to
         send the entire notebook document to the pylsp_lint hook, but we need to send
         the diagnostics back to the client on a per-cell basis.
@@ -486,7 +486,7 @@ class PythonLSPServer(MethodDispatcher):
     def m_notebook_document__did_change(self, notebookDocument=None, change=None, **_kwargs):
         """
         Changes to the notebook document.
-        
+
         This could be one of the following:
         1. Notebook metadata changed
         2. Cell(s) added

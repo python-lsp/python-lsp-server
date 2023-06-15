@@ -505,6 +505,7 @@ class Notebook:
     def remove_cells(self, start: int, delete_count: int) -> None:
         del self.cells[start:start+delete_count]
 
+
 # We inherit from Document for now to get the same API. However, cell document differ from the text documents in that
 # they have a language id.
 class Cell(Document):

@@ -58,7 +58,7 @@ def client_server_pair():
     client_server_pair_obj.client._endpoint.notify("exit")
 
 
-def test_initialize(client_server_pair): # pylint: disable=redefined-outer-name
+def test_initialize(client_server_pair):  # pylint: disable=redefined-outer-name
     client, server = client_server_pair
     response = client._endpoint.request(
         "initialize",
@@ -73,7 +73,7 @@ def test_initialize(client_server_pair): # pylint: disable=redefined-outer-name
     # TODO: assert that notebook capabilities are in response
 
 
-def test_notebook_document__did_open(client_server_pair): # pylint: disable=redefined-outer-name
+def test_notebook_document__did_open(client_server_pair):  # pylint: disable=redefined-outer-name
     client, server = client_server_pair
     client._endpoint.request(
         "initialize",
@@ -157,7 +157,7 @@ def test_notebook_document__did_open(client_server_pair): # pylint: disable=rede
         mock_notify.assert_has_calls(expected_call_args)
 
 
-def test_notebook_document__did_change(client_server_pair): # pylint: disable=redefined-outer-name
+def test_notebook_document__did_change(client_server_pair):  # pylint: disable=redefined-outer-name
     client, server = client_server_pair
     client._endpoint.request(
         "initialize",
@@ -258,7 +258,7 @@ def test_notebook_document__did_change(client_server_pair): # pylint: disable=re
         )
         wait_for_condition(lambda: mock_notify.call_count >= 1)
         assert len(server.workspace.documents) == 2
-        assert not "cell_2_uri" in server.workspace.documents
+        assert "cell_2_uri" not in server.workspace.documents
         assert len(server.workspace.get_document("notebook_uri").cells) == 1
         expected_call_args = [
             call(
@@ -406,7 +406,7 @@ def test_notebook_document__did_change(client_server_pair): # pylint: disable=re
         mock_notify.assert_has_calls(expected_call_args)
 
 
-def test_notebook__did_close(client_server_pair):  # pylint: disable=redefined-outer-name
+def test_notebook__did_close(client_server_pair):   # pylint: disable=redefined-outer-name
     client, server = client_server_pair
     client._endpoint.request(
         "initialize",
