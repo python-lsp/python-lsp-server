@@ -1,5 +1,23 @@
 # History of changes
 
+## Version 1.7.4 (2023/06/29)
+
+### Issues Closed
+
+* [Issue 393](https://github.com/python-lsp/python-lsp-server/issues/393) - Environment path doesn't expand user directory
+
+In this release 1 issue was closed.
+
+### Pull Requests Merged
+
+* [PR 394](https://github.com/python-lsp/python-lsp-server/pull/394) - Resolve homedir references in Jedi environment path, by [@odiroot](https://github.com/odiroot)
+* [PR 381](https://github.com/python-lsp/python-lsp-server/pull/381) - Report progress even when initialization fails, by [@syphar](https://github.com/syphar)
+* [PR 380](https://github.com/python-lsp/python-lsp-server/pull/380) - Fix pylint hang on file with many errors, by [@hetmankp](https://github.com/hetmankp)
+
+In this release 3 pull requests were closed.
+
+----
+
 ## Version 1.7.3 (2023/05/15)
 
 ### Issues Closed
