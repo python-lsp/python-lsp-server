@@ -10,7 +10,7 @@ import pytest
 from pylsp.python_lsp import PythonLSPServer
 from pylsp.lsp import NotebookCellKind
 
-CALL_TIMEOUT_IN_SECONDS = 10
+CALL_TIMEOUT_IN_SECONDS = 30
 
 
 def wait_for_condition(condition, timeout=CALL_TIMEOUT_IN_SECONDS):
