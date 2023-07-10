@@ -434,23 +434,25 @@ class PythonLSPServer(MethodDispatcher):
             offset += num_lines
 
         workspace.put_document(random_uri, total_source)
-        document_diagnostics = flatten(self._hook('pylsp_lint', random_uri, is_saved=True))
 
-        # Now we need to map the diagnostics back to the correct cell and publish them.
-        # Note: this is O(n*m) in the number of cells and diagnostics, respectively.
-        for cell in cell_list:
-            cell_diagnostics = []
-            for diagnostic in document_diagnostics:
-                if diagnostic['range']['start']['line'] > cell['line_end'] \
-                    or diagnostic['range']['end']['line'] < cell['line_start']:
-                    continue
-                diagnostic['range']['start']['line'] = diagnostic['range']['start']['line'] - cell['line_start']
-                diagnostic['range']['end']['line'] = diagnostic['range']['end']['line'] - cell['line_start']
-                cell_diagnostics.append(diagnostic)
+        try:
+            document_diagnostics = flatten(self._hook('pylsp_lint', random_uri, is_saved=True))
 
-            workspace.publish_diagnostics(cell['uri'], cell_diagnostics)
+            # Now we need to map the diagnostics back to the correct cell and publish them.
+            # Note: this is O(n*m) in the number of cells and diagnostics, respectively.
+            for cell in cell_list:
+                cell_diagnostics = []
+                for diagnostic in document_diagnostics:
+                    if diagnostic['range']['start']['line'] > cell['line_end'] \
+                        or diagnostic['range']['end']['line'] < cell['line_start']:
+                        continue
+                    diagnostic['range']['start']['line'] = diagnostic['range']['start']['line'] - cell['line_start']
+                    diagnostic['range']['end']['line'] = diagnostic['range']['end']['line'] - cell['line_start']
+                    cell_diagnostics.append(diagnostic)
 
-        workspace.rm_document(random_uri)
+                workspace.publish_diagnostics(cell['uri'], cell_diagnostics)
+        finally:
+            workspace.rm_document(random_uri)
 
     def references(self, doc_uri, position, exclude_declaration):
         return flatten(self._hook(
