@@ -515,3 +515,23 @@ class Cell(Document):
                  rope_project_builder=None):
         super().__init__(uri, workspace, source, version, local, extra_sys_path, rope_project_builder)
         self.language_id = language_id
+
+    @property
+    @lock
+    def line_count(self):
+        """"
+        Return the number of lines in the cell document.
+
+        This function is used to combine all cell documents into one text document. Note that we need to count a
+        newline at the end of a non-empty text line as an extra line.
+
+        Examples:
+            - "x\n" is a cell with two lines, "x" and ""
+            - "x" is a cell with one line, "x"
+            - "\n" is a cell with one line, ""
+        """
+        if len(self.lines) == 0:
+            return 1
+
+        last_line = self.lines[-1]
+        return len(self.lines) + (last_line != "\n" and last_line.endswith("\n"))

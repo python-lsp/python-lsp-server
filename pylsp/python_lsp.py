@@ -416,34 +416,38 @@ class PythonLSPServer(MethodDispatcher):
             cell_uri = cell['document']
             cell_document = workspace.get_cell_document(cell_uri)
 
-            num_lines = len(cell_document.lines)
+            num_lines = cell_document.line_count
 
             data = {
                 'uri': cell_uri,
-                'line_start': offset + 1,
-                'line_end': offset + num_lines,
+                'line_start': offset,
+                'line_end': offset + num_lines - 1,
                 'source': cell_document.source
             }
 
             cell_list.append(data)
-            total_source = total_source + "\n" + cell_document.source
+            if offset == 0:
+                total_source = cell_document.source
+            else:
+                maybe_newline = "" if total_source.endswith("\n") else "\n"
+                total_source += (maybe_newline + cell_document.source)
 
             offset += num_lines
 
         workspace.put_document(random_uri, total_source)
         document_diagnostics = flatten(self._hook('pylsp_lint', random_uri, is_saved=True))
 
-        # Now we need to map the diagnostics back to the correct cell and
-        # publish them.
+        # Now we need to map the diagnostics back to the correct cell and publish them.
+        # Note: this is O(n*m) in the number of cells and diagnostics, respectively.
         for cell in cell_list:
             cell_diagnostics = []
             for diagnostic in document_diagnostics:
-                if diagnostic['range']['start']['line'] > cell['line_end']:
-                    break
+                if diagnostic['range']['start']['line'] > cell['line_end'] \
+                    or diagnostic['range']['end']['line'] < cell['line_start']:
+                    continue
                 diagnostic['range']['start']['line'] = diagnostic['range']['start']['line'] - cell['line_start']
                 diagnostic['range']['end']['line'] = diagnostic['range']['end']['line'] - cell['line_start']
                 cell_diagnostics.append(diagnostic)
-                document_diagnostics.pop(0)
 
             workspace.publish_diagnostics(cell['uri'], cell_diagnostics)
 

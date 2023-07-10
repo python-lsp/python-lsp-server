@@ -10,10 +10,10 @@ import pytest
 from pylsp.python_lsp import PythonLSPServer
 from pylsp.lsp import NotebookCellKind
 
-CALL_TIMEOUT = 10
+CALL_TIMEOUT_IN_SECONDS = 10
 
 
-def wait_for_condition(condition, timeout=CALL_TIMEOUT):
+def wait_for_condition(condition, timeout=CALL_TIMEOUT_IN_SECONDS):
     """Wait for a condition to be true, or timeout."""
     start_time = time.time()
     while not condition():
@@ -51,9 +51,9 @@ def client_server_pair():
 
     yield (client_server_pair_obj.client, client_server_pair_obj.server)
 
-    shutdown_response = client_server_pair_obj.client._endpoint.request("shutdown").result(
-        timeout=CALL_TIMEOUT
-    )
+    shutdown_response = client_server_pair_obj.client._endpoint.request(
+        "shutdown"
+    ).result(timeout=CALL_TIMEOUT_IN_SECONDS)
     assert shutdown_response is None
     client_server_pair_obj.client._endpoint.notify("exit")
 
@@ -67,13 +67,15 @@ def test_initialize(client_server_pair):  # pylint: disable=redefined-outer-name
             "rootPath": os.path.dirname(__file__),
             "initializationOptions": {},
         },
-    ).result(timeout=CALL_TIMEOUT)
+    ).result(timeout=CALL_TIMEOUT_IN_SECONDS)
     assert server.workspace is not None
     assert "capabilities" in response
     # TODO: assert that notebook capabilities are in response
 
 
-def test_notebook_document__did_open(client_server_pair):  # pylint: disable=redefined-outer-name
+def test_notebook_document__did_open(
+    client_server_pair,
+):  # pylint: disable=redefined-outer-name
     client, server = client_server_pair
     client._endpoint.request(
         "initialize",
@@ -82,7 +84,7 @@ def test_notebook_document__did_open(client_server_pair):  # pylint: disable=red
             "rootPath": os.path.dirname(__file__),
             "initializationOptions": {},
         },
-    ).result(timeout=CALL_TIMEOUT)
+    ).result(timeout=CALL_TIMEOUT_IN_SECONDS)
 
     with patch.object(server._endpoint, "notify") as mock_notify:
         client._endpoint.notify(
@@ -100,28 +102,70 @@ def test_notebook_document__did_open(client_server_pair):  # pylint: disable=red
                             "kind": NotebookCellKind.Code,
                             "document": "cell_2_uri",
                         },
+                        {
+                            "kind": NotebookCellKind.Code,
+                            "document": "cell_3_uri",
+                        },
+                        {
+                            "kind": NotebookCellKind.Code,
+                            "document": "cell_4_uri",
+                        },
+                        {
+                            "kind": NotebookCellKind.Code,
+                            "document": "cell_5_uri",
+                        },
                     ],
                 },
+                # Test as many edge cases as possible for the diagnostics message
                 "cellTextDocuments": [
                     {
                         "uri": "cell_1_uri",
                         "languageId": "python",
-                        "text": "import sys",
+                        "text": "",
                     },
                     {
                         "uri": "cell_2_uri",
                         "languageId": "python",
-                        "text": "x = 1",
+                        "text": "\n",
+                    },
+                    {
+                        "uri": "cell_3_uri",
+                        "languageId": "python",
+                        "text": "\nimport sys\n\nabc\n\n",
+                    },
+                    {
+                        "uri": "cell_4_uri",
+                        "languageId": "python",
+                        "text": "x",
+                    },
+                    {
+                        "uri": "cell_5_uri",
+                        "languageId": "python",
+                        "text": "y\n",
                     },
                 ],
             },
         )
-        wait_for_condition(lambda: mock_notify.call_count >= 2)
+        wait_for_condition(lambda: mock_notify.call_count >= 5)
         expected_call_args = [
             call(
                 "textDocument/publishDiagnostics",
                 params={
                     "uri": "cell_1_uri",
+                    "diagnostics": [],
+                },
+            ),
+            call(
+                "textDocument/publishDiagnostics",
+                params={
+                    "uri": "cell_2_uri",
+                    "diagnostics": [],
+                },
+            ),
+            call(
+                "textDocument/publishDiagnostics",
+                params={
+                    "uri": "cell_3_uri",
                     "diagnostics": [
                         {
                             "source": "pyflakes",
@@ -131,25 +175,60 @@ def test_notebook_document__did_open(client_server_pair):  # pylint: disable=red
                             },
                             "message": "'sys' imported but unused",
                             "severity": 2,
-                        }
+                        },
+                        {
+                            "source": "pyflakes",
+                            "range": {
+                                "start": {"line": 3, "character": 0},
+                                "end": {"line": 3, "character": 4},
+                            },
+                            "message": "undefined name 'abc'",
+                            "severity": 1,
+                        },
+                        {
+                            "source": "pycodestyle",
+                            "range": {
+                                "start": {"line": 1, "character": 0},
+                                "end": {"line": 1, "character": 11},
+                            },
+                            "message": "E303 too many blank lines (3)",
+                            "code": "E303",
+                            "severity": 2,
+                        },
                     ],
                 },
             ),
             call(
                 "textDocument/publishDiagnostics",
                 params={
-                    "uri": "cell_2_uri",
+                    "uri": "cell_4_uri",
                     "diagnostics": [
                         {
-                            "source": "pycodestyle",
+                            "source": "pyflakes",
                             "range": {
-                                "start": {"line": 0, "character": 5},
-                                "end": {"line": 0, "character": 5},
+                                "start": {"line": 0, "character": 0},
+                                "end": {"line": 0, "character": 2},
                             },
-                            "message": "W292 no newline at end of file",
-                            "code": "W292",
-                            "severity": 2,
-                        }
+                            "message": "undefined name 'x'",
+                            "severity": 1,
+                        },
+                    ],
+                },
+            ),
+            call(
+                "textDocument/publishDiagnostics",
+                params={
+                    "uri": "cell_5_uri",
+                    "diagnostics": [
+                        {
+                            "source": "pyflakes",
+                            "range": {
+                                "start": {"line": 0, "character": 0},
+                                "end": {"line": 0, "character": 2},
+                            },
+                            "message": "undefined name 'y'",
+                            "severity": 1,
+                        },
                     ],
                 },
             ),
@@ -157,7 +236,9 @@ def test_notebook_document__did_open(client_server_pair):  # pylint: disable=red
         mock_notify.assert_has_calls(expected_call_args)
 
 
-def test_notebook_document__did_change(client_server_pair):  # pylint: disable=redefined-outer-name
+def test_notebook_document__did_change(
+    client_server_pair,
+):  # pylint: disable=redefined-outer-name
     client, server = client_server_pair
     client._endpoint.request(
         "initialize",
@@ -166,7 +247,7 @@ def test_notebook_document__did_change(client_server_pair):  # pylint: disable=r
             "rootPath": os.path.dirname(__file__),
             "initializationOptions": {},
         },
-    ).result(timeout=CALL_TIMEOUT)
+    ).result(timeout=CALL_TIMEOUT_IN_SECONDS)
 
     # Open notebook
     with patch.object(server._endpoint, "notify") as mock_notify:
@@ -274,7 +355,17 @@ def test_notebook_document__did_change(client_server_pair):  # pylint: disable=r
                             },
                             "message": "'sys' imported but unused",
                             "severity": 2,
-                        }
+                        },
+                        {
+                            "source": "pycodestyle",
+                            "range": {
+                                "start": {"line": 0, "character": 10},
+                                "end": {"line": 0, "character": 10},
+                            },
+                            "message": "W292 no newline at end of file",
+                            "code": "W292",
+                            "severity": 2,
+                        },
                     ],
                 },
             )
@@ -349,7 +440,17 @@ def test_notebook_document__did_change(client_server_pair):  # pylint: disable=r
                             },
                             "message": "undefined name 'x'",
                             "severity": 1,
-                        }
+                        },
+                        {
+                            "source": "pycodestyle",
+                            "range": {
+                                "start": {"line": 0, "character": 1},
+                                "end": {"line": 0, "character": 1},
+                            },
+                            "message": "W292 no newline at end of file",
+                            "code": "W292",
+                            "severity": 2,
+                        },
                     ],
                 },
             ),
@@ -406,7 +507,9 @@ def test_notebook_document__did_change(client_server_pair):  # pylint: disable=r
         mock_notify.assert_has_calls(expected_call_args)
 
 
-def test_notebook__did_close(client_server_pair):   # pylint: disable=redefined-outer-name
+def test_notebook__did_close(
+    client_server_pair,
+):  # pylint: disable=redefined-outer-name
     client, server = client_server_pair
     client._endpoint.request(
         "initialize",
@@ -415,7 +518,7 @@ def test_notebook__did_close(client_server_pair):   # pylint: disable=redefined-
             "rootPath": os.path.dirname(__file__),
             "initializationOptions": {},
         },
-    ).result(timeout=CALL_TIMEOUT)
+    ).result(timeout=CALL_TIMEOUT_IN_SECONDS)
 
     # Open notebook
     with patch.object(server._endpoint, "notify") as mock_notify:
