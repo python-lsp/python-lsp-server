@@ -126,8 +126,8 @@ def test_notebook_document__did_open(client_server_pair):  # pylint: disable=red
                         {
                             "source": "pyflakes",
                             "range": {
-                                "start": {"line": 1, "character": 0},
-                                "end": {"line": 1, "character": 11},
+                                "start": {"line": 0, "character": 0},
+                                "end": {"line": 0, "character": 11},
                             },
                             "message": "'sys' imported but unused",
                             "severity": 2,
@@ -143,8 +143,8 @@ def test_notebook_document__did_open(client_server_pair):  # pylint: disable=red
                         {
                             "source": "pycodestyle",
                             "range": {
-                                "start": {"line": 1, "character": 5},
-                                "end": {"line": 1, "character": 5},
+                                "start": {"line": 0, "character": 5},
+                                "end": {"line": 0, "character": 5},
                             },
                             "message": "W292 no newline at end of file",
                             "code": "W292",
@@ -215,8 +215,8 @@ def test_notebook_document__did_change(client_server_pair):  # pylint: disable=r
                         {
                             "source": "pyflakes",
                             "range": {
-                                "start": {"line": 1, "character": 0},
-                                "end": {"line": 1, "character": 11},
+                                "start": {"line": 0, "character": 0},
+                                "end": {"line": 0, "character": 11},
                             },
                             "message": "'sys' imported but unused",
                             "severity": 2,
@@ -269,8 +269,8 @@ def test_notebook_document__did_change(client_server_pair):  # pylint: disable=r
                         {
                             "source": "pyflakes",
                             "range": {
-                                "start": {"line": 1, "character": 0},
-                                "end": {"line": 1, "character": 10},
+                                "start": {"line": 0, "character": 0},
+                                "end": {"line": 0, "character": 10},
                             },
                             "message": "'sys' imported but unused",
                             "severity": 2,
@@ -327,8 +327,8 @@ def test_notebook_document__did_change(client_server_pair):  # pylint: disable=r
                         {
                             "source": "pyflakes",
                             "range": {
-                                "start": {"line": 1, "character": 0},
-                                "end": {"line": 1, "character": 11},
+                                "start": {"line": 0, "character": 0},
+                                "end": {"line": 0, "character": 11},
                             },
                             "message": "'sys' imported but unused",
                             "severity": 2,
@@ -344,8 +344,8 @@ def test_notebook_document__did_change(client_server_pair):  # pylint: disable=r
                         {
                             "source": "pyflakes",
                             "range": {
-                                "start": {"line": 1, "character": 0},
-                                "end": {"line": 1, "character": 1},
+                                "start": {"line": 0, "character": 0},
+                                "end": {"line": 0, "character": 1},
                             },
                             "message": "undefined name 'x'",
                             "severity": 1,
@@ -392,8 +392,8 @@ def test_notebook_document__did_change(client_server_pair):  # pylint: disable=r
                         {
                             "source": "pycodestyle",
                             "range": {
-                                "start": {"line": 1, "character": 8},
-                                "end": {"line": 1, "character": 8},
+                                "start": {"line": 0, "character": 8},
+                                "end": {"line": 0, "character": 8},
                             },
                             "message": "W292 no newline at end of file",
                             "code": "W292",

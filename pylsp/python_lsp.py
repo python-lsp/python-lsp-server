@@ -440,8 +440,8 @@ class PythonLSPServer(MethodDispatcher):
             for diagnostic in document_diagnostics:
                 if diagnostic['range']['start']['line'] > cell['line_end']:
                     break
-                diagnostic['range']['start']['line'] = diagnostic['range']['start']['line'] - cell['line_start'] + 1
-                diagnostic['range']['end']['line'] = diagnostic['range']['end']['line'] - cell['line_start'] + 1
+                diagnostic['range']['start']['line'] = diagnostic['range']['start']['line'] - cell['line_start']
+                diagnostic['range']['end']['line'] = diagnostic['range']['end']['line'] - cell['line_start']
                 cell_diagnostics.append(diagnostic)
                 document_diagnostics.pop(0)
 
