@@ -429,8 +429,7 @@ class PythonLSPServer(MethodDispatcher):
             if offset == 0:
                 total_source = cell_document.source
             else:
-                maybe_newline = "" if total_source.endswith("\n") else "\n"
-                total_source += (maybe_newline + cell_document.source)
+                total_source += ("\n" + cell_document.source)
 
             offset += num_lines
 

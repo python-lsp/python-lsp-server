@@ -169,8 +169,8 @@ def test_notebook_document__did_open(
                         {
                             "source": "pyflakes",
                             "range": {
-                                "start": {"line": 0, "character": 0},
-                                "end": {"line": 0, "character": 11},
+                                "start": {"line": 1, "character": 0},
+                                "end": {"line": 1, "character": 11},
                             },
                             "message": "'sys' imported but unused",
                             "severity": 2,
@@ -190,7 +190,7 @@ def test_notebook_document__did_open(
                                 "start": {"line": 1, "character": 0},
                                 "end": {"line": 1, "character": 11},
                             },
-                            "message": "E303 too many blank lines (3)",
+                            "message": "E303 too many blank lines (4)",
                             "code": "E303",
                             "severity": 2,
                         },
