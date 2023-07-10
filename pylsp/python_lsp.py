@@ -394,7 +394,7 @@ class PythonLSPServer(MethodDispatcher):
             flatten(self._hook('pylsp_lint', doc_uri, is_saved=is_saved))
         )
 
-    def _lint_notebook_document(self, notebook_document, workspace):   # pylint: disable=too-many-locals
+    def _lint_notebook_document(self, notebook_document, workspace):
         """
         Lint a notebook document.
 
