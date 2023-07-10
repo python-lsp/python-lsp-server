@@ -69,8 +69,7 @@ def test_initialize(client_server_pair):  # pylint: disable=redefined-outer-name
         },
     ).result(timeout=CALL_TIMEOUT_IN_SECONDS)
     assert server.workspace is not None
-    assert "capabilities" in response
-    # TODO: assert that notebook capabilities are in response
+    assert "notebookDocumentSync" in response["capabilities"].keys()
 
 
 def test_notebook_document__did_open(
