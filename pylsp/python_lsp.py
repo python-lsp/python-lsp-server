@@ -394,7 +394,7 @@ class PythonLSPServer(MethodDispatcher):
             flatten(self._hook('pylsp_lint', doc_uri, is_saved=is_saved))
         )
 
-    def _lint_notebook_document(self, notebook_document, workspace):
+    def _lint_notebook_document(self, notebook_document, workspace):  # pylint: disable=too-many-locals
         """
         Lint a notebook document.
 
@@ -443,11 +443,13 @@ class PythonLSPServer(MethodDispatcher):
             for cell in cell_list:
                 cell_diagnostics = []
                 for diagnostic in document_diagnostics:
-                    if diagnostic['range']['start']['line'] > cell['line_end'] \
-                        or diagnostic['range']['end']['line'] < cell['line_start']:
+                    start_line = diagnostic['range']['start']['line']
+                    end_line = diagnostic['range']['end']['line']
+
+                    if start_line > cell['line_end'] or end_line < cell['line_start']:
                         continue
-                    diagnostic['range']['start']['line'] = diagnostic['range']['start']['line'] - cell['line_start']
-                    diagnostic['range']['end']['line'] = diagnostic['range']['end']['line'] - cell['line_start']
+                    diagnostic['range']['start']['line'] = start_line - cell['line_start']
+                    diagnostic['range']['end']['line'] = end_line - cell['line_start']
                     cell_diagnostics.append(diagnostic)
 
                 workspace.publish_diagnostics(cell['uri'], cell_diagnostics)
@@ -528,6 +530,7 @@ class PythonLSPServer(MethodDispatcher):
                     # Cell documents
                     for cell_document in structure['didClose']:
                         workspace.rm_document(cell_document['uri'])
+                        workspace.publish_diagnostics(cell_document['uri'], [])
                     # Cell metadata which is removed from Notebook
                     workspace.remove_notebook_cells(notebookDocument['uri'], start, cell_delete_count)
 
