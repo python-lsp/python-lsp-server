@@ -582,3 +582,82 @@ def test_notebook__did_close(
         )
         wait_for_condition(lambda: mock_notify.call_count >= 2)
         assert len(server.workspace.documents) == 0
+
+def test_notebook_definition(
+    client_server_pair,
+):  # pylint: disable=redefined-outer-name
+    client, server = client_server_pair
+    client._endpoint.request(
+        "initialize",
+        {
+            "processId": 1234,
+            "rootPath": os.path.dirname(__file__),
+            "initializationOptions": {},
+        },
+    ).result(timeout=CALL_TIMEOUT_IN_SECONDS)
+
+    # Open notebook
+    with patch.object(server._endpoint, "notify") as mock_notify:
+        client._endpoint.notify(
+            "notebookDocument/didOpen",
+            {
+                "notebookDocument": {
+                    "uri": "notebook_uri",
+                    "notebookType": "jupyter-notebook",
+                    "cells": [
+                        {
+                            "kind": NotebookCellKind.Code,
+                            "document": "cell_1_uri",
+                        },
+                        {
+                            "kind": NotebookCellKind.Code,
+                            "document": "cell_2_uri",
+                        },
+                    ],
+                },
+                "cellTextDocuments": [
+                    {
+                        "uri": "cell_1_uri",
+                        "languageId": "python",
+                        "text": "y=2\nx=1",
+                    },
+                    {
+                        "uri": "cell_2_uri",
+                        "languageId": "python",
+                        "text": "x",
+                    },
+                ],
+            },
+        )
+        # wait for expected diagnostics messages
+        wait_for_condition(lambda: mock_notify.call_count >= 2)
+        assert len(server.workspace.documents) == 3
+        for uri in ["cell_1_uri", "cell_2_uri", "notebook_uri"]:
+            assert uri in server.workspace.documents
+
+    future = client._endpoint.request(
+        "textDocument/definition",
+        {
+            "textDocument": {
+                "uri": "cell_2_uri",
+            },
+            "position": {
+                "line": 0,
+                "character": 1
+            }
+        },
+    )
+    result = future.result(CALL_TIMEOUT_IN_SECONDS)
+    assert result == [{
+        'uri': 'cell_1_uri',
+        'range': {
+            'start': {
+                'line': 1,
+                'character': 0
+            },
+            'end': {
+                'line': 1,
+                'character': 1
+            }
+        }
+    }]

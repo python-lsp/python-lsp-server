@@ -16,7 +16,7 @@ from pylsp_jsonrpc.streams import JsonRpcStreamReader, JsonRpcStreamWriter
 
 from . import lsp, _utils, uris
 from .config import config
-from .workspace import Workspace, Document, Notebook
+from .workspace import Workspace, Document, Notebook, Cell
 from ._version import __version__
 
 log = logging.getLogger(__name__)
@@ -484,7 +484,7 @@ class PythonLSPServer(MethodDispatcher):
             metadata=notebookDocument.get('metadata')
         )
         for cell in (cellTextDocuments or []):
-            workspace.put_cell_document(cell['uri'], cell['languageId'], cell['text'], version=cell.get('version'))
+            workspace.put_cell_document(cell['uri'], notebookDocument['uri'], cell['languageId'], cell['text'], version=cell.get('version'))
         self.lint(notebookDocument['uri'], is_saved=True)
 
     def m_notebook_document__did_close(self, notebookDocument=None, cellTextDocuments=None, **_kwargs):
@@ -526,7 +526,8 @@ class PythonLSPServer(MethodDispatcher):
                     # Cell documents
                     for cell_document in structure['didOpen']:
                         workspace.put_cell_document(
-                            cell_document['uri'],
+                            cell_document['uri'], 
+                            notebookDocument['uri'],
                             cell_document['languageId'],
                             cell_document['text'],
                             cell_document.get('version')
@@ -593,7 +594,80 @@ class PythonLSPServer(MethodDispatcher):
     def m_text_document__completion(self, textDocument=None, position=None, **_kwargs):
         return self.completions(textDocument['uri'], position)
 
+    def _cell_document__definition(self, cellDocument=None, position=None, **_kwargs):
+        # First, we create a temp TextDocument to send to the hook that represents the whole notebook
+        # contents.
+        workspace = self._match_uri_to_workspace(cellDocument.notebook_uri)
+        notebookDocument = workspace.get_maybe_document(cellDocument.notebook_uri)
+        if notebookDocument is None:
+            raise ValueError("Invalid notebook document")
+
+        random_uri = str(uuid.uuid4())
+        # cell_list helps us map the diagnostics back to the correct cell later.
+        cell_list: List[Dict[str, Any]] = []
+
+        offset = 0
+        total_source = ""
+        for cell in notebookDocument.cells:
+            cell_uri = cell['document']
+            cell_document = workspace.get_cell_document(cell_uri)
+
+            num_lines = cell_document.line_count
+
+            data = {
+                'uri': cell_uri,
+                'line_start': offset,
+                'line_end': offset + num_lines - 1,
+                'source': cell_document.source
+            }
+
+            if position is not None and cell_uri == cellDocument.uri:
+                position['line'] += offset
+
+            cell_list.append(data)
+            if offset == 0:
+                total_source = cell_document.source
+            else:
+                total_source += ("\n" + cell_document.source)
+
+            offset += num_lines
+
+        # TODO: make a workspace temp document context manager that yields the random uri and cleans up afterwards
+        workspace.put_document(random_uri, total_source)
+        log.info(f'Making new document {random_uri}')
+        try:
+            definitions = self.definitions(random_uri, position)
+            log.info(f'Got definitions: {definitions}')
+
+            # {
+            #     'uri': uris.uri_with(document.uri, path=str(d.module_path)),
+            #     'range': {
+            #         'start': {'line': d.line - 1, 'character': d.column},
+            #         'end': {'line': d.line - 1, 'character': d.column + len(d.name)},
+            #     }
+            # }
+            print(definitions)
+            for definition in definitions:
+                # TODO: a better test for if a definition is the random_uri
+                if random_uri in definition['uri']:
+                    # Find the cell the start is in
+                    for cell in cell_list:
+                        # TODO: perhaps it is more correct to check definition['range']['end']['line'] <= cell['line_end'], but 
+                        # that would mess up if a definition was split over cells
+                        if cell['line_start'] <= definition['range']['start']['line'] <= cell['line_end']:
+                            definition['uri'] = cell['uri']
+                            definition['range']['start']['line'] -= cell['line_start']
+                            definition['range']['end']['line'] -= cell['line_start']
+            return definitions
+        finally:
+            workspace.rm_document(random_uri)
+
     def m_text_document__definition(self, textDocument=None, position=None, **_kwargs):
+        # textDocument here is just a dict with a uri
+        workspace = self._match_uri_to_workspace(textDocument['uri'])
+        document = workspace.get_document(textDocument['uri'])
+        if isinstance(document, Cell):
+            return self._cell_document__definition(document, position, **_kwargs)
         return self.definitions(textDocument['uri'], position)
 
     def m_text_document__document_highlight(self, textDocument=None, position=None, **_kwargs):

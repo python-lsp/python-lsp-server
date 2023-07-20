@@ -128,8 +128,8 @@ class Workspace:
     def update_notebook_metadata(self, doc_uri, metadata):
         self._docs[doc_uri].metadata = metadata
 
-    def put_cell_document(self, doc_uri, language_id, source, version=None):
-        self._docs[doc_uri] = self._create_cell_document(doc_uri, language_id, source, version)
+    def put_cell_document(self, doc_uri, notebook_uri, language_id, source, version=None):
+        self._docs[doc_uri] = self._create_cell_document(doc_uri, notebook_uri, language_id, source, version)
 
     def rm_document(self, doc_uri):
         self._docs.pop(doc_uri)
@@ -305,11 +305,12 @@ class Workspace:
             metadata=metadata
         )
 
-    def _create_cell_document(self, doc_uri, language_id, source=None, version=None):
+    def _create_cell_document(self, doc_uri, notebook_uri, language_id, source=None, version=None):
         # TODO: remove what is unnecessary here.
         path = uris.to_fs_path(doc_uri)
         return Cell(
             doc_uri,
+            notebook_uri=notebook_uri,
             language_id=language_id,
             workspace=self,
             source=source,
@@ -538,10 +539,11 @@ class Cell(Document):
     they have a language id.
     """
 
-    def __init__(self, uri, language_id, workspace, source=None, version=None, local=True, extra_sys_path=None,
+    def __init__(self, uri, notebook_uri, language_id, workspace, source=None, version=None, local=True, extra_sys_path=None,
                  rope_project_builder=None):
         super().__init__(uri, workspace, source, version, local, extra_sys_path, rope_project_builder)
         self.language_id = language_id
+        self.notebook_uri = notebook_uri
 
     @property
     @lock
