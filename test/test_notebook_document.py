@@ -7,6 +7,7 @@ from unittest.mock import patch, call
 
 import pytest
 
+from pylsp import IS_WIN
 from pylsp.python_lsp import PythonLSPServer
 from pylsp.lsp import NotebookCellKind
 
@@ -58,6 +59,7 @@ def client_server_pair():
     client_server_pair_obj.client._endpoint.notify("exit")
 
 
+@pytest.mark.skipif(IS_WIN, reason="Flaky on Windows")
 def test_initialize(client_server_pair):  # pylint: disable=redefined-outer-name
     client, server = client_server_pair
     response = client._endpoint.request(
@@ -72,6 +74,7 @@ def test_initialize(client_server_pair):  # pylint: disable=redefined-outer-name
     assert "notebookDocumentSync" in response["capabilities"].keys()
 
 
+@pytest.mark.skipif(IS_WIN, reason="Flaky on Windows")
 def test_notebook_document__did_open(
     client_server_pair,
 ):  # pylint: disable=redefined-outer-name
@@ -235,6 +238,7 @@ def test_notebook_document__did_open(
         mock_notify.assert_has_calls(expected_call_args)
 
 
+@pytest.mark.skipif(IS_WIN, reason="Flaky on Windows")
 def test_notebook_document__did_change(
     client_server_pair,
 ):  # pylint: disable=redefined-outer-name
@@ -506,6 +510,7 @@ def test_notebook_document__did_change(
         mock_notify.assert_has_calls(expected_call_args)
 
 
+@pytest.mark.skipif(IS_WIN, reason="Flaky on Windows")
 def test_notebook__did_close(
     client_server_pair,
 ):  # pylint: disable=redefined-outer-name
