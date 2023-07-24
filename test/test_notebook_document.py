@@ -340,7 +340,7 @@ def test_notebook_document__did_change(
                 },
             },
         )
-        wait_for_condition(lambda: mock_notify.call_count >= 1)
+        wait_for_condition(lambda: mock_notify.call_count >= 2)
         assert len(server.workspace.documents) == 2
         assert "cell_2_uri" not in server.workspace.documents
         assert len(server.workspace.get_document("notebook_uri").cells) == 1
