@@ -28,6 +28,7 @@ class FakeEditorMethodsMixin:
     """
     Represents the methods to be added to a dispatcher class when faking an editor.
     """
+
     def m_window__work_done_progress__create(self, *_args, **_kwargs):
         """
         Fake editor method `window/workDoneProgress/create`.
@@ -52,6 +53,7 @@ class FakeEndpoint(Endpoint):
     Fake methods in the `dispatcher` should raise `JsonRpcException` for any
     error.
     """
+
     def request(self, method, params=None):
         request_future = super().request(method, params)
         try:
@@ -64,13 +66,11 @@ class FakeEndpoint(Endpoint):
 
 @pytest.fixture
 def pylsp(tmpdir):
-    """ Return an initialized python LS """
+    """Return an initialized python LS"""
     ls = FakePythonLSPServer(StringIO, StringIO, endpoint_cls=FakeEndpoint)
 
     ls.m_initialize(
-        processId=1,
-        rootUri=uris.from_fs_path(str(tmpdir)),
-        initializationOptions={}
+        processId=1, rootUri=uris.from_fs_path(str(tmpdir)), initializationOptions={}
     )
 
     return ls
@@ -78,26 +78,20 @@ def pylsp(tmpdir):
 
 @pytest.fixture
 def pylsp_w_workspace_folders(tmpdir):
-    """ Return an initialized python LS """
+    """Return an initialized python LS"""
     ls = FakePythonLSPServer(StringIO, StringIO, endpoint_cls=FakeEndpoint)
 
-    folder1 = tmpdir.mkdir('folder1')
-    folder2 = tmpdir.mkdir('folder2')
+    folder1 = tmpdir.mkdir("folder1")
+    folder2 = tmpdir.mkdir("folder2")
 
     ls.m_initialize(
         processId=1,
         rootUri=uris.from_fs_path(str(folder1)),
         initializationOptions={},
         workspaceFolders=[
-            {
-                'uri': uris.from_fs_path(str(folder1)),
-                'name': 'folder1'
-            },
-            {
-                'uri': uris.from_fs_path(str(folder2)),
-                'name': 'folder2'
-            }
-        ]
+            {"uri": uris.from_fs_path(str(folder1)), "name": "folder1"},
+            {"uri": uris.from_fs_path(str(folder2)), "name": "folder2"},
+        ],
     )
 
     workspace_folders = [folder1, folder2]
@@ -129,7 +123,7 @@ def workspace(tmpdir, endpoint):  # pylint: disable=redefined-outer-name
 @pytest.fixture
 def workspace_other_root_path(tmpdir, endpoint):  # pylint: disable=redefined-outer-name
     """Return a workspace with a root_path other than tmpdir."""
-    ws_path = str(tmpdir.mkdir('test123').mkdir('test456'))
+    ws_path = str(tmpdir.mkdir("test123").mkdir("test456"))
     ws = Workspace(uris.from_fs_path(ws_path), endpoint)
     ws._config = Config(ws.root_uri, {}, 0, {})
     return ws
@@ -139,7 +133,9 @@ def workspace_other_root_path(tmpdir, endpoint):  # pylint: disable=redefined-ou
 def config(workspace):  # pylint: disable=redefined-outer-name
     """Return a config object."""
     cfg = Config(workspace.root_uri, {}, 0, {})
-    cfg._plugin_settings = {'plugins': {'pylint': {'enabled': False, 'args': [], 'executable': None}}}
+    cfg._plugin_settings = {
+        "plugins": {"pylint": {"enabled": False, "args": [], "executable": None}}
+    }
     return cfg
 
 
@@ -150,14 +146,15 @@ def doc(workspace):  # pylint: disable=redefined-outer-name
 
 @pytest.fixture
 def temp_workspace_factory(workspace):  # pylint: disable=redefined-outer-name
-    '''
+    """
     Returns a function that creates a temporary workspace from the files dict.
     The dict is in the format {"file_name": "file_contents"}
-    '''
+    """
+
     def fn(files):
         def create_file(name, content):
             fn = os.path.join(workspace.root_path, name)
-            with open(fn, 'w', encoding='utf-8') as f:
+            with open(fn, "w", encoding="utf-8") as f:
                 f.write(content)
             workspace.put_document(uris.from_fs_path(fn), content)
 

@@ -38,7 +38,7 @@ def test_debounce_keyed_by():
     interval = 0.1
     obj = mock.Mock()
 
-    @_utils.debounce(0.1, keyed_by='key')
+    @_utils.debounce(0.1, keyed_by="key")
     def call_m(key):
         obj(key)
 
@@ -50,11 +50,14 @@ def test_debounce_keyed_by():
     assert not obj.mock_calls
 
     time.sleep(interval * 2)
-    obj.assert_has_calls([
-        mock.call(1),
-        mock.call(2),
-        mock.call(3),
-    ], any_order=True)
+    obj.assert_has_calls(
+        [
+            mock.call(1),
+            mock.call(2),
+            mock.call(3),
+        ],
+        any_order=True,
+    )
     assert len(obj.mock_calls) == 3
 
     call_m(1)
@@ -74,23 +77,25 @@ def test_find_parents(tmpdir):
     path = subsubdir.ensure("path.py")
     test_cfg = tmpdir.ensure("test.cfg")
 
-    assert _utils.find_parents(tmpdir.strpath, path.strpath, ["test.cfg"]) == [test_cfg.strpath]
+    assert _utils.find_parents(tmpdir.strpath, path.strpath, ["test.cfg"]) == [
+        test_cfg.strpath
+    ]
 
 
 def test_merge_dicts():
     assert _utils.merge_dicts(
-        {'a': True, 'b': {'x': 123, 'y': {'hello': 'world'}}},
-        {'a': False, 'b': {'y': [], 'z': 987}}
-    ) == {'a': False, 'b': {'x': 123, 'y': [], 'z': 987}}
+        {"a": True, "b": {"x": 123, "y": {"hello": "world"}}},
+        {"a": False, "b": {"y": [], "z": 987}},
+    ) == {"a": False, "b": {"x": 123, "y": [], "z": 987}}
 
 
 def test_clip_column():
     assert _utils.clip_column(0, [], 0) == 0
-    assert _utils.clip_column(2, ['123'], 0) == 2
-    assert _utils.clip_column(3, ['123'], 0) == 3
-    assert _utils.clip_column(5, ['123'], 0) == 3
-    assert _utils.clip_column(0, ['\n', '123'], 0) == 0
-    assert _utils.clip_column(1, ['\n', '123'], 0) == 0
-    assert _utils.clip_column(2, ['123\n', '123'], 0) == 2
-    assert _utils.clip_column(3, ['123\n', '123'], 0) == 3
-    assert _utils.clip_column(4, ['123\n', '123'], 1) == 3
+    assert _utils.clip_column(2, ["123"], 0) == 2
+    assert _utils.clip_column(3, ["123"], 0) == 3
+    assert _utils.clip_column(5, ["123"], 0) == 3
+    assert _utils.clip_column(0, ["\n", "123"], 0) == 0
+    assert _utils.clip_column(1, ["\n", "123"], 0) == 0
+    assert _utils.clip_column(2, ["123\n", "123"], 0) == 2
+    assert _utils.clip_column(3, ["123\n", "123"], 0) == 3
+    assert _utils.clip_column(4, ["123\n", "123"], 1) == 3
