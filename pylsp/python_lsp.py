@@ -476,9 +476,13 @@ class PythonLSPServer(MethodDispatcher):
 
     def m_notebook_document__did_open(self, notebookDocument=None, cellTextDocuments=None, **_kwargs):
         workspace = self._match_uri_to_workspace(notebookDocument['uri'])
-        workspace.put_notebook_document(notebookDocument['uri'], notebookDocument['notebookType'],
-                                        cells=notebookDocument['cells'], version=notebookDocument.get('version'),
-                                        metadata=notebookDocument.get('metadata'))
+        workspace.put_notebook_document(
+            notebookDocument['uri'],
+            notebookDocument['notebookType'],
+            cells=notebookDocument['cells'],
+            version=notebookDocument.get('version'),
+            metadata=notebookDocument.get('metadata')
+        )
         for cell in (cellTextDocuments or []):
             workspace.put_cell_document(cell['uri'], cell['languageId'], cell['text'], version=cell.get('version'))
         self.lint(notebookDocument['uri'], is_saved=True)
@@ -521,8 +525,12 @@ class PythonLSPServer(MethodDispatcher):
                     # Case 2
                     # Cell documents
                     for cell_document in structure['didOpen']:
-                        workspace.put_cell_document(cell_document['uri'], cell_document['languageId'],
-                                                    cell_document['text'], cell_document.get('version'))
+                        workspace.put_cell_document(
+                            cell_document['uri'],
+                            cell_document['languageId'],
+                            cell_document['text'],
+                            cell_document.get('version')
+                        )
                     # Cell metadata which is added to Notebook
                     workspace.add_notebook_cells(notebookDocument['uri'], notebook_cell_array_change['cells'], start)
                 else:

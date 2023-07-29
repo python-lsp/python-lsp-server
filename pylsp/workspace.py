@@ -506,10 +506,15 @@ class Notebook:
         del self.cells[start:start+delete_count]
 
 
-# We inherit from Document for now to get the same API. However, cell document differ from the text documents in that
-# they have a language id.
 class Cell(Document):
-    """Represents a cell in a notebook."""
+    """
+    Represents a cell in a notebook.
+
+    Notes
+    -----
+    We inherit from Document for now to get the same API. However, a cell document differs from text documents in that
+    they have a language id.
+    """
 
     def __init__(self, uri, language_id, workspace, source=None, version=None, local=True, extra_sys_path=None,
                  rope_project_builder=None):
