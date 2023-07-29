@@ -165,8 +165,8 @@ Dev install
 
 ```
 # create conda env
-cc python-lsp-server
-ca python-lsp-server
+conda create --name python-lsp-server python=3.8 -y
+conda activate python-lsp-server
 
 pip install ".[all]"
 pip install ".[websockets]"
