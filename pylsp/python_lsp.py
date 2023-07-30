@@ -602,7 +602,6 @@ class PythonLSPServer(MethodDispatcher):
         if notebookDocument is None:
             raise ValueError("Invalid notebook document")
 
-        random_uri = str(uuid.uuid4())
         # cell_list helps us map the diagnostics back to the correct cell later.
         cell_list: List[Dict[str, Any]] = []
 
@@ -632,21 +631,8 @@ class PythonLSPServer(MethodDispatcher):
 
             offset += num_lines
 
-        # TODO: make a workspace temp document context manager that yields the random uri and cleans up afterwards
-        workspace.put_document(random_uri, total_source)
-        log.info(f'Making new document {random_uri}')
-        try:
+        with workspace.temp_document(total_source) as random_uri:
             definitions = self.definitions(random_uri, position)
-            log.info(f'Got definitions: {definitions}')
-
-            # {
-            #     'uri': uris.uri_with(document.uri, path=str(d.module_path)),
-            #     'range': {
-            #         'start': {'line': d.line - 1, 'character': d.column},
-            #         'end': {'line': d.line - 1, 'character': d.column + len(d.name)},
-            #     }
-            # }
-            print(definitions)
             for definition in definitions:
                 # TODO: a better test for if a definition is the random_uri
                 if random_uri in definition['uri']:
@@ -659,8 +645,6 @@ class PythonLSPServer(MethodDispatcher):
                             definition['range']['start']['line'] -= cell['line_start']
                             definition['range']['end']['line'] -= cell['line_start']
             return definitions
-        finally:
-            workspace.rm_document(random_uri)
 
     def m_text_document__definition(self, textDocument=None, position=None, **_kwargs):
         # textDocument here is just a dict with a uri

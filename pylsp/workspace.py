@@ -119,6 +119,17 @@ class Workspace:
     def put_notebook_document(self, doc_uri, notebook_type, cells, version=None, metadata=None):
         self._docs[doc_uri] = self._create_notebook_document(doc_uri, notebook_type, cells, version, metadata)
 
+    @contextmanager
+    def temp_document(self, source):
+        random_uri = str(uuid.uuid4())
+        try:
+            self.put_document(random_uri, source)
+            yield random_uri
+        finally:
+            self.rm_document(random_uri)
+
+
+
     def add_notebook_cells(self, doc_uri, cells, start):
         self._docs[doc_uri].add_cells(cells, start)
 
