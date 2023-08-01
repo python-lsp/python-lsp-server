@@ -120,15 +120,15 @@ class Workspace:
         self._docs[doc_uri] = self._create_notebook_document(doc_uri, notebook_type, cells, version, metadata)
 
     @contextmanager
-    def temp_document(self, source):
-        random_uri = str(uuid.uuid4())
+    def temp_document(self, source, path=None):
+        if path is None:
+            path = self.root_path
+        uri = uris.from_fs_path(os.path.join(path, str(uuid.uuid4())))
         try:
-            self.put_document(random_uri, source)
-            yield random_uri
+            self.put_document(uri, source)
+            yield uri
         finally:
-            self.rm_document(random_uri)
-
-
+            self.rm_document(uri)
 
     def add_notebook_cells(self, doc_uri, cells, start):
         self._docs[doc_uri].add_cells(cells, start)

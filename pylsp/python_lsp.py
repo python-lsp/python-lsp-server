@@ -634,8 +634,7 @@ class PythonLSPServer(MethodDispatcher):
         with workspace.temp_document(total_source) as random_uri:
             definitions = self.definitions(random_uri, position)
             for definition in definitions:
-                # TODO: a better test for if a definition is the random_uri
-                if random_uri in definition['uri']:
+                if random_uri == definition['uri']:
                     # Find the cell the start is in
                     for cell in cell_list:
                         # TODO: perhaps it is more correct to check definition['range']['end']['line'] <= cell['line_end'], but 
