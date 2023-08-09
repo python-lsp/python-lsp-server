@@ -6,6 +6,8 @@ import logging
 import os
 import socketserver
 import threading
+import uuid
+from typing import List, Dict, Any
 import ujson as json
 
 from pylsp_jsonrpc.dispatchers import MethodDispatcher
@@ -14,7 +16,7 @@ from pylsp_jsonrpc.streams import JsonRpcStreamReader, JsonRpcStreamWriter
 
 from . import lsp, _utils, uris
 from .config import config
-from .workspace import Workspace
+from .workspace import Workspace, Document, Notebook
 from ._version import __version__
 
 log = logging.getLogger(__name__)
@@ -266,6 +268,11 @@ class PythonLSPServer(MethodDispatcher):
                 },
                 'openClose': True,
             },
+            'notebookDocumentSync': {
+                'notebookSelector': {
+                    'cells': [{'language': 'python'}]
+                }
+            },
             'workspace': {
                 'workspaceFolders': {
                     'supported': True,
@@ -375,11 +382,79 @@ class PythonLSPServer(MethodDispatcher):
     def lint(self, doc_uri, is_saved):
         # Since we're debounced, the document may no longer be open
         workspace = self._match_uri_to_workspace(doc_uri)
-        if doc_uri in workspace.documents:
-            workspace.publish_diagnostics(
-                doc_uri,
-                flatten(self._hook('pylsp_lint', doc_uri, is_saved=is_saved))
-            )
+        document_object = workspace.documents.get(doc_uri, None)
+        if isinstance(document_object, Document):
+            self._lint_text_document(doc_uri, workspace, is_saved=is_saved)
+        elif isinstance(document_object, Notebook):
+            self._lint_notebook_document(document_object, workspace)
+
+    def _lint_text_document(self, doc_uri, workspace, is_saved):
+        workspace.publish_diagnostics(
+            doc_uri,
+            flatten(self._hook('pylsp_lint', doc_uri, is_saved=is_saved))
+        )
+
+    def _lint_notebook_document(self, notebook_document, workspace):  # pylint: disable=too-many-locals
+        """
+        Lint a notebook document.
+
+        This is a bit more complicated than linting a text document, because we need to
+        send the entire notebook document to the pylsp_lint hook, but we need to send
+        the diagnostics back to the client on a per-cell basis.
+        """
+
+        # First, we create a temp TextDocument that represents the whole notebook
+        # contents. We'll use this to send to the pylsp_lint hook.
+        random_uri = str(uuid.uuid4())
+
+        # cell_list helps us map the diagnostics back to the correct cell later.
+        cell_list: List[Dict[str, Any]] = []
+
+        offset = 0
+        total_source = ""
+        for cell in notebook_document.cells:
+            cell_uri = cell['document']
+            cell_document = workspace.get_cell_document(cell_uri)
+
+            num_lines = cell_document.line_count
+
+            data = {
+                'uri': cell_uri,
+                'line_start': offset,
+                'line_end': offset + num_lines - 1,
+                'source': cell_document.source
+            }
+
+            cell_list.append(data)
+            if offset == 0:
+                total_source = cell_document.source
+            else:
+                total_source += ("\n" + cell_document.source)
+
+            offset += num_lines
+
+        workspace.put_document(random_uri, total_source)
+
+        try:
+            document_diagnostics = flatten(self._hook('pylsp_lint', random_uri, is_saved=True))
+
+            # Now we need to map the diagnostics back to the correct cell and publish them.
+            # Note: this is O(n*m) in the number of cells and diagnostics, respectively.
+            for cell in cell_list:
+                cell_diagnostics = []
+                for diagnostic in document_diagnostics:
+                    start_line = diagnostic['range']['start']['line']
+                    end_line = diagnostic['range']['end']['line']
+
+                    if start_line > cell['line_end'] or end_line < cell['line_start']:
+                        continue
+                    diagnostic['range']['start']['line'] = start_line - cell['line_start']
+                    diagnostic['range']['end']['line'] = end_line - cell['line_start']
+                    cell_diagnostics.append(diagnostic)
+
+                workspace.publish_diagnostics(cell['uri'], cell_diagnostics)
+        finally:
+            workspace.rm_document(random_uri)
 
     def references(self, doc_uri, position, exclude_declaration):
         return flatten(self._hook(
@@ -398,6 +473,91 @@ class PythonLSPServer(MethodDispatcher):
 
     def m_completion_item__resolve(self, **completionItem):
         return self.completion_item_resolve(completionItem)
+
+    def m_notebook_document__did_open(self, notebookDocument=None, cellTextDocuments=None, **_kwargs):
+        workspace = self._match_uri_to_workspace(notebookDocument['uri'])
+        workspace.put_notebook_document(
+            notebookDocument['uri'],
+            notebookDocument['notebookType'],
+            cells=notebookDocument['cells'],
+            version=notebookDocument.get('version'),
+            metadata=notebookDocument.get('metadata')
+        )
+        for cell in (cellTextDocuments or []):
+            workspace.put_cell_document(cell['uri'], cell['languageId'], cell['text'], version=cell.get('version'))
+        self.lint(notebookDocument['uri'], is_saved=True)
+
+    def m_notebook_document__did_close(self, notebookDocument=None, cellTextDocuments=None, **_kwargs):
+        workspace = self._match_uri_to_workspace(notebookDocument['uri'])
+        for cell in (cellTextDocuments or []):
+            workspace.publish_diagnostics(cell['uri'], [])
+            workspace.rm_document(cell['uri'])
+        workspace.rm_document(notebookDocument['uri'])
+
+    def m_notebook_document__did_change(self, notebookDocument=None, change=None, **_kwargs):
+        """
+        Changes to the notebook document.
+
+        This could be one of the following:
+        1. Notebook metadata changed
+        2. Cell(s) added
+        3. Cell(s) deleted
+        4. Cell(s) data changed
+            4.1 Cell metadata changed
+            4.2 Cell source changed
+        """
+        workspace = self._match_uri_to_workspace(notebookDocument['uri'])
+
+        if change.get('metadata'):
+            # Case 1
+            workspace.update_notebook_metadata(notebookDocument['uri'], change.get('metadata'))
+
+        cells = change.get('cells')
+        if cells:
+            # Change to cells
+            structure = cells.get('structure')
+            if structure:
+                # Case 2 or 3
+                notebook_cell_array_change = structure['array']
+                start = notebook_cell_array_change['start']
+                cell_delete_count = notebook_cell_array_change['deleteCount']
+                if cell_delete_count == 0:
+                    # Case 2
+                    # Cell documents
+                    for cell_document in structure['didOpen']:
+                        workspace.put_cell_document(
+                            cell_document['uri'],
+                            cell_document['languageId'],
+                            cell_document['text'],
+                            cell_document.get('version')
+                        )
+                    # Cell metadata which is added to Notebook
+                    workspace.add_notebook_cells(notebookDocument['uri'], notebook_cell_array_change['cells'], start)
+                else:
+                    # Case 3
+                    # Cell documents
+                    for cell_document in structure['didClose']:
+                        workspace.rm_document(cell_document['uri'])
+                        workspace.publish_diagnostics(cell_document['uri'], [])
+                    # Cell metadata which is removed from Notebook
+                    workspace.remove_notebook_cells(notebookDocument['uri'], start, cell_delete_count)
+
+            data = cells.get('data')
+            if data:
+                # Case 4.1
+                for cell in data:
+                    # update NotebookDocument.cells properties
+                    pass
+
+            text_content = cells.get('textContent')
+            if text_content:
+                # Case 4.2
+                for cell in text_content:
+                    cell_uri = cell['document']['uri']
+                    # Even though the protocol says that `changes` is an array, we assume that it's always a single
+                    # element array that contains the last change to the cell source.
+                    workspace.update_document(cell_uri, cell['changes'][0])
+        self.lint(notebookDocument['uri'], is_saved=True)
 
     def m_text_document__did_close(self, textDocument=None, **_kwargs):
         workspace = self._match_uri_to_workspace(textDocument['uri'])

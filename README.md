@@ -161,6 +161,24 @@ pip install 'python-lsp-server[websockets]'
 
 ## Development
 
+Dev install
+
+```
+# create conda env
+conda create --name python-lsp-server python=3.8 -y
+conda activate python-lsp-server
+
+pip install ".[all]"
+pip install ".[websockets]"
+```
+
+Run server with ws
+
+```
+pylsp --ws -v    # Info level logging
+pylsp --ws -v -v # Debug level logging
+```
+
 To run the test suite:
 
 ```sh

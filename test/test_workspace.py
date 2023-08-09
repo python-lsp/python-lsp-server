@@ -23,6 +23,16 @@ def test_put_document(pylsp):
     assert DOC_URI in pylsp.workspace._docs
 
 
+def test_put_notebook_document(pylsp):
+    pylsp.workspace.put_notebook_document(DOC_URI, 'jupyter-notebook', [])
+    assert DOC_URI in pylsp.workspace._docs
+
+
+def test_put_cell_document(pylsp):
+    pylsp.workspace.put_cell_document(DOC_URI, 'python', 'content')
+    assert DOC_URI in pylsp.workspace._docs
+
+
 def test_get_document(pylsp):
     pylsp.workspace.put_document(DOC_URI, 'TEXT')
     assert pylsp.workspace.get_document(DOC_URI).source == 'TEXT'
