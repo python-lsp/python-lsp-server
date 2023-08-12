@@ -15,7 +15,6 @@ PYFLAKES_ERROR_MESSAGES = (
     messages.YieldOutsideFunction,
     messages.ContinueOutsideLoop,
     messages.BreakOutsideLoop,
-    messages.ContinueInFinally,
     messages.TwoStarredExpressions,
 )
 
