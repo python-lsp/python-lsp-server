@@ -11,7 +11,7 @@ authors = [{name = "Python Language Server Contributors"}]
 description = "Python Language Server for the Language Server Protocol"
 readme = "README.md"
 license = {text = "MIT"}
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 dependencies = [
     "jedi>=0.17.2,<0.20.0",
     "python-lsp-jsonrpc>=1.0.0",
