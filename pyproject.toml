@@ -13,12 +13,12 @@ readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.8"
 dependencies = [
-    "jedi>=0.17.2,<0.20.0",
-    "python-lsp-jsonrpc>=1.0.0",
-    "pluggy>=1.0.0",
     "docstring-to-markdown",
+    "importlib_metadata>=4.8.3;python_version<\"3.10\"",
+    "jedi>=0.17.2,<0.20.0",
+    "pluggy>=1.0.0",
+    "python-lsp-jsonrpc>=1.0.0",
     "ujson>=3.0.0",
-    "setuptools>=39.0.0",
 ]
 dynamic = ["version"]
 
@@ -104,4 +104,3 @@ addopts = "--cov-report html --cov-report term --junitxml=pytest.xml --cov pylsp
 
 [tool.coverage.run]
 concurrency = ["multiprocessing", "thread"]
-

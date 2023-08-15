@@ -3,14 +3,22 @@
 # pylint: disable=import-outside-toplevel
 
 import logging
+import sys
 from functools import lru_cache
 from typing import List, Mapping, Sequence, Union
 
-import pkg_resources
 import pluggy
 from pluggy._hooks import HookImpl
 
 from pylsp import _utils, hookspecs, uris, PYLSP
+
+# See compatibility note on `group` keyword:
+#   https://docs.python.org/3/library/importlib.metadata.html#entry-points
+if sys.version_info < (3, 10):  # pragma: no cover
+    from importlib_metadata import entry_points
+else:  # pragma: no cover
+    from importlib.metadata import entry_points
+
 
 log = logging.getLogger(__name__)
 
@@ -67,14 +75,15 @@ class Config:
         # Pluggy will skip loading a plugin if it throws a DistributionNotFound exception.
         # However I don't want all plugins to have to catch ImportError and re-throw. So here we'll filter
         # out any entry points that throw ImportError assuming one or more of their dependencies isn't present.
-        for entry_point in pkg_resources.iter_entry_points(PYLSP):
+        for entry_point in entry_points(group=PYLSP):
             try:
                 entry_point.load()
             except Exception as e:  # pylint: disable=broad-except
                 log.info("Failed to load %s entry point '%s': %s", PYLSP, entry_point.name, e)
                 self._pm.set_blocked(entry_point.name)
 
-        # Load the entry points into pluggy, having blocked any failing ones
+        # Load the entry points into pluggy, having blocked any failing ones.
+        # Despite the API name, recent Pluggy versions will use ``importlib_metadata``.
         self._pm.load_setuptools_entrypoints(PYLSP)
 
         for name, plugin in self._pm.list_name_plugin():
