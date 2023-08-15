@@ -28,7 +28,7 @@ Homepage = "https://github.com/python-lsp/python-lsp-server"
 [project.optional-dependencies]
 all = [
     "autopep8>=1.6.0,<2.1.0",
-    "black>=21.11,<22.0",
+    "black>=23.7.0,<24.0",
     "flake8>=5.0.0,<7",
     "mccabe>=0.7.0,<0.8.0",
     "pycodestyle>=2.9.0,<2.11.0",
@@ -40,7 +40,7 @@ all = [
     "whatthepatch>=1.0.2,<2.0.0"
 ]
 autopep8 = ["autopep8>=1.6.0,<2.1.0"]
-black = ["black>=21.11,<22.0"]
+black = ["black>=23.7.0,<24.0"]
 flake8 = ["flake8>=5.0.0,<7"]
 mccabe = ["mccabe>=0.7.0,<0.8.0"]
 pycodestyle = ["pycodestyle>=2.9.0,<2.11.0"]
