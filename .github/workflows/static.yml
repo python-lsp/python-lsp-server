@@ -35,11 +35,11 @@ jobs:
           python-version: '3.8'
           architecture: 'x64'
       - run: python -m pip install --upgrade pip setuptools jsonschema
-      - run: pip install -e .[pylint,pycodestyle,pyflakes]
+      - run: pip install -e .[pylint,black,pyflakes]
       - name: Pylint checks
         run: pylint pylsp test
       - name: Code style checks
-        run: pycodestyle pylsp test
+        run: black --check pylsp test
       - name: Pyflakes checks
         run: pyflakes pylsp test
       - name: Validate JSON schema
