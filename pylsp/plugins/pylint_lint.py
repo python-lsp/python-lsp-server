@@ -289,9 +289,9 @@ def _run_pylint_stdio(pylint_executable, document, flags):
         cmd = ["python", "-m", "pylint"]
         cmd.extend(flags)
         cmd.extend(["--from-stdin", document.path])
-        p = Popen(
+        p = Popen(  # pylint: disable=consider-using-with
             cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE
-        )  # pylint: disable=consider-using-with
+        )
     (stdout, stderr) = p.communicate(document.source.encode())
     if stderr:
         log.error("Error while running pylint '%s'", stderr.decode())

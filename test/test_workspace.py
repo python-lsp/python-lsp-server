@@ -237,7 +237,8 @@ def test_workspace_loads_pycodestyle_config(pylsp, tmpdir):
     # Test that project settings are loaded
     workspace2_dir = tmpdir.mkdir("NewTest456")
     cfg = workspace2_dir.join("pycodestyle.cfg")
-    cfg.write("[pycodestyle]\n" "max-line-length = 1000")  # pylint: disable=implicit-str-concat
+    # pylint: disable=implicit-str-concat
+    cfg.write("[pycodestyle]\n" "max-line-length = 1000")
 
     workspace1 = {"uri": str(workspace1_dir)}
     workspace2 = {"uri": str(workspace2_dir)}
@@ -256,7 +257,8 @@ def test_workspace_loads_pycodestyle_config(pylsp, tmpdir):
     # Test switching to another workspace with different settings
     workspace3_dir = tmpdir.mkdir("NewTest789")
     cfg1 = workspace3_dir.join("pycodestyle.cfg")
-    cfg1.write("[pycodestyle]\n" "max-line-length = 20")  # pylint: disable=implicit-str-concat
+    # pylint: disable=implicit-str-concat
+    cfg1.write("[pycodestyle]\n" "max-line-length = 20")
 
     workspace3 = {"uri": str(workspace3_dir)}
 
