@@ -31,6 +31,7 @@ all = [
     "black>=23.7.0,<24.0",
     "flake8>=5.0.0,<7",
     "mccabe>=0.7.0,<0.8.0",
+    "pycodestyle>=2.9.0,<2.11.0",
     "pydocstyle>=6.3.0,<6.4.0",
     "pyflakes>=2.5.0,<3.1.0",
     "pylint>=2.5.0,<3",
@@ -42,6 +43,7 @@ autopep8 = ["autopep8>=1.6.0,<2.1.0"]
 black = ["black>=23.7.0,<24.0"]
 flake8 = ["flake8>=5.0.0,<7"]
 mccabe = ["mccabe>=0.7.0,<0.8.0"]
+pycodestyle = ["pycodestyle>=2.9.0,<2.11.0"]
 pydocstyle = ["pydocstyle>=6.3.0,<6.4.0"]
 pyflakes = ["pyflakes>=2.5.0,<3.1.0"]
 pylint = ["pylint>=2.5.0,<3"]

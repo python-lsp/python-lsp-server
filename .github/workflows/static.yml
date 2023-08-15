@@ -35,7 +35,7 @@ jobs:
           python-version: '3.8'
           architecture: 'x64'
       - run: python -m pip install --upgrade pip setuptools jsonschema
-      - run: pip install -e .[pylint,black,pyflakes]
+      - run: pip install -e .[pylint,black,pycodestyle,pyflakes]
       - name: Pylint checks
         run: pylint pylsp test
       - name: Code style checks
