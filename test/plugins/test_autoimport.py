@@ -87,7 +87,6 @@ def test_autoimport_import_with_name(completions):
 
 @pytest.mark.parametrize("completions", [("""def func(s""", 10)], indirect=True)
 def test_autoimport_function(completions):
-
     assert len(completions) == 0
 
 
@@ -183,18 +182,15 @@ def test_autoimport_defined_name(config, workspace):
 
 class TestShouldInsert:
     def test_dot(self):
-
         assert not should_insert("""str.""", 4)
 
     def test_dot_partial(self):
-
         assert not should_insert("""str.metho\n""", 9)
 
     def test_comment(self):
         assert not should_insert("""#""", 1)
 
     def test_comment_indent(self):
-
         assert not should_insert("""    # """, 5)
 
     def test_from(self):

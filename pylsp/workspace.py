@@ -36,7 +36,6 @@ def lock(method):
 
 
 class Workspace:
-
     # pylint: disable=too-many-public-methods
 
     M_PUBLISH_DIAGNOSTICS = "textDocument/publishDiagnostics"

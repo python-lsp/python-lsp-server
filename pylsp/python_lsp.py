@@ -304,7 +304,7 @@ class PythonLSPServer(MethodDispatcher):
         rootPath=None,
         initializationOptions=None,
         workspaceFolders=None,
-        **_kwargs
+        **_kwargs,
     ):
         log.debug(
             "Language server initialized with %s %s %s %s",

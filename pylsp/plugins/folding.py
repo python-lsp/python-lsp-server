@@ -20,7 +20,7 @@ def pylsp_folding_range(document):
     ranges = __compute_folding_ranges(tree, lines)
 
     results = []
-    for (start_line, end_line) in ranges:
+    for start_line, end_line in ranges:
         start_line -= 1
         end_line -= 1
         # If start/end character is not defined, then it defaults to the

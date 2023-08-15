@@ -69,7 +69,6 @@ class PyCodeStyleDiagnosticReport(pycodestyle.BaseReport):
         self.diagnostics = []
         super().__init__(options=options)
 
-    # pylint: disable=unused-argument
     def error(self, line_number, offset, text, check):
         code = text[:4]
         if self._ignore_code(code):

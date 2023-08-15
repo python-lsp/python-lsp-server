@@ -14,7 +14,7 @@ def pylsp_definitions(config, document, position):
     definitions = document.jedi_script(use_document_path=True).goto(
         follow_imports=settings.get("follow_imports", True),
         follow_builtin_imports=settings.get("follow_builtin_imports", True),
-        **code_position
+        **code_position,
     )
 
     follow_builtin_defns = settings.get("follow_builtin_definitions", True)
