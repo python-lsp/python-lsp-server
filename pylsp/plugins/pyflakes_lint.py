@@ -23,27 +23,30 @@ PYFLAKES_ERROR_MESSAGES = (
 def pylsp_lint(workspace, document):
     with workspace.report_progress("lint: pyflakes"):
         reporter = PyflakesDiagnosticReport(document.lines)
-        pyflakes_api.check(document.source.encode('utf-8'), document.path, reporter=reporter)
+        pyflakes_api.check(
+            document.source.encode("utf-8"), document.path, reporter=reporter
+        )
         return reporter.diagnostics
 
 
 class PyflakesDiagnosticReport:
-
     def __init__(self, lines):
         self.lines = lines
         self.diagnostics = []
 
     def unexpectedError(self, _filename, msg):  # pragma: no cover
         err_range = {
-            'start': {'line': 0, 'character': 0},
-            'end': {'line': 0, 'character': 0},
+            "start": {"line": 0, "character": 0},
+            "end": {"line": 0, "character": 0},
         }
-        self.diagnostics.append({
-            'source': 'pyflakes',
-            'range': err_range,
-            'message': msg,
-            'severity': lsp.DiagnosticSeverity.Error,
-        })
+        self.diagnostics.append(
+            {
+                "source": "pyflakes",
+                "range": err_range,
+                "message": msg,
+                "severity": lsp.DiagnosticSeverity.Error,
+            }
+        )
 
     def syntaxError(self, _filename, msg, lineno, offset, text):
         # We've seen that lineno and offset can sometimes be None
@@ -51,21 +54,26 @@ class PyflakesDiagnosticReport:
         offset = offset or 0
 
         err_range = {
-            'start': {'line': lineno - 1, 'character': offset},
-            'end': {'line': lineno - 1, 'character': offset + len(text)},
+            "start": {"line": lineno - 1, "character": offset},
+            "end": {"line": lineno - 1, "character": offset + len(text)},
         }
-        self.diagnostics.append({
-            'source': 'pyflakes',
-            'range': err_range,
-            'message': msg,
-            'severity': lsp.DiagnosticSeverity.Error,
-        })
+        self.diagnostics.append(
+            {
+                "source": "pyflakes",
+                "range": err_range,
+                "message": msg,
+                "severity": lsp.DiagnosticSeverity.Error,
+            }
+        )
 
     def flake(self, message):
-        """ Get message like <filename>:<lineno>: <msg> """
+        """Get message like <filename>:<lineno>: <msg>"""
         err_range = {
-            'start': {'line': message.lineno - 1, 'character': message.col},
-            'end': {'line': message.lineno - 1, 'character': len(self.lines[message.lineno - 1])},
+            "start": {"line": message.lineno - 1, "character": message.col},
+            "end": {
+                "line": message.lineno - 1,
+                "character": len(self.lines[message.lineno - 1]),
+            },
         }
 
         severity = lsp.DiagnosticSeverity.Warning
@@ -74,9 +82,11 @@ class PyflakesDiagnosticReport:
                 severity = lsp.DiagnosticSeverity.Error
                 break
 
-        self.diagnostics.append({
-            'source': 'pyflakes',
-            'range': err_range,
-            'message': message.message % message.message_args,
-            'severity': severity
-        })
+        self.diagnostics.append(
+            {
+                "source": "pyflakes",
+                "range": err_range,
+                "message": message.message % message.message_args,
+                "severity": severity,
+            }
+        )
