@@ -376,7 +376,10 @@ class PythonLSPServer(MethodDispatcher):
         return flatten(self._hook('pylsp_document_highlight', doc_uri, position=position)) or None
 
     def hover(self, doc_uri, position):
-        return self._hook('pylsp_hover', doc_uri, position=position) or {'contents': ''}
+        out = self._hook('pylsp_hover', doc_uri, position=position)
+        if out:
+            return {'contents': [o['contents'] for o in out]}
+        return {'contents': ''}
 
     @_utils.debounce(LINT_DEBOUNCE_S, keyed_by='doc_uri')
     def lint(self, doc_uri, is_saved):
