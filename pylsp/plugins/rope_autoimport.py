@@ -20,7 +20,7 @@ from ._rope_task_handle import PylspTaskHandle
 log = logging.getLogger(__name__)
 
 _score_pow = 5
-_score_max = 10**_score_pow
+_score_max = 10 ** _score_pow
 MAX_RESULTS = 1000
 
 
