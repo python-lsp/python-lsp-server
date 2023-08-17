@@ -550,8 +550,8 @@ class Cell(Document):
     they have a language id.
     """
 
-    def __init__(self, uri, notebook_uri, language_id, workspace, source=None, version=None, local=True, extra_sys_path=None,
-                 rope_project_builder=None):
+    def __init__(self, uri, notebook_uri, language_id, workspace, source=None, version=None, local=True,
+                 extra_sys_path=None, rope_project_builder=None):
         super().__init__(uri, workspace, source, version, local, extra_sys_path, rope_project_builder)
         self.language_id = language_id
         self.notebook_uri = notebook_uri

@@ -484,7 +484,13 @@ class PythonLSPServer(MethodDispatcher):
             metadata=notebookDocument.get('metadata')
         )
         for cell in (cellTextDocuments or []):
-            workspace.put_cell_document(cell['uri'], notebookDocument['uri'], cell['languageId'], cell['text'], version=cell.get('version'))
+            workspace.put_cell_document(
+                cell['uri'],
+                notebookDocument['uri'],
+                cell['languageId'],
+                cell['text'],
+                version=cell.get('version')
+            )
         self.lint(notebookDocument['uri'], is_saved=True)
 
     def m_notebook_document__did_close(self, notebookDocument=None, cellTextDocuments=None, **_kwargs):
@@ -526,7 +532,7 @@ class PythonLSPServer(MethodDispatcher):
                     # Cell documents
                     for cell_document in structure['didOpen']:
                         workspace.put_cell_document(
-                            cell_document['uri'], 
+                            cell_document['uri'],
                             notebookDocument['uri'],
                             cell_document['languageId'],
                             cell_document['text'],
