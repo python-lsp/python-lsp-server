@@ -679,14 +679,14 @@ class PythonLSPServer(MethodDispatcher):
         if notebookDocument is None:
             raise ValueError("Invalid notebook document")
 
-        cell_data = notebookDocument.cell_data(notebookDocument)
+        cell_data = notebookDocument.cell_data()
 
         # Concatenate all cells to be a single temporary document
-        total_source = "\n".join(cell.source for cell in cell_data.values())
+        total_source = "\n".join(data["source"] for data in cell_data.values())
         with workspace.temp_document(total_source) as temp_uri:
             # update position to be the position in the temp document
             if position is not None:
-                position += cell_data[cellDocument.uri]["line_start"]
+                position["line"] += cell_data[cellDocument.uri]["line_start"]
 
             definitions = self.definitions(temp_uri, position)
 
