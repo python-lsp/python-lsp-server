@@ -539,6 +539,25 @@ class Notebook:
     def remove_cells(self, start: int, delete_count: int) -> None:
         del self.cells[start:start+delete_count]
 
+    def cell_data(self):
+        """Extract current cell data.
+
+        Returns a dict (ordered by cell position) where the key is the cell uri and the
+        value is a dict with line_start, line_end, and source attributes.
+        """
+        cell_data = {}
+        offset = 0
+        for cell in self.cells:
+            cell_uri = cell['document']
+            cell_document = self.workspace.get_cell_document(cell_uri)
+            num_lines = cell_document.line_count
+            cell_data[cell_uri] = {
+                'line_start': offset,
+                'line_end': offset + num_lines - 1,
+                'source': cell_document.source
+            }
+            offset += num_lines
+        return cell_data
 
 class Cell(Document):
     """

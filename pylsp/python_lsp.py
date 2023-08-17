@@ -600,55 +600,34 @@ class PythonLSPServer(MethodDispatcher):
     def m_text_document__completion(self, textDocument=None, position=None, **_kwargs):
         return self.completions(textDocument['uri'], position)
 
-    def _cell_document__definition(self, cellDocument=None, position=None, **_kwargs):
-        # First, we create a temp TextDocument to send to the hook that represents the whole notebook
-        # contents.
+    def _cell_document__definition(self, cellDocument, position=None, **_kwargs):
         workspace = self._match_uri_to_workspace(cellDocument.notebook_uri)
         notebookDocument = workspace.get_maybe_document(cellDocument.notebook_uri)
         if notebookDocument is None:
             raise ValueError("Invalid notebook document")
 
-        # cell_list helps us map the diagnostics back to the correct cell later.
-        cell_list: List[Dict[str, Any]] = []
+        cell_data = notebookDocument.cell_data(notebookDocument)
 
-        offset = 0
-        total_source = ""
-        for cell in notebookDocument.cells:
-            cell_uri = cell['document']
-            cell_document = workspace.get_cell_document(cell_uri)
+        # Concatenate all cells to be a single temporary document
+        total_source = '\n'.join(cell.source for cell in cell_data.values())
+        with workspace.temp_document(total_source) as temp_uri:
+            # update position to be the position in the temp document
+            if position is not None:
+                position += cell_data[cellDocument.uri]['line_start']
 
-            num_lines = cell_document.line_count
+            definitions = self.definitions(temp_uri, position)
 
-            data = {
-                'uri': cell_uri,
-                'line_start': offset,
-                'line_end': offset + num_lines - 1,
-                'source': cell_document.source
-            }
-
-            if position is not None and cell_uri == cellDocument.uri:
-                position['line'] += offset
-
-            cell_list.append(data)
-            if offset == 0:
-                total_source = cell_document.source
-            else:
-                total_source += ("\n" + cell_document.source)
-
-            offset += num_lines
-
-        with workspace.temp_document(total_source) as random_uri:
-            definitions = self.definitions(random_uri, position)
+            # Translate temp_uri locations to cell document locations
             for definition in definitions:
-                if random_uri == definition['uri']:
-                    # Find the cell the start is in
-                    for cell in cell_list:
-                        # TODO: perhaps it is more correct to check definition['range']['end']['line'] <= cell['line_end'], but 
-                        # that would mess up if a definition was split over cells
-                        if cell['line_start'] <= definition['range']['start']['line'] <= cell['line_end']:
-                            definition['uri'] = cell['uri']
-                            definition['range']['start']['line'] -= cell['line_start']
-                            definition['range']['end']['line'] -= cell['line_start']
+                if definition['uri'] == temp_uri:
+                    # Find the cell the start line is in and adjust the uri and line numbers
+                    for cell_uri, data in cell_data.items():
+                        if data['line_start'] <= definition['range']['start']['line'] <= data['line_end']:
+                            definition['uri'] = cell_uri
+                            definition['range']['start']['line'] -= data['line_start']
+                            definition['range']['end']['line'] -= data['line_start']
+                            break
+
             return definitions
 
     def m_text_document__definition(self, textDocument=None, position=None, **_kwargs):
