@@ -5,6 +5,8 @@ import os
 from io import StringIO
 from unittest.mock import MagicMock
 
+from test.test_utils import ClientServerPair
+
 import pytest
 from pylsp_jsonrpc.dispatchers import MethodDispatcher
 from pylsp_jsonrpc.endpoint import Endpoint
@@ -22,6 +24,7 @@ DOC = """import sys
 def main():
     print sys.stdin.read()
 """
+CALL_TIMEOUT_IN_SECONDS = 30
 
 
 class FakeEditorMethodsMixin:
@@ -163,3 +166,17 @@ def temp_workspace_factory(workspace):  # pylint: disable=redefined-outer-name
         return workspace
 
     return fn
+
+
+@pytest.fixture
+def client_server_pair():
+    """A fixture that sets up a client/server pair and shuts down the server"""
+    client_server_pair_obj = ClientServerPair()
+
+    yield (client_server_pair_obj.client, client_server_pair_obj.server)
+
+    shutdown_response = client_server_pair_obj.client._endpoint.request(
+        "shutdown"
+    ).result(timeout=CALL_TIMEOUT_IN_SECONDS)
+    assert shutdown_response is None
+    client_server_pair_obj.client._endpoint.notify("exit")
