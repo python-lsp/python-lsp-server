@@ -593,11 +593,11 @@ class PythonLSPServer(MethodDispatcher):
                     # Cell documents
                     for cell_document in structure["didOpen"]:
                         workspace.put_cell_document(
-                            cell_document['uri'],
-                            notebookDocument['uri'],
-                            cell_document['languageId'],
-                            cell_document['text'],
-                            cell_document.get('version')
+                            cell_document["uri"],
+                            notebookDocument["uri"],
+                            cell_document["languageId"],
+                            cell_document["text"],
+                            cell_document.get("version"),
                         )
                     # Cell metadata which is added to Notebook
                     workspace.add_notebook_cells(
@@ -682,34 +682,38 @@ class PythonLSPServer(MethodDispatcher):
         cell_data = notebookDocument.cell_data(notebookDocument)
 
         # Concatenate all cells to be a single temporary document
-        total_source = '\n'.join(cell.source for cell in cell_data.values())
+        total_source = "\n".join(cell.source for cell in cell_data.values())
         with workspace.temp_document(total_source) as temp_uri:
             # update position to be the position in the temp document
             if position is not None:
-                position += cell_data[cellDocument.uri]['line_start']
+                position += cell_data[cellDocument.uri]["line_start"]
 
             definitions = self.definitions(temp_uri, position)
 
             # Translate temp_uri locations to cell document locations
             for definition in definitions:
-                if definition['uri'] == temp_uri:
+                if definition["uri"] == temp_uri:
                     # Find the cell the start line is in and adjust the uri and line numbers
                     for cell_uri, data in cell_data.items():
-                        if data['line_start'] <= definition['range']['start']['line'] <= data['line_end']:
-                            definition['uri'] = cell_uri
-                            definition['range']['start']['line'] -= data['line_start']
-                            definition['range']['end']['line'] -= data['line_start']
+                        if (
+                            data["line_start"]
+                            <= definition["range"]["start"]["line"]
+                            <= data["line_end"]
+                        ):
+                            definition["uri"] = cell_uri
+                            definition["range"]["start"]["line"] -= data["line_start"]
+                            definition["range"]["end"]["line"] -= data["line_start"]
                             break
 
             return definitions
 
     def m_text_document__definition(self, textDocument=None, position=None, **_kwargs):
         # textDocument here is just a dict with a uri
-        workspace = self._match_uri_to_workspace(textDocument['uri'])
-        document = workspace.get_document(textDocument['uri'])
+        workspace = self._match_uri_to_workspace(textDocument["uri"])
+        document = workspace.get_document(textDocument["uri"])
         if isinstance(document, Cell):
             return self._cell_document__definition(document, position, **_kwargs)
-        return self.definitions(textDocument['uri'], position)
+        return self.definitions(textDocument["uri"], position)
 
     def m_text_document__document_highlight(
         self, textDocument=None, position=None, **_kwargs

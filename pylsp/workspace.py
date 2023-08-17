@@ -150,7 +150,9 @@ class Workspace:
     def update_notebook_metadata(self, doc_uri, metadata):
         self._docs[doc_uri].metadata = metadata
 
-    def put_cell_document(self, doc_uri, notebook_uri, language_id, source, version=None):
+    def put_cell_document(
+        self, doc_uri, notebook_uri, language_id, source, version=None
+    ):
         self._docs[doc_uri] = self._create_cell_document(
             doc_uri, notebook_uri, language_id, source, version
         )
@@ -351,7 +353,9 @@ class Workspace:
             metadata=metadata,
         )
 
-    def _create_cell_document(self, doc_uri, notebook_uri, language_id, source=None, version=None):
+    def _create_cell_document(
+        self, doc_uri, notebook_uri, language_id, source=None, version=None
+    ):
         # TODO: remove what is unnecessary here.
         path = uris.to_fs_path(doc_uri)
         return Cell(
@@ -606,16 +610,17 @@ class Notebook:
         cell_data = {}
         offset = 0
         for cell in self.cells:
-            cell_uri = cell['document']
+            cell_uri = cell["document"]
             cell_document = self.workspace.get_cell_document(cell_uri)
             num_lines = cell_document.line_count
             cell_data[cell_uri] = {
-                'line_start': offset,
-                'line_end': offset + num_lines - 1,
-                'source': cell_document.source
+                "line_start": offset,
+                "line_end": offset + num_lines - 1,
+                "source": cell_document.source,
             }
             offset += num_lines
         return cell_data
+
 
 class Cell(Document):
     """
@@ -630,7 +635,7 @@ class Cell(Document):
     def __init__(
         self,
         uri,
-        notebook_uri
+        notebook_uri,
         language_id,
         workspace,
         source=None,

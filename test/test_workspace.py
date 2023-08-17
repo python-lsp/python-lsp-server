@@ -7,7 +7,7 @@ from pylsp import uris
 
 
 DOC_URI = uris.from_fs_path(__file__)
-NOTEBOOK_URI = uris.from_fs_path('notebook_uri')
+NOTEBOOK_URI = uris.from_fs_path("notebook_uri")
 
 
 def path_as_uri(path):

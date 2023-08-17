@@ -583,6 +583,7 @@ def test_notebook__did_close(
         wait_for_condition(lambda: mock_notify.call_count >= 2)
         assert len(server.workspace.documents) == 0
 
+
 def test_notebook_definition(
     client_server_pair,
 ):  # pylint: disable=redefined-outer-name
@@ -641,23 +642,16 @@ def test_notebook_definition(
             "textDocument": {
                 "uri": "cell_2_uri",
             },
-            "position": {
-                "line": 0,
-                "character": 1
-            }
+            "position": {"line": 0, "character": 1},
         },
     )
     result = future.result(CALL_TIMEOUT_IN_SECONDS)
-    assert result == [{
-        'uri': 'cell_1_uri',
-        'range': {
-            'start': {
-                'line': 1,
-                'character': 0
+    assert result == [
+        {
+            "uri": "cell_1_uri",
+            "range": {
+                "start": {"line": 1, "character": 0},
+                "end": {"line": 1, "character": 1},
             },
-            'end': {
-                'line': 1,
-                'character': 1
-            }
         }
-    }]
+    ]
