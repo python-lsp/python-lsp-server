@@ -2,16 +2,14 @@
 
 import os
 import time
-from threading import Thread
 from unittest.mock import patch, call
+
+from test.fixtures import CALL_TIMEOUT_IN_SECONDS
 
 import pytest
 
 from pylsp import IS_WIN
-from pylsp.python_lsp import PythonLSPServer
 from pylsp.lsp import NotebookCellKind
-
-CALL_TIMEOUT_IN_SECONDS = 30
 
 
 def wait_for_condition(condition, timeout=CALL_TIMEOUT_IN_SECONDS):
@@ -23,44 +21,8 @@ def wait_for_condition(condition, timeout=CALL_TIMEOUT_IN_SECONDS):
             raise TimeoutError("Timeout waiting for condition")
 
 
-def start(obj):
-    obj.start()
-
-
-class ClientServerPair:
-    """A class to setup a client/server pair"""
-
-    def __init__(self):
-        # Client to Server pipe
-        csr, csw = os.pipe()
-        # Server to client pipe
-        scr, scw = os.pipe()
-
-        self.server = PythonLSPServer(os.fdopen(csr, "rb"), os.fdopen(scw, "wb"))
-        self.server_thread = Thread(target=start, args=[self.server])
-        self.server_thread.start()
-
-        self.client = PythonLSPServer(os.fdopen(scr, "rb"), os.fdopen(csw, "wb"))
-        self.client_thread = Thread(target=start, args=[self.client])
-        self.client_thread.start()
-
-
-@pytest.fixture
-def client_server_pair():
-    """A fixture that sets up a client/server pair and shuts down the server"""
-    client_server_pair_obj = ClientServerPair()
-
-    yield (client_server_pair_obj.client, client_server_pair_obj.server)
-
-    shutdown_response = client_server_pair_obj.client._endpoint.request(
-        "shutdown"
-    ).result(timeout=CALL_TIMEOUT_IN_SECONDS)
-    assert shutdown_response is None
-    client_server_pair_obj.client._endpoint.notify("exit")
-
-
 @pytest.mark.skipif(IS_WIN, reason="Flaky on Windows")
-def test_initialize(client_server_pair):  # pylint: disable=redefined-outer-name
+def test_initialize(client_server_pair):
     client, server = client_server_pair
     response = client._endpoint.request(
         "initialize",
@@ -77,7 +39,7 @@ def test_initialize(client_server_pair):  # pylint: disable=redefined-outer-name
 @pytest.mark.skipif(IS_WIN, reason="Flaky on Windows")
 def test_notebook_document__did_open(
     client_server_pair,
-):  # pylint: disable=redefined-outer-name
+):
     client, server = client_server_pair
     client._endpoint.request(
         "initialize",
@@ -241,7 +203,7 @@ def test_notebook_document__did_open(
 @pytest.mark.skipif(IS_WIN, reason="Flaky on Windows")
 def test_notebook_document__did_change(
     client_server_pair,
-):  # pylint: disable=redefined-outer-name
+):
     client, server = client_server_pair
     client._endpoint.request(
         "initialize",
@@ -513,7 +475,7 @@ def test_notebook_document__did_change(
 @pytest.mark.skipif(IS_WIN, reason="Flaky on Windows")
 def test_notebook__did_close(
     client_server_pair,
-):  # pylint: disable=redefined-outer-name
+):
     client, server = client_server_pair
     client._endpoint.request(
         "initialize",
