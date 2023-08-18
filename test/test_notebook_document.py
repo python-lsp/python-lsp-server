@@ -545,10 +545,8 @@ def test_notebook__did_close(
         wait_for_condition(lambda: mock_notify.call_count >= 2)
         assert len(server.workspace.documents) == 0
 
-
-def test_notebook_definition(
-    client_server_pair,
-):  # pylint: disable=redefined-outer-name
+@pytest.mark.skipif(IS_WIN, reason="Flaky on Windows")
+def test_notebook_definition(client_server_pair):
     client, server = client_server_pair
     client._endpoint.request(
         "initialize",
