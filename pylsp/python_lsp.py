@@ -16,7 +16,7 @@ from pylsp_jsonrpc.streams import JsonRpcStreamReader, JsonRpcStreamWriter
 
 from . import lsp, _utils, uris
 from .config import config
-from .workspace import Workspace, Document, Notebook
+from .workspace import Workspace, Document, Notebook, Cell
 from ._version import __version__
 
 log = logging.getLogger(__name__)
@@ -541,6 +541,7 @@ class PythonLSPServer(MethodDispatcher):
         for cell in cellTextDocuments or []:
             workspace.put_cell_document(
                 cell["uri"],
+                notebookDocument["uri"],
                 cell["languageId"],
                 cell["text"],
                 version=cell.get("version"),
@@ -593,6 +594,7 @@ class PythonLSPServer(MethodDispatcher):
                     for cell_document in structure["didOpen"]:
                         workspace.put_cell_document(
                             cell_document["uri"],
+                            notebookDocument["uri"],
                             cell_document["languageId"],
                             cell_document["text"],
                             cell_document.get("version"),
@@ -671,7 +673,46 @@ class PythonLSPServer(MethodDispatcher):
     def m_text_document__completion(self, textDocument=None, position=None, **_kwargs):
         return self.completions(textDocument["uri"], position)
 
+    def _cell_document__definition(self, cellDocument, position=None, **_kwargs):
+        workspace = self._match_uri_to_workspace(cellDocument.notebook_uri)
+        notebookDocument = workspace.get_maybe_document(cellDocument.notebook_uri)
+        if notebookDocument is None:
+            raise ValueError("Invalid notebook document")
+
+        cell_data = notebookDocument.cell_data()
+
+        # Concatenate all cells to be a single temporary document
+        total_source = "\n".join(data["source"] for data in cell_data.values())
+        with workspace.temp_document(total_source) as temp_uri:
+            # update position to be the position in the temp document
+            if position is not None:
+                position["line"] += cell_data[cellDocument.uri]["line_start"]
+
+            definitions = self.definitions(temp_uri, position)
+
+            # Translate temp_uri locations to cell document locations
+            for definition in definitions:
+                if definition["uri"] == temp_uri:
+                    # Find the cell the start line is in and adjust the uri and line numbers
+                    for cell_uri, data in cell_data.items():
+                        if (
+                            data["line_start"]
+                            <= definition["range"]["start"]["line"]
+                            <= data["line_end"]
+                        ):
+                            definition["uri"] = cell_uri
+                            definition["range"]["start"]["line"] -= data["line_start"]
+                            definition["range"]["end"]["line"] -= data["line_start"]
+                            break
+
+            return definitions
+
     def m_text_document__definition(self, textDocument=None, position=None, **_kwargs):
+        # textDocument here is just a dict with a uri
+        workspace = self._match_uri_to_workspace(textDocument["uri"])
+        document = workspace.get_document(textDocument["uri"])
+        if isinstance(document, Cell):
+            return self._cell_document__definition(document, position, **_kwargs)
         return self.definitions(textDocument["uri"], position)
 
     def m_text_document__document_highlight(

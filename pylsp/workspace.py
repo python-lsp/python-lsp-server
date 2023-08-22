@@ -130,6 +130,17 @@ class Workspace:
             doc_uri, notebook_type, cells, version, metadata
         )
 
+    @contextmanager
+    def temp_document(self, source, path=None):
+        if path is None:
+            path = self.root_path
+        uri = uris.from_fs_path(os.path.join(path, str(uuid.uuid4())))
+        try:
+            self.put_document(uri, source)
+            yield uri
+        finally:
+            self.rm_document(uri)
+
     def add_notebook_cells(self, doc_uri, cells, start):
         self._docs[doc_uri].add_cells(cells, start)
 
@@ -139,9 +150,11 @@ class Workspace:
     def update_notebook_metadata(self, doc_uri, metadata):
         self._docs[doc_uri].metadata = metadata
 
-    def put_cell_document(self, doc_uri, language_id, source, version=None):
+    def put_cell_document(
+        self, doc_uri, notebook_uri, language_id, source, version=None
+    ):
         self._docs[doc_uri] = self._create_cell_document(
-            doc_uri, language_id, source, version
+            doc_uri, notebook_uri, language_id, source, version
         )
 
     def rm_document(self, doc_uri):
@@ -340,11 +353,14 @@ class Workspace:
             metadata=metadata,
         )
 
-    def _create_cell_document(self, doc_uri, language_id, source=None, version=None):
+    def _create_cell_document(
+        self, doc_uri, notebook_uri, language_id, source=None, version=None
+    ):
         # TODO: remove what is unnecessary here.
         path = uris.to_fs_path(doc_uri)
         return Cell(
             doc_uri,
+            notebook_uri=notebook_uri,
             language_id=language_id,
             workspace=self,
             source=source,
@@ -585,6 +601,26 @@ class Notebook:
     def remove_cells(self, start: int, delete_count: int) -> None:
         del self.cells[start : start + delete_count]
 
+    def cell_data(self):
+        """Extract current cell data.
+
+        Returns a dict (ordered by cell position) where the key is the cell uri and the
+        value is a dict with line_start, line_end, and source attributes.
+        """
+        cell_data = {}
+        offset = 0
+        for cell in self.cells:
+            cell_uri = cell["document"]
+            cell_document = self.workspace.get_cell_document(cell_uri)
+            num_lines = cell_document.line_count
+            cell_data[cell_uri] = {
+                "line_start": offset,
+                "line_end": offset + num_lines - 1,
+                "source": cell_document.source,
+            }
+            offset += num_lines
+        return cell_data
+
 
 class Cell(Document):
     """
@@ -599,6 +635,7 @@ class Cell(Document):
     def __init__(
         self,
         uri,
+        notebook_uri,
         language_id,
         workspace,
         source=None,
@@ -611,6 +648,7 @@ class Cell(Document):
             uri, workspace, source, version, local, extra_sys_path, rope_project_builder
         )
         self.language_id = language_id
+        self.notebook_uri = notebook_uri
 
     @property
     @lock

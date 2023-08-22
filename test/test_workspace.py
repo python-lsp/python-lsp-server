@@ -7,6 +7,7 @@ from pylsp import uris
 
 
 DOC_URI = uris.from_fs_path(__file__)
+NOTEBOOK_URI = uris.from_fs_path("notebook_uri")
 
 
 def path_as_uri(path):
@@ -29,7 +30,7 @@ def test_put_notebook_document(pylsp):
 
 
 def test_put_cell_document(pylsp):
-    pylsp.workspace.put_cell_document(DOC_URI, "python", "content")
+    pylsp.workspace.put_cell_document(DOC_URI, NOTEBOOK_URI, "python", "content")
     assert DOC_URI in pylsp.workspace._docs
 
 
