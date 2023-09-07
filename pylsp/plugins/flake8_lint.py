@@ -109,11 +109,14 @@ def run_flake8(flake8_executable, args, document):
         )
 
     log.debug("Calling %s with args: '%s'", flake8_executable, args)
+    popen_kwargs = {}
+    if cwd := document._workspace.root_path:
+        popen_kwargs["cwd"] = cwd
     try:
         cmd = [flake8_executable]
         cmd.extend(args)
         p = Popen(
-            cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE, cwd=document._workspace.root_path
+            cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE, **popen_kwargs
         )
     except IOError:
         log.debug(
@@ -124,7 +127,7 @@ def run_flake8(flake8_executable, args, document):
         cmd = [sys.executable, "-m", "flake8"]
         cmd.extend(args)
         p = Popen(  # pylint: disable=consider-using-with
-            cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE, cwd=document._workspace.root_path
+            cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE, **popen_kwargs
         )
     (stdout, stderr) = p.communicate(document.source.encode())
     if stderr:
