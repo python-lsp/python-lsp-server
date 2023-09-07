@@ -52,6 +52,9 @@ class PyflakesDiagnosticReport:
         # We've seen that lineno and offset can sometimes be None
         lineno = lineno or 1
         offset = offset or 0
+        # could be None if the error is due to an invalid encoding
+        # see e.g. https://github.com/python-lsp/python-lsp-server/issues/429
+        text = text or ""
 
         err_range = {
             "start": {"line": lineno - 1, "character": offset},
