@@ -115,9 +115,7 @@ def run_flake8(flake8_executable, args, document):
     try:
         cmd = [flake8_executable]
         cmd.extend(args)
-        p = Popen(
-            cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE, **popen_kwargs
-        )
+        p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE, **popen_kwargs)
     except IOError:
         log.debug(
             "Can't execute %s. Trying with '%s -m flake8'",
