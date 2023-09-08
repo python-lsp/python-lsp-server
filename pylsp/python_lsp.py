@@ -238,7 +238,7 @@ class PythonLSPServer(MethodDispatcher):
         return {
             "error": {
                 "code": lsp.ErrorCodes.InvalidRequest,
-                "message": "Requests after shutdown not valid",
+                "message": "Requests after shutdown are not valid",
             }
         }
 
