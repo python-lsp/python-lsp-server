@@ -215,7 +215,7 @@ class PythonLSPServer(MethodDispatcher):
         if self._shutdown and item != "exit":
             # exit is the only allowed method during shutdown
             log.debug("Ignoring non-exit method during shutdown: %s", item)
-            raise KeyError
+            item = "invalid_request_after_shutdown"
 
         try:
             return super().__getitem__(item)
@@ -233,6 +233,14 @@ class PythonLSPServer(MethodDispatcher):
         for workspace in self.workspaces.values():
             workspace.close()
         self._shutdown = True
+
+    def m_invalid_request_after_shutdown(self, **_kwargs):
+        return {
+            "error": {
+                "code": lsp.ErrorCodes.InvalidRequest,
+                "message": "Requests after shutdown are not valid",
+            }
+        }
 
     def m_exit(self, **_kwargs):
         self._endpoint.shutdown()
