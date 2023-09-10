@@ -79,11 +79,15 @@ def pylsp_lint(workspace, document):
         flake8_executable = settings.get("executable", "flake8")
 
         args = build_args(opts)
-        output = run_flake8(flake8_executable, args, document)
-        return parse_stdout(document, output)
+
+        # ensure the same source is used for flake8 execution and result parsing;
+        # single source access improves performance as it is only one disk access
+        source = document.source
+        output = run_flake8(flake8_executable, args, document, source)
+        return parse_stdout(source, output)
 
 
-def run_flake8(flake8_executable, args, document):
+def run_flake8(flake8_executable, args, document, source):
     """Run flake8 with the provided arguments, logs errors
     from stderr if any.
     """
@@ -127,7 +131,7 @@ def run_flake8(flake8_executable, args, document):
         p = Popen(  # pylint: disable=consider-using-with
             cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE, **popen_kwargs
         )
-    (stdout, stderr) = p.communicate(document.source.encode())
+    (stdout, stderr) = p.communicate(source.encode())
     if stderr:
         log.error("Error while running flake8 '%s'", stderr.decode())
     return stdout.decode()
@@ -155,7 +159,7 @@ def build_args(options):
     return args
 
 
-def parse_stdout(document, stdout):
+def parse_stdout(source, stdout):
     """
     Build a diagnostics from flake8's output, it should extract every result and format
     it into a dict that looks like this:
@@ -183,6 +187,7 @@ def parse_stdout(document, stdout):
         A list of dictionaries.
     """
 
+    document_lines = source.splitlines(True)
     diagnostics = []
     lines = stdout.splitlines()
     for raw_line in lines:
@@ -212,7 +217,7 @@ def parse_stdout(document, stdout):
                 "end": {
                     "line": line,
                     # no way to determine the column
-                    "character": len(document.lines[line]),
+                    "character": len(document_lines[line]),
                 },
             },
             "message": msg,
