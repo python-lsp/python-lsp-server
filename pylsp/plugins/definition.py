@@ -7,16 +7,32 @@ from pylsp import hookimpl, uris, _utils
 log = logging.getLogger(__name__)
 
 
+def _resolve_definition(script, settings, maybe_defn):
+    while not maybe_defn.is_definition() and maybe_defn.module_path == script.path:
+        defns = script.goto(
+            follow_imports=settings.get("follow_imports", True),
+            follow_builtin_imports=settings.get("follow_builtin_imports", True),
+            line=maybe_defn.line,
+            column=maybe_defn.column,
+        )
+        if len(defns) == 1:
+            maybe_defn = defns[0]
+        else:
+            break
+    return maybe_defn
+
+
 @hookimpl
 def pylsp_definitions(config, document, position):
     settings = config.plugin_settings("jedi_definition")
     code_position = _utils.position_to_jedi_linecolumn(document, position)
-    definitions = document.jedi_script(use_document_path=True).goto(
+    script = document.jedi_script(use_document_path=True)
+    definitions = script.goto(
         follow_imports=settings.get("follow_imports", True),
         follow_builtin_imports=settings.get("follow_builtin_imports", True),
         **code_position,
     )
-
+    definitions = [_resolve_definition(script, settings, d) for d in definitions]
     follow_builtin_defns = settings.get("follow_builtin_definitions", True)
     return [
         {
