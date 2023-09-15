@@ -21,6 +21,11 @@ class Directory(object):
 
     def add_member(self, id, name):
         self.members[id] = name
+        
+        
+subscripted_before_reference = {}
+subscripted_before_reference[0] = 0
+subscripted_before_reference
 """
 
 
@@ -32,6 +37,22 @@ def test_definitions(config, workspace):
     def_range = {
         "start": {"line": 0, "character": 4},
         "end": {"line": 0, "character": 5},
+    }
+
+    doc = Document(DOC_URI, workspace, DOC)
+    assert [{"uri": DOC_URI, "range": def_range}] == pylsp_definitions(
+        config, doc, cursor_pos
+    )
+
+
+def test_indirect_definitions(config, workspace):
+    # Over 'subscripted_before_reference'
+    cursor_pos = {"line": 16, "character": 0}
+
+    # The definition of 'subscripted_before_reference'
+    def_range = {
+        "start": {"line": 14, "character": 0},
+        "end": {"line": 14, "character": len("subscripted_before_reference")},
     }
 
     doc = Document(DOC_URI, workspace, DOC)
