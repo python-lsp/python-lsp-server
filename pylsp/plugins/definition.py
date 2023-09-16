@@ -14,10 +14,15 @@ if TYPE_CHECKING:
 log = logging.getLogger(__name__)
 
 
+MAX_JEDI_GOTO_HOPS = 100
+
+
 def _resolve_definition(
     maybe_defn: Name, script: Script, settings: Dict[str, Any]
 ) -> Name:
-    while not maybe_defn.is_definition() and maybe_defn.module_path == script.path:
+    for _ in range(MAX_JEDI_GOTO_HOPS):
+        if maybe_defn.is_definition() or maybe_defn.module_path != script.path:
+            break
         defns = script.goto(
             follow_imports=settings.get("follow_imports", True),
             follow_builtin_imports=settings.get("follow_builtin_imports", True),
