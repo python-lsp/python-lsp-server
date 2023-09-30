@@ -73,7 +73,7 @@ def test_indirect_definitions(config, workspace):
 
 
 def test_definition_with_multihop_inference_goto(config, workspace):
-    # Over 'subscripted_before_reference'
+    # Over 'inception()'
     cursor_pos = {"line": 26, "character": 0}
 
     # The most recent definition of 'inception',
