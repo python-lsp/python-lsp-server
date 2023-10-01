@@ -36,7 +36,18 @@ my_list = [1, None, alias]
 inception = my_list[2]
 
 inception()
+
+import numpy
+numpy.ones
 """
+
+
+def test_numpy(config, workspace):
+    cursor_pos = {"line": 29, "character": 8}
+
+    doc = Document(DOC_URI, workspace, DOC)
+    defns = pylsp_definitions(config, doc, cursor_pos)
+    assert len(defns) > 0, defns
 
 
 def test_definitions(config, workspace):
