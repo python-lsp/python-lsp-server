@@ -47,6 +47,7 @@ def pylsp_definitions(
     code_position = _utils.position_to_jedi_linecolumn(document, position)
     script = document.jedi_script(use_document_path=True)
     auto_import_modules = jedi.settings.auto_import_modules
+
     try:
         jedi.settings.auto_import_modules = []
         definitions = script.goto(
@@ -57,6 +58,7 @@ def pylsp_definitions(
         definitions = [_resolve_definition(d, script, settings) for d in definitions]
     finally:
         jedi.settings.auto_import_modules = auto_import_modules
+
     follow_builtin_defns = settings.get("follow_builtin_definitions", True)
     return [
         {
