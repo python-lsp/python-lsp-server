@@ -36,6 +36,9 @@ my_list = [1, None, alias]
 inception = my_list[2]
 
 inception()
+
+import numpy
+numpy.ones
 """
 
 
@@ -87,6 +90,15 @@ def test_definition_with_multihop_inference_goto(config, workspace):
     assert [{"uri": DOC_URI, "range": def_range}] == pylsp_definitions(
         config, doc, cursor_pos
     )
+
+
+def test_numpy_definition(config, workspace):
+    # Over numpy.ones
+    cursor_pos = {"line": 29, "character": 8}
+
+    doc = Document(DOC_URI, workspace, DOC)
+    defns = pylsp_definitions(config, doc, cursor_pos)
+    assert len(defns) > 0, defns
 
 
 def test_builtin_definition(config, workspace):

@@ -3,6 +3,9 @@
 from __future__ import annotations
 import logging
 from typing import Any, Dict, List, TYPE_CHECKING
+
+import jedi
+
 from pylsp import hookimpl, uris, _utils
 
 if TYPE_CHECKING:
@@ -43,12 +46,19 @@ def pylsp_definitions(
     settings = config.plugin_settings("jedi_definition")
     code_position = _utils.position_to_jedi_linecolumn(document, position)
     script = document.jedi_script(use_document_path=True)
-    definitions = script.goto(
-        follow_imports=settings.get("follow_imports", True),
-        follow_builtin_imports=settings.get("follow_builtin_imports", True),
-        **code_position,
-    )
-    definitions = [_resolve_definition(d, script, settings) for d in definitions]
+    auto_import_modules = jedi.settings.auto_import_modules
+
+    try:
+        jedi.settings.auto_import_modules = []
+        definitions = script.goto(
+            follow_imports=settings.get("follow_imports", True),
+            follow_builtin_imports=settings.get("follow_builtin_imports", True),
+            **code_position,
+        )
+        definitions = [_resolve_definition(d, script, settings) for d in definitions]
+    finally:
+        jedi.settings.auto_import_modules = auto_import_modules
+
     follow_builtin_defns = settings.get("follow_builtin_definitions", True)
     return [
         {
