@@ -27,7 +27,7 @@ Homepage = "https://github.com/python-lsp/python-lsp-server"
 
 [project.optional-dependencies]
 all = [
-    "autopep8>=1.6.0,<2.1.0",
+    "autopep8>=2.0.4,<2.1.0",
     "flake8>=6.1.0,<7",
     "mccabe>=0.7.0,<0.8.0",
     "pycodestyle>=2.11.0,<2.12.0",
