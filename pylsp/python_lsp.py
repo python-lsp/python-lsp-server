@@ -295,7 +295,7 @@ class PythonLSPServer(MethodDispatcher):
                 "openClose": True,
             },
             "notebookDocumentSync": {
-                "notebookSelector": {"cells": [{"language": "python"}]}
+                "notebookSelector": [{"cells": [{"language": "python"}]}]
             },
             "workspace": {
                 "workspaceFolders": {"supported": True, "changeNotifications": True}
