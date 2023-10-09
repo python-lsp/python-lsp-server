@@ -1,5 +1,21 @@
 # History of changes
 
+## Version 1.8.2 (2023/10/09)
+
+### Issues Closed
+
+* [Issue 453](https://github.com/python-lsp/python-lsp-server/issues/453) - notebookDocumentSync notebookSelector type error ([PR 454](https://github.com/python-lsp/python-lsp-server/pull/454) by [@smacke](https://github.com/smacke))
+
+In this release 1 issue was closed.
+
+### Pull Requests Merged
+
+* [PR 454](https://github.com/python-lsp/python-lsp-server/pull/454) - Fix notebook document selector not being a list in capabilities, by [@smacke](https://github.com/smacke) ([453](https://github.com/python-lsp/python-lsp-server/issues/453))
+
+In this release 1 pull request was closed.
+
+----
+
 ## Version 1.8.1 (2023/10/05)
 
 ### Issues Closed
