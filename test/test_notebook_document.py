@@ -33,7 +33,8 @@ def test_initialize(client_server_pair):
         },
     ).result(timeout=CALL_TIMEOUT_IN_SECONDS)
     assert server.workspace is not None
-    assert "notebookDocumentSync" in response["capabilities"].keys()
+    selector = response["capabilities"]["notebookDocumentSync"]["notebookSelector"]
+    assert isinstance(selector, list)
 
 
 @pytest.mark.skipif(IS_WIN, reason="Flaky on Windows")
