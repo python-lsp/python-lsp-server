@@ -9,6 +9,7 @@ import time
 from unittest import mock
 
 from flaky import flaky
+from docstring_to_markdown import UnknownFormatError
 
 from pylsp import _utils
 from pylsp.python_lsp import PythonLSPServer, start_io_lang_server
@@ -154,3 +155,53 @@ def test_clip_column():
     assert _utils.clip_column(2, ["123\n", "123"], 0) == 2
     assert _utils.clip_column(3, ["123\n", "123"], 0) == 3
     assert _utils.clip_column(4, ["123\n", "123"], 1) == 3
+
+
+@mock.patch("docstring_to_markdown.convert")
+def test_format_docstring_valid_rst_signature(mock_convert):
+    """Test that a valid RST docstring includes the function signature."""
+    docstring = """A function docstring.
+
+    Parameters
+    ----------
+    a : str, something
+    """
+
+    # Mock the return value to avoid depedency on the real thing
+    mock_convert.return_value = """A function docstring.
+
+    #### Parameters
+
+    - `a`: str, something
+    """
+
+    markdown = _utils.format_docstring(
+        docstring,
+        "markdown",
+        ["something(a: str) -> str"],
+    )["value"]
+
+    assert markdown.startswith(
+        _utils.wrap_signature("something(a: str) -> str"),
+    )
+
+
+@mock.patch("docstring_to_markdown.convert", side_effect=UnknownFormatError)
+def test_format_docstring_invalid_rst_signature(_):
+    """Test that an invalid RST docstring includes the function signature."""
+    docstring = """A function docstring.
+
+    Parameters
+    ----------
+    a : str, something
+    """
+
+    markdown = _utils.format_docstring(
+        docstring,
+        "markdown",
+        ["something(a: str) -> str"],
+    )["value"]
+
+    assert markdown.startswith(
+        _utils.wrap_signature("something(a: str) -> str"),
+    )
