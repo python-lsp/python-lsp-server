@@ -9,11 +9,10 @@ import time
 from unittest import mock
 
 from flaky import flaky
+from docstring_to_markdown import UnknownFormatError
 
 from pylsp import _utils
 from pylsp.python_lsp import PythonLSPServer, start_io_lang_server
-
-from docstring_to_markdown import UnknownFormatError
 
 
 def start(obj):
@@ -188,7 +187,7 @@ def test_format_docstring_valid_rst_signature(mock_convert):
 
 
 @mock.patch("docstring_to_markdown.convert", side_effect=UnknownFormatError)
-def test_format_docstring_invalid_rst_signature(mock_convert):
+def test_format_docstring_invalid_rst_signature(_):
     """Test that an invalid RST docstring includes the function signature."""
     docstring = """A function docstring.
 
