@@ -19,7 +19,7 @@ def wait_for_condition(condition, timeout=CALL_TIMEOUT_IN_SECONDS):
         time.sleep(0.1)
         if time.time() - start_time > timeout:
             raise TimeoutError("Timeout waiting for condition")
-   
+
 
 @pytest.mark.skipif(IS_WIN, reason="Flaky on Windows")
 def test_initialize(client_server_pair):
