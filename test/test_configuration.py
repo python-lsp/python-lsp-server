@@ -54,12 +54,12 @@ def test_set_flake8_using_workspace_did_change_configuration(client_server_pair)
         is False
     )
 
-    with patch.object(server, "_hook") as mock_hook:
+    with patch.object(server.workspace, "update_config") as mock_update_config:
         client._endpoint.notify(
             "workspace/didChangeConfiguration",
             {"settings": INITIALIZATION_OPTIONS},
         )
-        wait_for_condition(lambda: mock_hook.call_count >= 1)
+        wait_for_condition(lambda: mock_update_config.call_count >= 1)
 
         for key, value in INITIALIZATION_OPTIONS["pylsp"]["plugins"].items():
             assert server.workspace._config.settings().get("plugins").get(key).get(
