@@ -138,10 +138,13 @@ def test_find_parents(tmpdir):
 
 
 def test_merge_dicts():
-    assert _utils.merge_dicts(
-        {"a": True, "b": {"x": 123, "y": {"hello": "world"}}},
-        {"a": False, "b": {"y": [], "z": 987}},
-    ) == {"a": False, "b": {"x": 123, "y": [], "z": 987}}
+    assert (
+        _utils.merge_dicts(
+            {"a": True, "b": {"x": 123, "y": {"hello": "world"}}},
+            {"a": False, "b": {"y": [], "z": 987}},
+        )
+        == {"a": False, "b": {"x": 123, "y": [], "z": 987}}
+    )
 
 
 def test_clip_column():
