@@ -238,3 +238,13 @@ def pylsp_document_did_open(config: Config, workspace: Workspace):
 def pylsp_document_did_save(config: Config, workspace: Workspace, document: Document):
     """Update the names associated with this document."""
     _reload_cache(config, workspace, [document])
+
+
+@hookimpl
+def pylsp_workspace_configuration_chaged(config: Config, workspace: Workspace):
+    """Initialize AutoImport if it has been enabled through a workspace/didChangeConfiguration message from the frontend.
+
+    Generates the cache for local and global items.
+    """
+    if config.plugin_settings("rope_autoimport").get("enabled", False):
+        _reload_cache(config, workspace)

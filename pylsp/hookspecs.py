@@ -127,3 +127,8 @@ def pylsp_settings(config):
 @hookspec(firstresult=True)
 def pylsp_signature_help(config, workspace, document, position):
     pass
+
+
+@hookspec
+def pylsp_workspace_configuration_changed(config, workspace):
+    pass

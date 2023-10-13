@@ -766,6 +766,7 @@ class PythonLSPServer(MethodDispatcher):
             self.config.update((settings or {}).get("pylsp", {}))
         for workspace in self.workspaces.values():
             workspace.update_config(settings)
+            self._hook("pylsp_workspace_configuration_changed")
             for doc_uri in workspace.documents:
                 self.lint(doc_uri, is_saved=False)
 
