@@ -242,7 +242,8 @@ def pylsp_document_did_save(config: Config, workspace: Workspace, document: Docu
 
 @hookimpl
 def pylsp_workspace_configuration_chaged(config: Config, workspace: Workspace):
-    """Initialize AutoImport if it has been enabled through a workspace/didChangeConfiguration message from the frontend.
+    """Initialize AutoImport if it has been enabled through a
+    workspace/didChangeConfiguration message from the frontend.
 
     Generates the cache for local and global items.
     """
