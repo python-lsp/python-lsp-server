@@ -16,9 +16,9 @@ def _find_docstring(definitions):
 
         # TODO(Review)
         # We could also concatenate all docstrings we find in the definitions
-        # I am agains this because
+        # I am against this because
         # - If just one definition has a docstring, it gives a false impression of the hover element
-        # - If multiple definitions have a docstring, the user will probably not relize
+        # - If multiple definitions have a docstring, the user will probably not realize
         #   that he can scroll to see the other options
         return ""
 
