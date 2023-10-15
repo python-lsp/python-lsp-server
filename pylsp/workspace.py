@@ -5,7 +5,6 @@ import io
 import logging
 from contextlib import contextmanager
 import os
-from pydoc import doc
 import re
 import uuid
 import functools
