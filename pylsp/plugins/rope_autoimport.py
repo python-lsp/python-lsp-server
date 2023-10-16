@@ -22,6 +22,7 @@ log = logging.getLogger(__name__)
 _score_pow = 5
 _score_max = 10**_score_pow
 MAX_RESULTS = 1000
+ENABLED = False
 
 
 @hookimpl
@@ -203,6 +204,8 @@ def _sort_import(score: int) -> str:
 def _reload_cache(
     config: Config, workspace: Workspace, files: Optional[List[Document]] = None
 ):
+    # pylint: disable=global-statements
+    global ENABLED
     memory: bool = config.plugin_settings("rope_autoimport").get("memory", False)
     rope_config = config.settings().get("rope", {})
     autoimport = workspace._rope_autoimport(rope_config, memory)
@@ -214,6 +217,7 @@ def _reload_cache(
     )
     autoimport.generate_cache(task_handle=task_handle, resources=resources)
     autoimport.generate_modules_cache(task_handle=task_handle)
+    ENABLED = True
 
 
 @hookimpl
@@ -241,12 +245,14 @@ def pylsp_document_did_save(config: Config, workspace: Workspace, document: Docu
 
 
 @hookimpl
-def pylsp_workspace_configuration_chaged(config: Config, workspace: Workspace):
+def pylsp_workspace_configuration_changed(config: Config, workspace: Workspace):
     """
     Initialize autoimport if it has been enabled through a
     workspace/didChangeConfiguration message from the frontend.
 
     Generates the cache for local and global items.
     """
-    if config.plugin_settings("rope_autoimport").get("enabled", False):
+    if config.plugin_settings("rope_autoimport").get("enabled", False) and not ENABLED:
         _reload_cache(config, workspace)
+    else:
+        log.debug("autoimport: Skipping cache reload.")
