@@ -204,7 +204,7 @@ def _sort_import(score: int) -> str:
 def _reload_cache(
     config: Config, workspace: Workspace, files: Optional[List[Document]] = None
 ):
-    # pylint: disable=global-statements
+    # pylint: disable=global-statement
     global ENABLED
     memory: bool = config.plugin_settings("rope_autoimport").get("memory", False)
     rope_config = config.settings().get("rope", {})
