@@ -205,6 +205,7 @@ def _reload_cache(
 ):
     memory: bool = config.plugin_settings("rope_autoimport").get("memory", False)
     rope_config = config.settings().get("rope", {})
+    log.debug("[_reload_cache] rope_config = %s", rope_config)
     autoimport = workspace._rope_autoimport(rope_config, memory)
     task_handle = PylspTaskHandle(workspace)
     resources: Optional[List[Resource]] = (
@@ -212,6 +213,7 @@ def _reload_cache(
         if files is None
         else [document._rope_resource(rope_config) for document in files]
     )
+    log.debug("[_reload_cache] resources = %s", resources)
     autoimport.generate_cache(task_handle=task_handle, resources=resources)
     autoimport.generate_modules_cache(task_handle=task_handle)
 
@@ -241,7 +243,7 @@ def pylsp_document_did_save(config: Config, workspace: Workspace, document: Docu
 
 
 @hookimpl
-def pylsp_workspace_configuration_chaged(config: Config, workspace: Workspace):
+def pylsp_workspace_configuration_changed(config: Config, workspace: Workspace):
     """
     Initialize autoimport if it has been enabled through a
     workspace/didChangeConfiguration message from the frontend.
@@ -250,3 +252,5 @@ def pylsp_workspace_configuration_chaged(config: Config, workspace: Workspace):
     """
     if config.plugin_settings("rope_autoimport").get("enabled", False):
         _reload_cache(config, workspace)
+    else:
+        log.debug("autoimport: Skipping cache reload.")
