@@ -4,7 +4,7 @@ import os
 import time
 
 from unittest.mock import patch, call
-from test.fixtures import CALL_TIMEOUT_IN_SECONDS
+from test.test_utils import CALL_TIMEOUT_IN_SECONDS
 import pytest
 from pylsp.workspace import Notebook
 
@@ -29,7 +29,6 @@ def test_initialize(client_server_pair):
         {
             "processId": 1234,
             "rootPath": os.path.dirname(__file__),
-            "initializationOptions": {},
         },
     ).result(timeout=CALL_TIMEOUT_IN_SECONDS)
     assert server.workspace is not None
@@ -100,7 +99,6 @@ def test_notebook_document__did_open(
         {
             "processId": 1234,
             "rootPath": os.path.dirname(__file__),
-            "initializationOptions": {},
         },
     ).result(timeout=CALL_TIMEOUT_IN_SECONDS)
 
@@ -264,7 +262,6 @@ def test_notebook_document__did_change(
         {
             "processId": 1234,
             "rootPath": os.path.dirname(__file__),
-            "initializationOptions": {},
         },
     ).result(timeout=CALL_TIMEOUT_IN_SECONDS)
 
@@ -536,7 +533,6 @@ def test_notebook__did_close(
         {
             "processId": 1234,
             "rootPath": os.path.dirname(__file__),
-            "initializationOptions": {},
         },
     ).result(timeout=CALL_TIMEOUT_IN_SECONDS)
 
@@ -608,7 +604,6 @@ def test_notebook_definition(client_server_pair):
         {
             "processId": 1234,
             "rootPath": os.path.dirname(__file__),
-            "initializationOptions": {},
         },
     ).result(timeout=CALL_TIMEOUT_IN_SECONDS)
 

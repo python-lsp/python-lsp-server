@@ -394,7 +394,18 @@ class PythonLSPServer(MethodDispatcher):
         return flatten(self._hook("pylsp_code_lens", doc_uri))
 
     def completions(self, doc_uri, position):
-        completions = self._hook("pylsp_completions", doc_uri, position=position)
+        workspace = self._match_uri_to_workspace(doc_uri)
+        document = workspace.get_document(doc_uri)
+        ignored_names = None
+        if isinstance(document, Cell):
+            log.debug("Getting ignored names from notebook document")
+            # We need to get the ignored names from the whole notebook document
+            notebook_document = workspace.get_maybe_document(document.notebook_uri)
+            ignored_names = notebook_document.jedi_names()
+            log.debug("Got ignored names from notebook document: %s", ignored_names)
+        completions = self._hook(
+            "pylsp_completions", doc_uri, position=position, ignored_names=ignored_names
+        )
         return {"isIncomplete": False, "items": flatten(completions)}
 
     def completion_item_resolve(self, completion_item):

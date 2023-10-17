@@ -1,13 +1,18 @@
 # Copyright 2022- Python Language Server Contributors.
 
 from typing import Dict, List
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
+
+from test.test_notebook_document import wait_for_condition
+from test.test_utils import send_initialize_request, send_notebook_did_open
 
 import jedi
 import parso
 import pytest
 
-from pylsp import lsp, uris
+from pylsp import IS_WIN, uris
+from pylsp import lsp
+
 from pylsp.config.config import Config
 from pylsp.plugins.rope_autoimport import _get_score, _should_insert, get_names
 from pylsp.plugins.rope_autoimport import (
@@ -15,6 +20,7 @@ from pylsp.plugins.rope_autoimport import (
 )
 from pylsp.plugins.rope_autoimport import pylsp_initialize
 from pylsp.workspace import Workspace
+
 
 DOC_URI = uris.from_fs_path(__file__)
 
@@ -39,7 +45,9 @@ def completions(config: Config, autoimport_workspace: Workspace, request):
     com_position = {"line": 0, "character": position}
     autoimport_workspace.put_document(DOC_URI, source=document)
     doc = autoimport_workspace.get_document(DOC_URI)
-    yield pylsp_autoimport_completions(config, autoimport_workspace, doc, com_position)
+    yield pylsp_autoimport_completions(
+        config, autoimport_workspace, doc, com_position, None
+    )
     autoimport_workspace.rm_document(DOC_URI)
 
 
@@ -141,43 +149,11 @@ def test_autoimport_defined_name(config, workspace):
     com_position = {"line": 1, "character": 3}
     workspace.put_document(DOC_URI, source=document)
     doc = workspace.get_document(DOC_URI)
-    completions = pylsp_autoimport_completions(config, workspace, doc, com_position)
+    completions = pylsp_autoimport_completions(
+        config, workspace, doc, com_position, None
+    )
     workspace.rm_document(DOC_URI)
     assert not check_dict({"label": "List"}, completions)
-
-
-# This test has several large issues.
-# 1. autoimport relies on its sources being written to disk. This makes testing harder
-# 2. the hook doesn't handle removed files
-# 3. The testing framework cannot access the actual autoimport object so it cannot clear the cache
-# def test_autoimport_update_module(config: Config, workspace: Workspace):
-#     document2 = "SomethingYouShouldntWrite = 1"
-#     document = """SomethingYouShouldntWrit"""
-#     com_position = {
-#         "line": 0,
-#         "character": 3,
-#     }
-#     doc2_path = workspace.root_path + "/test_file_no_one_should_write_to.py"
-#     if os.path.exists(doc2_path):
-#         os.remove(doc2_path)
-#     DOC2_URI = uris.from_fs_path(doc2_path)
-#     workspace.put_document(DOC_URI, source=document)
-#     doc = workspace.get_document(DOC_URI)
-#     completions = pylsp_autoimport_completions(config, workspace, doc, com_position)
-#     assert len(completions) == 0
-#     with open(doc2_path, "w") as f:
-#         f.write(document2)
-#     workspace.put_document(DOC2_URI, source=document2)
-#     doc2 = workspace.get_document(DOC2_URI)
-#     pylsp_document_did_save(config, workspace, doc2)
-#     assert check_dict({"label": "SomethingYouShouldntWrite"}, completions)
-#     workspace.put_document(DOC2_URI, source="\n")
-#     doc2 = workspace.get_document(DOC2_URI)
-#     os.remove(doc2_path)
-#     pylsp_document_did_save(config, workspace, doc2)
-#     completions = pylsp_autoimport_completions(config, workspace, doc, com_position)
-#     assert len(completions) == 0
-#     workspace.rm_document(DOC_URI)
 
 
 class TestShouldInsert:
@@ -233,3 +209,40 @@ def test_get_names():
     """
     results = get_names(jedi.Script(code=source))
     assert results == set(["blah", "bleh", "e", "hello", "someone", "sfa", "a", "b"])
+
+
+@pytest.mark.skipif(IS_WIN, reason="Flaky on Windows")
+def test_autoimport_for_notebook_document(
+    client_server_pair,
+):
+    client, server = client_server_pair
+    send_initialize_request(client)
+
+    with patch.object(server._endpoint, "notify") as mock_notify:
+        send_notebook_did_open(client, ["import os", "os", "sys"])
+        wait_for_condition(lambda: mock_notify.call_count >= 3)
+
+    server.m_workspace__did_change_configuration(
+        settings={
+            "pylsp": {"plugins": {"rope_autoimport": {"enabled": True, "memory": True}}}
+        }
+    )
+    rope_autoimport_settings = server.workspace._config.plugin_settings(
+        "rope_autoimport"
+    )
+    assert rope_autoimport_settings.get("enabled", False) is True
+    assert rope_autoimport_settings.get("memory", False) is True
+
+    suggestions = server.completions("cell_1_uri", {"line": 0, "character": 2}).get(
+        "items"
+    )
+    assert not any(
+        suggestion for suggestion in suggestions if suggestion.get("label", "") == "os"
+    )
+
+    suggestions = server.completions("cell_2_uri", {"line": 0, "character": 3}).get(
+        "items"
+    )
+    assert any(
+        suggestion for suggestion in suggestions if suggestion.get("label", "") == "sys"
+    )

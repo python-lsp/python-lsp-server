@@ -595,6 +595,7 @@ class Notebook:
         self.version = version
         self.cells = cells or []
         self.metadata = metadata or {}
+        self._lock = RLock()
 
     def __str__(self):
         return "Notebook with URI '%s'" % str(self.uri)
@@ -624,6 +625,15 @@ class Notebook:
             }
             offset += num_lines
         return cell_data
+
+    @lock
+    def jedi_names(self, all_scopes=False, definitions=True, references=False):
+        """Get all names to ignore from all cells."""
+        names = set()
+        for cell in self.cells:
+            cell_document = self.workspace.get_cell_document(cell["document"])
+            names.update(cell_document.jedi_names(all_scopes, definitions, references))
+        return set(name.name for name in names)
 
 
 class Cell(Document):
