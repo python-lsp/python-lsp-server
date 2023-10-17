@@ -78,10 +78,8 @@ class Workspace:
             rope_folder = rope_config.get("ropeFolder")
             if rope_folder:
                 self.__rope = Project(self._root_path, ropefolder=rope_folder)
-                log.debug("[_rope_project_builder] root_path = %s, ropenfolder = %s", self._root_path, rope_folder)
             else:
                 self.__rope = Project(self._root_path)
-                log.debug("[_rope_project_builder] root_path = %s, ropenfolder = '.ropeproject'", (self._root_path))
             self.__rope.prefs.set(
                 "extension_modules", rope_config.get("extensionModules", [])
             )

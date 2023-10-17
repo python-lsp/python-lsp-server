@@ -205,7 +205,6 @@ def _reload_cache(
 ):
     memory: bool = config.plugin_settings("rope_autoimport").get("memory", False)
     rope_config = config.settings().get("rope", {})
-    log.debug("[_reload_cache] rope_config = %s", rope_config)
     autoimport = workspace._rope_autoimport(rope_config, memory)
     task_handle = PylspTaskHandle(workspace)
     resources: Optional[List[Resource]] = (
@@ -213,7 +212,6 @@ def _reload_cache(
         if files is None
         else [document._rope_resource(rope_config) for document in files]
     )
-    log.debug("[_reload_cache] resources = %s", resources)
     autoimport.generate_cache(task_handle=task_handle, resources=resources)
     autoimport.generate_modules_cache(task_handle=task_handle)
 
