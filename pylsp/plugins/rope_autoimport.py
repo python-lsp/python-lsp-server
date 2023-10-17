@@ -171,10 +171,8 @@ def pylsp_completions(
     ignored_names: Set[str] = ignored_names or get_names(
         document.jedi_script(use_document_path=True)
     )
-    log.debug("autoimport: ignored names: %s", ignored_names)
     autoimport = workspace._rope_autoimport(rope_config)
     suggestions = list(autoimport.search_full(word, ignored_names=ignored_names))
-    log.debug("autoimport: suggestions: %s", suggestions)
     results = list(
         sorted(
             _process_statements(suggestions, document.uri, word, autoimport, document),
