@@ -169,7 +169,7 @@ class Workspace:
         for doc_uri in self.documents:
             if isinstance(document := self.get_document(doc_uri), Notebook):
                 # Notebook documents don't have a config. The config is
-                # handled on the cell level.
+                # handled at the cell level.
                 return
             document.update_config(settings)
 

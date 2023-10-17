@@ -241,7 +241,7 @@ def pylsp_document_did_save(config: Config, workspace: Workspace, document: Docu
 
 
 @hookimpl
-def pylsp_workspace_configuration_changed(config: Config, workspace: Workspace):
+def pylsp_workspace_configuration_chaged(config: Config, workspace: Workspace):
     """
     Initialize autoimport if it has been enabled through a
     workspace/didChangeConfiguration message from the frontend.
@@ -250,5 +250,3 @@ def pylsp_workspace_configuration_changed(config: Config, workspace: Workspace):
     """
     if config.plugin_settings("rope_autoimport").get("enabled", False):
         _reload_cache(config, workspace)
-    else:
-        log.debug("autoimport: Skipping cache reload.")
