@@ -11,7 +11,7 @@ from unittest import mock
 
 from flaky import flaky
 from docstring_to_markdown import UnknownFormatError
-from build.lib.pylsp.lsp import NotebookCellKind
+from pylsp.lsp import NotebookCellKind
 
 from pylsp import _utils
 from pylsp.python_lsp import PythonLSPServer, start_io_lang_server
