@@ -250,3 +250,5 @@ def pylsp_workspace_configuration_changed(config: Config, workspace: Workspace):
     """
     if config.plugin_settings("rope_autoimport").get("enabled", False):
         _reload_cache(config, workspace)
+    else:
+        log.debug("autoimport: Skipping cache reload.")
