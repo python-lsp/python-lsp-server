@@ -637,7 +637,10 @@ class Notebook:
         """
         Get the names in the notebook up to a certain cell.
 
-        :param up_to_cell_uri: The cell uri to stop at. If None, all cells are considered.
+        Parameters
+        ----------
+        up_to_cell_uri: str, optional
+            The cell uri to stop at. If None, all cells are considered.
         """
         names = set()
         for cell in self.cells:
