@@ -6,9 +6,10 @@ from io import StringIO
 from unittest.mock import MagicMock
 
 from test.test_utils import ClientServerPair, CALL_TIMEOUT_IN_SECONDS
-import pylsp_jsonrpc
 
 import pytest
+import pylsp_jsonrpc
+
 from pylsp_jsonrpc.dispatchers import MethodDispatcher
 from pylsp_jsonrpc.endpoint import Endpoint
 from pylsp_jsonrpc.exceptions import JsonRpcException
