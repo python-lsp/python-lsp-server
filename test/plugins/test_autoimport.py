@@ -10,8 +10,7 @@ import jedi
 import parso
 import pytest
 
-from pylsp import IS_WIN, uris
-from pylsp import lsp
+from pylsp import IS_WIN, lsp, uris
 
 from pylsp.config.config import Config
 from pylsp.plugins.rope_autoimport import _get_score, _should_insert, get_names
@@ -236,6 +235,7 @@ def test_autoimport_for_notebook_document(
     suggestions = server.completions("cell_1_uri", {"line": 0, "character": 2}).get(
         "items"
     )
+    # We don't receive an autoimport suggestion for "os" because it's already imported
     assert not any(
         suggestion for suggestion in suggestions if suggestion.get("label", "") == "os"
     )
@@ -243,6 +243,7 @@ def test_autoimport_for_notebook_document(
     suggestions = server.completions("cell_2_uri", {"line": 0, "character": 3}).get(
         "items"
     )
+    # We receive an autoimport suggestion for "sys" because it's not already imported
     assert any(
         suggestion for suggestion in suggestions if suggestion.get("label", "") == "sys"
     )
