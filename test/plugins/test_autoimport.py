@@ -11,7 +11,6 @@ import parso
 import pytest
 
 from pylsp import IS_WIN, lsp, uris
-
 from pylsp.config.config import Config
 from pylsp.plugins.rope_autoimport import _get_score, _should_insert, get_names
 from pylsp.plugins.rope_autoimport import (
