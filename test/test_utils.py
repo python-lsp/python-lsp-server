@@ -25,7 +25,7 @@ def send_notebook_did_open(client, cells: List[str]):
     Sends a notebookDocument/didOpen notification with the given python cells.
 
     The notebook has the uri "notebook_uri" and the cells have the uris
-    "cell_0_uri", "cell_1_uri", etc.
+    "cell_1_uri", "cell_2_uri", etc.
     """
     client._endpoint.notify(
         "notebookDocument/didOpen", notebook_with_python_cells(cells)
@@ -37,7 +37,7 @@ def notebook_with_python_cells(cells: List[str]):
     Create a notebook document with the given python cells.
 
     The notebook has the uri "notebook_uri" and the cells have the uris
-    "cell_0_uri", "cell_1_uri", etc.
+    "cell_1_uri", "cell_2_uri", etc.
     """
     return {
         "notebookDocument": {
@@ -46,14 +46,14 @@ def notebook_with_python_cells(cells: List[str]):
             "cells": [
                 {
                     "kind": NotebookCellKind.Code,
-                    "document": f"cell_{i}_uri",
+                    "document": f"cell_{i+1}_uri",
                 }
                 for i in range(len(cells))
             ],
         },
         "cellTextDocuments": [
             {
-                "uri": f"cell_{i}_uri",
+                "uri": f"cell_{i+1}_uri",
                 "languageId": "python",
                 "text": cell,
             }
@@ -63,7 +63,7 @@ def notebook_with_python_cells(cells: List[str]):
 
 
 def send_initialize_request(client):
-    client._endpoint.request(
+    return client._endpoint.request(
         "initialize",
         {
             "processId": 1234,

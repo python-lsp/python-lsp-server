@@ -232,7 +232,7 @@ def test_autoimport_for_notebook_document(
     assert rope_autoimport_settings.get("enabled", False) is True
     assert rope_autoimport_settings.get("memory", False) is True
 
-    suggestions = server.completions("cell_1_uri", {"line": 0, "character": 2}).get(
+    suggestions = server.completions("cell_2_uri", {"line": 0, "character": 2}).get(
         "items"
     )
     # We don't receive an autoimport suggestion for "os" because it's already imported
@@ -240,7 +240,7 @@ def test_autoimport_for_notebook_document(
         suggestion for suggestion in suggestions if suggestion.get("label", "") == "os"
     )
 
-    suggestions = server.completions("cell_2_uri", {"line": 0, "character": 3}).get(
+    suggestions = server.completions("cell_3_uri", {"line": 0, "character": 3}).get(
         "items"
     )
     # We receive an autoimport suggestion for "sys" because it's not already imported
