@@ -4,7 +4,7 @@ import os
 import time
 
 from unittest.mock import patch, call
-from test.test_utils import CALL_TIMEOUT_IN_SECONDS
+from test.fixtures import CALL_TIMEOUT_IN_SECONDS
 import pytest
 from pylsp.workspace import Notebook
 
