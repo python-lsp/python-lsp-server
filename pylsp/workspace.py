@@ -167,7 +167,11 @@ class Workspace:
     def update_config(self, settings):
         self._config.update((settings or {}).get("pylsp", {}))
         for doc_uri in self.documents:
-            self.get_document(doc_uri).update_config(settings)
+            if isinstance(document := self.get_document(doc_uri), Notebook):
+                # Notebook documents don't have a config. The config is
+                # handled at the cell level.
+                return
+            document.update_config(settings)
 
     def apply_edit(self, edit):
         return self._endpoint.request(self.M_APPLY_EDIT, {"edit": edit})

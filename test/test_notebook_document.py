@@ -2,11 +2,11 @@
 
 import os
 import time
+
 from unittest.mock import patch, call
-
 from test.fixtures import CALL_TIMEOUT_IN_SECONDS
-
 import pytest
+from pylsp.workspace import Notebook
 
 from pylsp import IS_WIN
 from pylsp.lsp import NotebookCellKind
@@ -35,6 +35,59 @@ def test_initialize(client_server_pair):
     assert server.workspace is not None
     selector = response["capabilities"]["notebookDocumentSync"]["notebookSelector"]
     assert isinstance(selector, list)
+
+
+@pytest.mark.skipif(IS_WIN, reason="Flaky on Windows")
+def test_workspace_did_change_configuration(client_server_pair):
+    """Test that we can update a workspace config w/o error when a notebook is open."""
+    client, server = client_server_pair
+    client._endpoint.request(
+        "initialize",
+        {
+            "processId": 1234,
+            "rootPath": os.path.dirname(__file__),
+        },
+    ).result(timeout=CALL_TIMEOUT_IN_SECONDS)
+    assert server.workspace is not None
+
+    with patch.object(server._endpoint, "notify") as mock_notify:
+        client._endpoint.notify(
+            "notebookDocument/didOpen",
+            {
+                "notebookDocument": {
+                    "uri": "notebook_uri",
+                    "notebookType": "jupyter-notebook",
+                    "cells": [
+                        {
+                            "kind": NotebookCellKind.Code,
+                            "document": "cell_1_uri",
+                        },
+                    ],
+                },
+                "cellTextDocuments": [
+                    {
+                        "uri": "cell_1_uri",
+                        "languageId": "python",
+                        "text": "",
+                    },
+                ],
+            },
+        )
+        wait_for_condition(lambda: mock_notify.call_count >= 1)
+    assert isinstance(server.workspace.get_document("notebook_uri"), Notebook)
+    assert len(server.workspace.documents) == 2
+
+    server.workspace.update_config(
+        {"pylsp": {"plugins": {"flake8": {"enabled": True}}}}
+    )
+
+    assert server.config.plugin_settings("flake8").get("enabled") is True
+    assert (
+        server.workspace.get_document("cell_1_uri")
+        ._config.plugin_settings("flake8")
+        .get("enabled")
+        is True
+    )
 
 
 @pytest.mark.skipif(IS_WIN, reason="Flaky on Windows")
