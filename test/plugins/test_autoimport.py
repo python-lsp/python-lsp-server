@@ -1,6 +1,6 @@
 # Copyright 2022- Python Language Server Contributors.
 
-from typing import Dict, List
+from typing import Any, Dict, List
 from unittest.mock import Mock, patch
 
 from test.test_notebook_document import wait_for_condition
@@ -22,6 +22,13 @@ from pylsp.workspace import Workspace
 
 
 DOC_URI = uris.from_fs_path(__file__)
+
+
+def contains_autoimport(suggestion: Dict[str, Any], module: str) -> bool:
+    """Checks if `suggestion` contains an autoimport for `module`."""
+    return suggestion.get("label", "") == module and "import" in suggestion.get(
+        "detail", ""
+    )
 
 
 @pytest.fixture(scope="session")
@@ -218,7 +225,15 @@ def test_autoimport_for_notebook_document(
     send_initialize_request(client)
 
     with patch.object(server._endpoint, "notify") as mock_notify:
-        send_notebook_did_open(client, ["import os", "os", "sys"])
+        # Expectations:
+        # 1. We receive an autoimport suggestion for "os" in the first cell because
+        #    os is imported after that.
+        # 2. We don't receive an autoimport suggestion for "os" in the second cell because it's
+        #    already imported in the second cell.
+        # 3. We don't receive an autoimport suggestion for "os" in the third cell because it's
+        #    already imported in the second cell.
+        # 4. We receive an autoimport suggestion for "sys" because it's not already imported
+        send_notebook_did_open(client, ["os", "import os\nos", "os", "sys"])
         wait_for_condition(lambda: mock_notify.call_count >= 3)
 
     server.m_workspace__did_change_configuration(
@@ -232,18 +247,42 @@ def test_autoimport_for_notebook_document(
     assert rope_autoimport_settings.get("enabled", False) is True
     assert rope_autoimport_settings.get("memory", False) is True
 
-    suggestions = server.completions("cell_2_uri", {"line": 0, "character": 2}).get(
+    # 1.
+    suggestions = server.completions("cell_1_uri", {"line": 0, "character": 2}).get(
         "items"
     )
-    # We don't receive an autoimport suggestion for "os" because it's already imported
-    assert not any(
-        suggestion for suggestion in suggestions if suggestion.get("label", "") == "os"
+    assert any(
+        suggestion
+        for suggestion in suggestions
+        if contains_autoimport(suggestion, "os")
     )
 
-    suggestions = server.completions("cell_3_uri", {"line": 0, "character": 3}).get(
+    # 2.
+    suggestions = server.completions("cell_2_uri", {"line": 1, "character": 2}).get(
         "items"
     )
-    # We receive an autoimport suggestion for "sys" because it's not already imported
+    assert not any(
+        suggestion
+        for suggestion in suggestions
+        if contains_autoimport(suggestion, "os")
+    )
+
+    # 3.
+    suggestions = server.completions("cell_3_uri", {"line": 0, "character": 2}).get(
+        "items"
+    )
+    assert not any(
+        suggestion
+        for suggestion in suggestions
+        if contains_autoimport(suggestion, "os")
+    )
+
+    # 4.
+    suggestions = server.completions("cell_4_uri", {"line": 0, "character": 3}).get(
+        "items"
+    )
     assert any(
-        suggestion for suggestion in suggestions if suggestion.get("label", "") == "sys"
+        suggestion
+        for suggestion in suggestions
+        if contains_autoimport(suggestion, "sys")
     )

@@ -627,12 +627,25 @@ class Notebook:
         return cell_data
 
     @lock
-    def jedi_names(self, all_scopes=False, definitions=True, references=False):
-        """Get all names to ignore from all cells."""
+    def jedi_names(
+        self,
+        up_to_cell_uri: Optional[str] = None,
+        all_scopes=False,
+        definitions=True,
+        references=False,
+    ):
+        """
+        Get the names in the notebook up to a certain cell.
+
+        :param up_to_cell_uri: The cell uri to stop at. If None, all cells are considered.
+        """
         names = set()
         for cell in self.cells:
-            cell_document = self.workspace.get_cell_document(cell["document"])
+            cell_uri = cell["document"]
+            cell_document = self.workspace.get_cell_document(cell_uri)
             names.update(cell_document.jedi_names(all_scopes, definitions, references))
+            if cell_uri == up_to_cell_uri:
+                break
         return set(name.name for name in names)
 
 

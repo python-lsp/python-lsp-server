@@ -400,7 +400,7 @@ class PythonLSPServer(MethodDispatcher):
         if isinstance(document, Cell):
             # We need to get the ignored names from the whole notebook document
             notebook_document = workspace.get_maybe_document(document.notebook_uri)
-            ignored_names = notebook_document.jedi_names()
+            ignored_names = notebook_document.jedi_names(doc_uri)
         completions = self._hook(
             "pylsp_completions", doc_uri, position=position, ignored_names=ignored_names
         )
