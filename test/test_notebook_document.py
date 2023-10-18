@@ -3,7 +3,11 @@
 import time
 from unittest.mock import patch, call
 
-from test.test_utils import CALL_TIMEOUT_IN_SECONDS, send_initialize_request, send_notebook_did_open
+from test.test_utils import (
+    CALL_TIMEOUT_IN_SECONDS,
+    send_initialize_request,
+    send_notebook_did_open,
+)
 
 import pytest
 from pylsp.workspace import Notebook
