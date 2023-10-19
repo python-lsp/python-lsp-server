@@ -1,7 +1,7 @@
 # Copyright 2022- Python Language Server Contributors.
 
 import logging
-from typing import Any, Dict, Generator, List, Optional, Set
+from typing import Any, Dict, Generator, List, Optional, Set, Union
 
 import parso
 from jedi import Script
@@ -153,7 +153,11 @@ def get_names(script: Script) -> Set[str]:
 
 @hookimpl
 def pylsp_completions(
-    config: Config, workspace: Workspace, document: Document, position
+    config: Config,
+    workspace: Workspace,
+    document: Document,
+    position,
+    ignored_names: Union[Set[str], None],
 ):
     """Get autoimport suggestions."""
     line = document.lines[position["line"]]
@@ -164,7 +168,9 @@ def pylsp_completions(
     word = word_node.value
     log.debug(f"autoimport: searching for word: {word}")
     rope_config = config.settings(document_path=document.path).get("rope", {})
-    ignored_names: Set[str] = get_names(document.jedi_script(use_document_path=True))
+    ignored_names: Set[str] = ignored_names or get_names(
+        document.jedi_script(use_document_path=True)
+    )
     autoimport = workspace._rope_autoimport(rope_config)
     suggestions = list(autoimport.search_full(word, ignored_names=ignored_names))
     results = list(
@@ -238,3 +244,17 @@ def pylsp_document_did_open(config: Config, workspace: Workspace):
 def pylsp_document_did_save(config: Config, workspace: Workspace, document: Document):
     """Update the names associated with this document."""
     _reload_cache(config, workspace, [document])
+
+
+@hookimpl
+def pylsp_workspace_configuration_changed(config: Config, workspace: Workspace):
+    """
+    Initialize autoimport if it has been enabled through a
+    workspace/didChangeConfiguration message from the frontend.
+
+    Generates the cache for local and global items.
+    """
+    if config.plugin_settings("rope_autoimport").get("enabled", False):
+        _reload_cache(config, workspace)
+    else:
+        log.debug("autoimport: Skipping cache reload.")

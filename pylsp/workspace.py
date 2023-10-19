@@ -167,7 +167,11 @@ class Workspace:
     def update_config(self, settings):
         self._config.update((settings or {}).get("pylsp", {}))
         for doc_uri in self.documents:
-            self.get_document(doc_uri).update_config(settings)
+            if isinstance(document := self.get_document(doc_uri), Notebook):
+                # Notebook documents don't have a config. The config is
+                # handled at the cell level.
+                return
+            document.update_config(settings)
 
     def apply_edit(self, edit):
         return self._endpoint.request(self.M_APPLY_EDIT, {"edit": edit})
@@ -591,6 +595,7 @@ class Notebook:
         self.version = version
         self.cells = cells or []
         self.metadata = metadata or {}
+        self._lock = RLock()
 
     def __str__(self):
         return "Notebook with URI '%s'" % str(self.uri)
@@ -620,6 +625,31 @@ class Notebook:
             }
             offset += num_lines
         return cell_data
+
+    @lock
+    def jedi_names(
+        self,
+        up_to_cell_uri: Optional[str] = None,
+        all_scopes=False,
+        definitions=True,
+        references=False,
+    ):
+        """
+        Get the names in the notebook up to a certain cell.
+
+        Parameters
+        ----------
+        up_to_cell_uri: str, optional
+            The cell uri to stop at. If None, all cells are considered.
+        """
+        names = set()
+        for cell in self.cells:
+            cell_uri = cell["document"]
+            cell_document = self.workspace.get_cell_document(cell_uri)
+            names.update(cell_document.jedi_names(all_scopes, definitions, references))
+            if cell_uri == up_to_cell_uri:
+                break
+        return set(name.name for name in names)
 
 
 class Cell(Document):
