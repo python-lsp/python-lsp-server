@@ -3,7 +3,7 @@
 import os
 from unittest.mock import patch
 
-from test.fixtures import CALL_TIMEOUT_IN_SECONDS
+from test.test_utils import CALL_TIMEOUT_IN_SECONDS
 from test.test_notebook_document import wait_for_condition
 
 import pytest
