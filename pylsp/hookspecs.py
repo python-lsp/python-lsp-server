@@ -25,7 +25,7 @@ def pylsp_commands(config, workspace):
 
 
 @hookspec
-def pylsp_completions(config, workspace, document, position):
+def pylsp_completions(config, workspace, document, position, ignored_names):
     pass
 
 

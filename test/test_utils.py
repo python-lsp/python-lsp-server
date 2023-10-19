@@ -6,13 +6,70 @@ import os
 import sys
 from threading import Thread
 import time
+from typing import List
 from unittest import mock
 
 from flaky import flaky
 from docstring_to_markdown import UnknownFormatError
 
 from pylsp import _utils
+from pylsp.lsp import NotebookCellKind
 from pylsp.python_lsp import PythonLSPServer, start_io_lang_server
+
+
+CALL_TIMEOUT_IN_SECONDS = 30
+
+
+def send_notebook_did_open(client, cells: List[str]):
+    """
+    Sends a notebookDocument/didOpen notification with the given python cells.
+
+    The notebook has the uri "notebook_uri" and the cells have the uris
+    "cell_1_uri", "cell_2_uri", etc.
+    """
+    client._endpoint.notify(
+        "notebookDocument/didOpen", notebook_with_python_cells(cells)
+    )
+
+
+def notebook_with_python_cells(cells: List[str]):
+    """
+    Create a notebook document with the given python cells.
+
+    The notebook has the uri "notebook_uri" and the cells have the uris
+    "cell_1_uri", "cell_2_uri", etc.
+    """
+    return {
+        "notebookDocument": {
+            "uri": "notebook_uri",
+            "notebookType": "jupyter-notebook",
+            "cells": [
+                {
+                    "kind": NotebookCellKind.Code,
+                    "document": f"cell_{i+1}_uri",
+                }
+                for i in range(len(cells))
+            ],
+        },
+        "cellTextDocuments": [
+            {
+                "uri": f"cell_{i+1}_uri",
+                "languageId": "python",
+                "text": cell,
+            }
+            for i, cell in enumerate(cells)
+        ],
+    }
+
+
+def send_initialize_request(client):
+    return client._endpoint.request(
+        "initialize",
+        {
+            "processId": 1234,
+            "rootPath": os.path.dirname(__file__),
+        },
+    ).result(timeout=CALL_TIMEOUT_IN_SECONDS)
 
 
 def start(obj):
