@@ -6,7 +6,7 @@ import os
 import sys
 from threading import Thread
 import time
-from typing import List
+from typing import Any, Dict, List
 from unittest import mock
 
 from flaky import flaky
@@ -62,12 +62,13 @@ def notebook_with_python_cells(cells: List[str]):
     }
 
 
-def send_initialize_request(client):
+def send_initialize_request(client, initialization_options: Dict[str, Any] = None):
     return client._endpoint.request(
         "initialize",
         {
             "processId": 1234,
             "rootPath": os.path.dirname(__file__),
+            "initializationOptions": initialization_options,
         },
     ).result(timeout=CALL_TIMEOUT_IN_SECONDS)
 

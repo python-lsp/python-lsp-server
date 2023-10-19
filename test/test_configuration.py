@@ -1,9 +1,8 @@
 # Copyright 2021- Python Language Server Contributors.
 
-import os
 from unittest.mock import patch
 
-from test.test_utils import CALL_TIMEOUT_IN_SECONDS
+from test.test_utils import send_initialize_request
 from test.test_notebook_document import wait_for_condition
 
 import pytest
@@ -25,14 +24,7 @@ INITIALIZATION_OPTIONS = {
 @pytest.mark.skipif(IS_WIN, reason="Flaky on Windows")
 def test_set_flake8_using_init_opts(client_server_pair):
     client, server = client_server_pair
-    client._endpoint.request(
-        "initialize",
-        {
-            "processId": 1234,
-            "rootPath": os.path.dirname(__file__),
-            "initializationOptions": INITIALIZATION_OPTIONS,
-        },
-    ).result(timeout=CALL_TIMEOUT_IN_SECONDS)
+    send_initialize_request(client, INITIALIZATION_OPTIONS)
     for key, value in INITIALIZATION_OPTIONS["pylsp"]["plugins"].items():
         assert server.workspace._config.settings().get("plugins").get(key).get(
             "enabled"
@@ -42,13 +34,7 @@ def test_set_flake8_using_init_opts(client_server_pair):
 @pytest.mark.skipif(IS_WIN, reason="Flaky on Windows")
 def test_set_flake8_using_workspace_did_change_configuration(client_server_pair):
     client, server = client_server_pair
-    client._endpoint.request(
-        "initialize",
-        {
-            "processId": 1234,
-            "rootPath": os.path.dirname(__file__),
-        },
-    ).result(timeout=CALL_TIMEOUT_IN_SECONDS)
+    send_initialize_request(client, None)
     assert (
         server.workspace._config.settings().get("plugins").get("flake8").get("enabled")
         is False
