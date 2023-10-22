@@ -1,6 +1,5 @@
 # Copyright 2022- Python Language Server Contributors.
 
-import code
 import logging
 from typing import Any, Dict, Generator, List, Optional, Set, Union
 
@@ -164,7 +163,7 @@ def _process_statements(
                 "kind": "quickfix",
                 "edit": {"changes": {doc_uri: [edit]}},
                 # data is a supported field for codeAction responses
-                # See https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_codeAction
+                # See https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_codeAction  # pylint: disable=line-too-long
                 "data": {"sortText": _sort_import(score)},
             }
         else:
@@ -202,7 +201,9 @@ def pylsp_completions(
     suggestions = list(autoimport.search_full(word, ignored_names=ignored_names))
     results = list(
         sorted(
-            _process_statements(suggestions, document.uri, word, autoimport, document, "completions"),
+            _process_statements(
+                suggestions, document.uri, word, autoimport, document, "completions"
+            ),
             key=lambda statement: statement["sortText"],
         )
     )
@@ -238,7 +239,7 @@ def pylsp_code_actions(
     config: Config,
     workspace: Workspace,
     document: Document,
-    range: Dict,
+    range: Dict,  # pylint: disable=redefined-builtin
     context: Dict,
 ) -> List[Dict]:
     """
@@ -274,7 +275,14 @@ def pylsp_code_actions(
         log.debug("autoimport: suggestions: %s", suggestions)
         results = list(
             sorted(
-                _process_statements(suggestions, document.uri, word, autoimport, document, "code_actions"),
+                _process_statements(
+                    suggestions,
+                    document.uri,
+                    word,
+                    autoimport,
+                    document,
+                    "code_actions",
+                ),
                 key=lambda statement: statement["data"]["sortText"],
             )
         )

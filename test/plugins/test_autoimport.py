@@ -38,7 +38,15 @@ def autoimport_workspace(tmp_path_factory) -> Workspace:
         uris.from_fs_path(str(tmp_path_factory.mktemp("pylsp"))), Mock()
     )
     workspace._config = Config(workspace.root_uri, {}, 0, {})
-    workspace._config.update({"rope_autoimport": {"memory": True, "completions": {"enabled": True}, "code_actions": {"enabled": True}}})
+    workspace._config.update(
+        {
+            "rope_autoimport": {
+                "memory": True,
+                "completions": {"enabled": True},
+                "code_actions": {"enabled": True},
+            }
+        }
+    )
     pylsp_initialize(workspace._config, workspace)
     yield workspace
     workspace.close()
@@ -181,9 +189,7 @@ def test_autoimport_code_actions(config, autoimport_workspace):
         config, autoimport_workspace, doc, None, context
     )
     autoimport_workspace.rm_document(DOC_URI)
-    assert any(
-        action.get("title") == "import os" for action in actions
-    )
+    assert any(action.get("title") == "import os" for action in actions)
 
 
 class TestShouldInsert:
@@ -266,9 +272,7 @@ def test_autoimport_completions_for_notebook_document(
                 "plugins": {
                     "rope_autoimport": {
                         "memory": True,
-                        "completions": {
-                            "enabled": True
-                        },
+                        "completions": {"enabled": True},
                     },
                 }
             }
