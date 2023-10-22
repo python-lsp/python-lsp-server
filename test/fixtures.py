@@ -8,7 +8,6 @@ from unittest.mock import MagicMock
 from test.test_utils import ClientServerPair, CALL_TIMEOUT_IN_SECONDS
 
 import pytest
-import pylsp_jsonrpc
 
 from pylsp_jsonrpc.dispatchers import MethodDispatcher
 from pylsp_jsonrpc.endpoint import Endpoint
@@ -176,13 +175,8 @@ def client_server_pair():
 
     yield (client_server_pair_obj.client, client_server_pair_obj.server)
 
-    try:
-        shutdown_response = client_server_pair_obj.client._endpoint.request(
-            "shutdown"
-        ).result(timeout=CALL_TIMEOUT_IN_SECONDS)
-        assert shutdown_response is None
-        client_server_pair_obj.client._endpoint.notify("exit")
-    except pylsp_jsonrpc.exceptions.JsonRpcInvalidParams:
-        # SQLite objects created in a thread can only be used in that same thread.
-        # This exeception is raised when testing rope autoimport.
-        client_server_pair_obj.client._endpoint.notify("exit")
+    shutdown_response = client_server_pair_obj.client._endpoint.request(
+        "shutdown"
+    ).result(timeout=CALL_TIMEOUT_IN_SECONDS)
+    assert shutdown_response is None
+    client_server_pair_obj.client._endpoint.notify("exit")

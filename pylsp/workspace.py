@@ -6,6 +6,7 @@ import logging
 from contextlib import contextmanager
 import os
 import re
+import sqlite3
 import uuid
 import functools
 from typing import Optional, Generator, Callable, List
