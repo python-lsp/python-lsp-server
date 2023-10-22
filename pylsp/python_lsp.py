@@ -385,7 +385,7 @@ class PythonLSPServer(MethodDispatcher):
     def m_initialized(self, **_kwargs):
         self._hook("pylsp_initialized")
 
-    def code_actions(self, doc_uri, range, context):
+    def code_actions(self, doc_uri: str, range: Dict, context: Dict):
         return flatten(
             self._hook("pylsp_code_actions", doc_uri, range=range, context=context)
         )

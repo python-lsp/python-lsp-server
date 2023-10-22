@@ -15,6 +15,7 @@ from pylsp.config.config import Config
 from pylsp.plugins.rope_autoimport import _get_score, _should_insert, get_names
 from pylsp.plugins.rope_autoimport import (
     pylsp_completions as pylsp_autoimport_completions,
+    pylsp_code_actions as pylsp_autoimport_code_actions,
 )
 from pylsp.plugins.rope_autoimport import pylsp_initialize
 from pylsp.workspace import Workspace
@@ -37,7 +38,7 @@ def autoimport_workspace(tmp_path_factory) -> Workspace:
         uris.from_fs_path(str(tmp_path_factory.mktemp("pylsp"))), Mock()
     )
     workspace._config = Config(workspace.root_uri, {}, 0, {})
-    workspace._config.update({"rope_autoimport": {"memory": True, "enabled": True}})
+    workspace._config.update({"rope_autoimport": {"memory": True, "completions": {"enabled": True}, "code_actions": {"enabled": True}}})
     pylsp_initialize(workspace._config, workspace)
     yield workspace
     workspace.close()
@@ -161,6 +162,30 @@ def test_autoimport_defined_name(config, workspace):
     assert not check_dict({"label": "List"}, completions)
 
 
+def test_autoimport_code_actions(config, autoimport_workspace):
+    source = "os"
+    autoimport_workspace.put_document(DOC_URI, source=source)
+    doc = autoimport_workspace.get_document(DOC_URI)
+    context = {
+        "diagnostics": [
+            {
+                "range": {
+                    "start": {"line": 0, "character": 0},
+                    "end": {"line": 0, "character": 2},
+                },
+                "message": "Undefined name `os`",
+            }
+        ]
+    }
+    actions = pylsp_autoimport_code_actions(
+        config, autoimport_workspace, doc, None, context
+    )
+    autoimport_workspace.rm_document(DOC_URI)
+    assert any(
+        action.get("title") == "import os" for action in actions
+    )
+
+
 class TestShouldInsert:
     def test_dot(self):
         assert not should_insert("""str.""", 4)
@@ -217,7 +242,7 @@ def test_get_names():
 
 
 @pytest.mark.skipif(IS_WIN, reason="Flaky on Windows")
-def test_autoimport_for_notebook_document(
+def test_autoimport_completions_for_notebook_document(
     client_server_pair,
 ):
     client, server = client_server_pair
@@ -237,13 +262,22 @@ def test_autoimport_for_notebook_document(
 
     server.m_workspace__did_change_configuration(
         settings={
-            "pylsp": {"plugins": {"rope_autoimport": {"enabled": True, "memory": True}}}
+            "pylsp": {
+                "plugins": {
+                    "rope_autoimport": {
+                        "memory": True,
+                        "completions": {
+                            "enabled": True
+                        },
+                    },
+                }
+            }
         }
     )
     rope_autoimport_settings = server.workspace._config.plugin_settings(
         "rope_autoimport"
     )
-    assert rope_autoimport_settings.get("enabled", False) is True
+    assert rope_autoimport_settings.get("completions", {}).get("enabled", False) is True
     assert rope_autoimport_settings.get("memory", False) is True
 
     # 1.

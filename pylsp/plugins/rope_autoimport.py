@@ -1,5 +1,6 @@
 # Copyright 2022- Python Language Server Contributors.
 
+import code
 import logging
 from typing import Any, Dict, Generator, List, Optional, Set, Union
 
@@ -21,13 +22,26 @@ log = logging.getLogger(__name__)
 
 _score_pow = 5
 _score_max = 10**_score_pow
-MAX_RESULTS = 1000
+MAX_RESULTS_COMPLETIONS = 1000
+MAX_RESULTS_CODE_ACTIONS = 10
 
 
 @hookimpl
 def pylsp_settings() -> Dict[str, Dict[str, Dict[str, Any]]]:
     # Default rope_completion to disabled
-    return {"plugins": {"rope_autoimport": {"enabled": False, "memory": False}}}
+    return {
+        "plugins": {
+            "rope_autoimport": {
+                "memory": False,
+                "completions": {
+                    "enabled": False,
+                },
+                "code_actions": {
+                    "enabled": False,
+                },
+            }
+        }
+    }
 
 
 # pylint: disable=too-many-return-statements
@@ -122,6 +136,7 @@ def _process_statements(
     word: str,
     autoimport: AutoImport,
     document: Document,
+    feature: str = "completions",
 ) -> Generator[Dict[str, Any], None, None]:
     for suggestion in suggestions:
         insert_line = autoimport.find_insertion_line(document.source) - 1
@@ -134,14 +149,26 @@ def _process_statements(
         if score > _score_max:
             continue
         # TODO make this markdown
-        yield {
-            "label": suggestion.name,
-            "kind": suggestion.itemkind,
-            "sortText": _sort_import(score),
-            "data": {"doc_uri": doc_uri},
-            "detail": _document(suggestion.import_statement),
-            "additionalTextEdits": [edit],
-        }
+        if feature == "completions":
+            yield {
+                "label": suggestion.name,
+                "kind": suggestion.itemkind,
+                "sortText": _sort_import(score),
+                "data": {"doc_uri": doc_uri},
+                "detail": _document(suggestion.import_statement),
+                "additionalTextEdits": [edit],
+            }
+        elif feature == "code_actions":
+            yield {
+                "title": suggestion.import_statement,
+                "kind": "quickfix",
+                "edit": {"changes": {doc_uri: [edit]}},
+                # data is a supported field for codeAction responses
+                # See https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_codeAction
+                "data": {"sortText": _sort_import(score)},
+            }
+        else:
+            raise ValueError(f"Unknown feature: {feature}")
 
 
 def get_names(script: Script) -> Set[str]:
@@ -175,12 +202,12 @@ def pylsp_completions(
     suggestions = list(autoimport.search_full(word, ignored_names=ignored_names))
     results = list(
         sorted(
-            _process_statements(suggestions, document.uri, word, autoimport, document),
+            _process_statements(suggestions, document.uri, word, autoimport, document, "completions"),
             key=lambda statement: statement["sortText"],
         )
     )
-    if len(results) > MAX_RESULTS:
-        results = results[:MAX_RESULTS]
+    if len(results) > MAX_RESULTS_COMPLETIONS:
+        results = results[:MAX_RESULTS_COMPLETIONS]
     return results
 
 
@@ -204,6 +231,58 @@ def _sort_import(score: int) -> str:
     # We also want to prioritize autoimport behind everything since its the last priority.
     # The minimum is to prevent score from overflowing the pad
     return "[z" + str(score).rjust(_score_pow, "0")
+
+
+@hookimpl
+def pylsp_code_actions(
+    config: Config,
+    workspace: Workspace,
+    document: Document,
+    range: Dict,
+    context: Dict,
+) -> List[Dict]:
+    """
+    Provide code actions through rope.
+
+    Parameters
+    ----------
+    config : pylsp.config.config.Config
+        Current workspace.
+    workspace : pylsp.workspace.Workspace
+        Current workspace.
+    document : pylsp.workspace.Document
+        Document to apply code actions on.
+    range : Dict
+        Range argument given by pylsp. Not used here.
+    context : Dict
+        CodeActionContext given as dict.
+
+    Returns
+    -------
+      List of dicts containing the code actions.
+    """
+    log.debug(f"textDocument/codeAction: {document} {range} {context}")
+    code_actions = []
+    for diagnostic in context.get("diagnostics", []):
+        if not diagnostic.get("message", "").lower().startswith("undefined name"):
+            continue
+        word = diagnostic.get("message", "").split("`")[1]
+        log.debug(f"autoimport: searching for word: {word}")
+        rope_config = config.settings(document_path=document.path).get("rope", {})
+        autoimport = workspace._rope_autoimport(rope_config)
+        suggestions = list(autoimport.search_full(word))
+        log.debug("autoimport: suggestions: %s", suggestions)
+        results = list(
+            sorted(
+                _process_statements(suggestions, document.uri, word, autoimport, document, "code_actions"),
+                key=lambda statement: statement["data"]["sortText"],
+            )
+        )
+        if len(results) > MAX_RESULTS_CODE_ACTIONS:
+            results = results[:MAX_RESULTS_CODE_ACTIONS]
+        code_actions.extend(results)
+
+    return code_actions
 
 
 def _reload_cache(
