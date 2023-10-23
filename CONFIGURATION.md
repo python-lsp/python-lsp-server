@@ -64,8 +64,9 @@ This server can be configured using the `workspace/didChangeConfiguration` metho
 | `pylsp.plugins.pylint.enabled` | `boolean` | Enable or disable the plugin. | `false` |
 | `pylsp.plugins.pylint.args` | `array` of non-unique `string` items | Arguments to pass to pylint. | `[]` |
 | `pylsp.plugins.pylint.executable` | `string` | Executable to run pylint with. Enabling this will run pylint on unsaved files via stdin. Can slow down workflow. Only works with python3. | `null` |
-| `pylsp.plugins.rope_autoimport.completions.enabled` | `boolean` | Enable or disable autoimport completions. | `false` |
-| `pylsp.plugins.rope_autoimport.code_actions.enabled` | `boolean` | Enable or disable autoimport code actions (e.g. for quick fixes). | `false` |
+| `pylsp.plugins.rope_autoimport.enabled` | `boolean` | Enable or disable autoimport. If false, neither completions nor code actions are enabled. If true, the respective features can be enabled or disabled individually. | `false` |
+| `pylsp.plugins.rope_autoimport.completions.enabled` | `boolean` | Enable or disable autoimport completions. | `true` |
+| `pylsp.plugins.rope_autoimport.code_actions.enabled` | `boolean` | Enable or disable autoimport code actions (e.g. for quick fixes). | `true` |
 | `pylsp.plugins.rope_autoimport.memory` | `boolean` | Make the autoimport database memory only. Drastically increases startup time. | `false` |
 | `pylsp.plugins.rope_completion.enabled` | `boolean` | Enable or disable the plugin. | `false` |
 | `pylsp.plugins.rope_completion.eager` | `boolean` | Resolve documentation and detail eagerly. | `false` |
