@@ -9,10 +9,14 @@ import pytest
 
 from pylsp import lsp, uris
 from pylsp.config.config import Config
-from pylsp.plugins.rope_autoimport import _get_score, _should_insert, get_names
+from pylsp.plugins.rope_autoimport import (
+    _get_score,
+    _should_insert,
+    get_name_or_module,
+    get_names,
+)
 from pylsp.plugins.rope_autoimport import (
     pylsp_completions as pylsp_autoimport_completions,
-    pylsp_code_actions as pylsp_autoimport_code_actions,
 )
 from pylsp.plugins.rope_autoimport import pylsp_initialize
 from pylsp.workspace import Workspace
@@ -227,26 +231,20 @@ def test_get_names():
     "message",
     ["Undefined name `os`", "F821 undefined name 'numpy'", "undefined name 'numpy'"],
 )
-def test_autoimport_code_actions(config, autoimport_workspace, message):
-    source = "os"
+def test_autoimport_code_actions_get_correct_module_name(autoimport_workspace, message):
+    source = "os.path.join('a', 'b')"
     autoimport_workspace.put_document(DOC_URI, source=source)
     doc = autoimport_workspace.get_document(DOC_URI)
-    context = {
-        "diagnostics": [
-            {
-                "range": {
-                    "start": {"line": 0, "character": 0},
-                    "end": {"line": 0, "character": 2},
-                },
-                "message": message,
-            }
-        ]
+    diagnostic = {
+        "range": {
+            "start": {"line": 0, "character": 0},
+            "end": {"line": 0, "character": 2},
+        },
+        "message": message,
     }
-    actions = pylsp_autoimport_code_actions(
-        config, autoimport_workspace, doc, None, context
-    )
+    module_name = get_name_or_module(doc, diagnostic)
     autoimport_workspace.rm_document(DOC_URI)
-    assert any(action.get("title") == "import os" for action in actions)
+    assert module_name == "os"
 
 
 # rope autoimport launches a sqlite database which checks from which thread it is called.

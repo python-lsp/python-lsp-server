@@ -234,6 +234,14 @@ def _sort_import(score: int) -> str:
     return "[z" + str(score).rjust(_score_pow, "0")
 
 
+def get_name_or_module(document, diagnostic) -> str:
+    return (
+        parso.parse(document.lines[diagnostic["range"]["start"]["line"]])
+        .get_leaf_for_position((1, diagnostic["range"]["start"]["character"] + 1))
+        .value
+    )
+
+
 @hookimpl
 def pylsp_code_actions(
     config: Config,
@@ -267,10 +275,8 @@ def pylsp_code_actions(
     for diagnostic in context.get("diagnostics", []):
         if "undefined name" not in diagnostic.get("message", "").lower():
             continue
-        expr = parso.parse(document.lines[diagnostic["range"]["start"]["line"]])
-        word = expr.get_leaf_for_position(
-            (1, diagnostic["range"]["start"]["character"] + 1)
-        ).value
+
+        word = get_name_or_module(document, diagnostic)
         log.debug(f"autoimport: searching for word: {word}")
         rope_config = config.settings(document_path=document.path).get("rope", {})
         autoimport = workspace._rope_autoimport(rope_config, feature="code_actions")
