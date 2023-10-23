@@ -350,7 +350,11 @@ def pylsp_workspace_configuration_changed(config: Config, workspace: Workspace):
 
     Generates the cache for local and global items.
     """
-    if config.plugin_settings("rope_autoimport").get("enabled", False):
+    if config.plugin_settings("rope_autoimport").get("completions", {}).get(
+        "enabled", False
+    ) or config.plugin_settings("rope_autoimport").get("code_actions", {}).get(
+        "enabled", False
+    ):
         _reload_cache(config, workspace)
     else:
         log.debug("autoimport: Skipping cache reload.")

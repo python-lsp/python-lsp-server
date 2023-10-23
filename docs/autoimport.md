@@ -3,7 +3,7 @@
 Requirements:
 
 1. install `python-lsp-server[rope]`
-2. set `pylsp.plugins.rope_autoimport.enabled` to `true`
+2. set `pylsp.plugins.rope_autoimport.completions.enabled` and/or `pylsp.plugins.rope_autoimport.code_actions.enabled` to `true`
 
 ## Startup
 
