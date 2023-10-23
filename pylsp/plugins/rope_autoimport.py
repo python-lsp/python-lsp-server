@@ -22,7 +22,7 @@ log = logging.getLogger(__name__)
 _score_pow = 5
 _score_max = 10**_score_pow
 MAX_RESULTS_COMPLETIONS = 1000
-MAX_RESULTS_CODE_ACTIONS = 10
+MAX_RESULTS_CODE_ACTIONS = 5
 
 
 @hookimpl
