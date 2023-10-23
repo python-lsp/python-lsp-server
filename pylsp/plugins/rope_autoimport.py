@@ -270,7 +270,7 @@ def pylsp_code_actions(
         word = diagnostic.get("message", "").split("`")[1]
         log.debug(f"autoimport: searching for word: {word}")
         rope_config = config.settings(document_path=document.path).get("rope", {})
-        autoimport = workspace._rope_autoimport(rope_config)
+        autoimport = workspace._rope_autoimport(rope_config, feature="code_actions")
         suggestions = list(autoimport.search_full(word))
         log.debug("autoimport: suggestions: %s", suggestions)
         results = list(

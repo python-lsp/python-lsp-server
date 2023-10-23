@@ -245,7 +245,7 @@ def test_autoimport_code_actions(config, autoimport_workspace):
 
 
 # rope autoimport launches a sqlite database which checks from which thread it is called.
-# This makes the test below fail. We'd need to fix this upstream.
+# This makes the test below fail because we access the db from a different thread.
 # See https://stackoverflow.com/questions/48218065/objects-created-in-a-thread-can-only-be-used-in-that-same-thread
 # @pytest.mark.skipif(IS_WIN, reason="Flaky on Windows")
 # def test_autoimport_completions_for_notebook_document(
