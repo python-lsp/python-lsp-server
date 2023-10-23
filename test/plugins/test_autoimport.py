@@ -223,7 +223,10 @@ def test_get_names():
 
 
 # Tests ruff, flake8 and pylfakes messages
-@pytest.mark.parametrize("message", ["Undefined name `os`", "F821 undefined name 'numpy'", "undefined name 'numpy'"])
+@pytest.mark.parametrize(
+    "message",
+    ["Undefined name `os`", "F821 undefined name 'numpy'", "undefined name 'numpy'"],
+)
 def test_autoimport_code_actions(config, autoimport_workspace, message):
     source = "os"
     autoimport_workspace.put_document(DOC_URI, source=source)

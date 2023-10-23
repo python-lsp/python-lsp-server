@@ -60,6 +60,7 @@ class Workspace:
         self.__rope_config = None
         # We have a sperate AutoImport object for each feature to avoid sqlite errors
         # from accessing the same database from multiple threads.
+        # An upstream fix discussion is here: https://github.com/python-rope/rope/issues/713
         self.__rope_autoimport = (
             {}
         )  # Type: Dict[Literal["completions", "code_actions"], rope.contrib.autoimport.sqlite.AutoImport]
