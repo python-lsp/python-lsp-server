@@ -187,7 +187,11 @@ def pylsp_completions(
     ignored_names: Union[Set[str], None],
 ):
     """Get autoimport suggestions."""
-    if not config.plugin_settings("rope_autoimport").get("completions", {}).get("enabled", False):
+    if (
+        not config.plugin_settings("rope_autoimport")
+        .get("completions", {})
+        .get("enabled", False)
+    ):
         return []
     line = document.lines[position["line"]]
     expr = parso.parse(line)
@@ -273,7 +277,11 @@ def pylsp_code_actions(
     -------
       List of dicts containing the code actions.
     """
-    if not config.plugin_settings("rope_autoimport").get("code_actions", {}).get("enabled", False):
+    if (
+        not config.plugin_settings("rope_autoimport")
+        .get("code_actions", {})
+        .get("enabled", False)
+    ):
         return []
     log.debug(f"textDocument/codeAction: {document} {range} {context}")
     code_actions = []
