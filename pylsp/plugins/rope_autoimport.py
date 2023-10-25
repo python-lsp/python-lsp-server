@@ -190,7 +190,7 @@ def pylsp_completions(
     if (
         not config.plugin_settings("rope_autoimport")
         .get("completions", {})
-        .get("enabled", False)
+        .get("enabled", True)
     ):
         return []
     line = document.lines[position["line"]]
@@ -280,7 +280,7 @@ def pylsp_code_actions(
     if (
         not config.plugin_settings("rope_autoimport")
         .get("code_actions", {})
-        .get("enabled", False)
+        .get("enabled", True)
     ):
         return []
     log.debug(f"textDocument/codeAction: {document} {range} {context}")

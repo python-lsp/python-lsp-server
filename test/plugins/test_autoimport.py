@@ -39,7 +39,16 @@ def autoimport_workspace(tmp_path_factory) -> Workspace:
         uris.from_fs_path(str(tmp_path_factory.mktemp("pylsp"))), Mock()
     )
     workspace._config = Config(workspace.root_uri, {}, 0, {})
-    workspace._config.update({"rope_autoimport": {"memory": True, "enabled": True}})
+    workspace._config.update(
+        {
+            "rope_autoimport": {
+                "memory": True,
+                "enabled": True,
+                "completions": {"enabled": True},
+                "code_actions": {"enabled": True},
+            }
+        }
+    )
     pylsp_initialize(workspace._config, workspace)
     yield workspace
     workspace.close()
