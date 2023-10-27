@@ -310,6 +310,7 @@ def pylsp_code_actions(
                 key=lambda statement: statement["data"]["sortText"],
             )
         )
+
         if len(results) > MAX_RESULTS_CODE_ACTIONS:
             results = results[:MAX_RESULTS_CODE_ACTIONS]
         code_actions.extend(results)
