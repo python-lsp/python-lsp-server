@@ -242,9 +242,10 @@ def _sort_import(score: int) -> str:
 
 
 def get_name_or_module(document, diagnostic) -> str:
+    start = diagnostic["range"]["start"]
     return (
-        parso.parse(document.lines[diagnostic["range"]["start"]["line"]])
-        .get_leaf_for_position((1, diagnostic["range"]["start"]["character"] + 1))
+        parso.parse(document.lines[start["line"]])
+        .get_leaf_for_position((1, start["character"] + 1))
         .value
     )
 
