@@ -58,6 +58,7 @@ class Workspace:
         # Whilst incubating, keep rope private
         self.__rope = None
         self.__rope_config = None
+
         # We have a sperate AutoImport object for each feature to avoid sqlite errors
         # from accessing the same database from multiple threads.
         # An upstream fix discussion is here: https://github.com/python-rope/rope/issues/713
