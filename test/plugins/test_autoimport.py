@@ -227,7 +227,7 @@ def test_get_names():
     assert results == set(["blah", "bleh", "e", "hello", "someone", "sfa", "a", "b"])
 
 
-# Tests ruff, flake8 and pylfakes messages
+# Tests ruff, flake8 and pyflakes messages
 @pytest.mark.parametrize(
     "message",
     ["Undefined name `os`", "F821 undefined name 'numpy'", "undefined name 'numpy'"],
