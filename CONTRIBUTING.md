@@ -1,7 +1,7 @@
 # Setup the environment
 
 1. Clone the repo: `git clone git@github.com:python-lsp/python-lsp-server.git`
-2. Create the virtual environment: `python3 -m virtualenv .venv`
+2. Create the virtual environment: `python3 -m venv .venv`
 3. Activate: `source .venv/bin/activate`
 
 Create a helper script to run the server without the need to `pip3 install` it
