@@ -265,7 +265,7 @@ def pylsp_code_actions(
     Parameters
     ----------
     config : pylsp.config.config.Config
-        Current workspace.
+        Current config.
     workspace : pylsp.workspace.Workspace
         Current workspace.
     document : pylsp.workspace.Document
