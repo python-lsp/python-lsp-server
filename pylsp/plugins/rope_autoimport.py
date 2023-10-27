@@ -285,6 +285,7 @@ def pylsp_code_actions(
         .get("enabled", True)
     ):
         return []
+
     log.debug(f"textDocument/codeAction: {document} {range} {context}")
     code_actions = []
     for diagnostic in context.get("diagnostics", []):
