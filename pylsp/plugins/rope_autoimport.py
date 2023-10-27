@@ -193,6 +193,7 @@ def pylsp_completions(
         .get("enabled", True)
     ):
         return []
+
     line = document.lines[position["line"]]
     expr = parso.parse(line)
     word_node = expr.get_leaf_for_position((1, position["character"]))
