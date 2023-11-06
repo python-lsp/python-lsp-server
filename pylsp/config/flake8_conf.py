@@ -3,7 +3,7 @@
 
 import logging
 import os
-from pylsp.utils import find_parents
+from pylsp._utils import find_parents
 from .source import ConfigSource
 
 log = logging.getLogger(__name__)
