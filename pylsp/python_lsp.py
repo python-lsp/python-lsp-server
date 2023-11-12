@@ -717,8 +717,7 @@ class PythonLSPServer(MethodDispatcher):
         document = workspace.get_document(textDocument["uri"])
         if isinstance(document, Cell):
             return self._cell_document__completion(document, position, **_kwargs)
-        else:
-            return self.completions(textDocument["uri"], position)
+        return self.completions(textDocument["uri"], position)
 
     def _cell_document__definition(self, cellDocument, position=None, **_kwargs):
         workspace = self._match_uri_to_workspace(cellDocument.notebook_uri)
@@ -760,8 +759,7 @@ class PythonLSPServer(MethodDispatcher):
         document = workspace.get_document(textDocument["uri"])
         if isinstance(document, Cell):
             return self._cell_document__definition(document, position, **_kwargs)
-        else:
-            return self.definitions(textDocument["uri"], position)
+        return self.definitions(textDocument["uri"], position)
 
     def m_text_document__document_highlight(
         self, textDocument=None, position=None, **_kwargs
