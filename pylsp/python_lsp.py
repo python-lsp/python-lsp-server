@@ -687,14 +687,6 @@ class PythonLSPServer(MethodDispatcher):
     def m_text_document__code_lens(self, textDocument=None, **_kwargs):
         return self.code_lens(textDocument["uri"])
 
-    def m_text_document__completion(self, textDocument=None, position=None, **_kwargs):
-        # textDocument here is just a dict with a uri
-        workspace = self._match_uri_to_workspace(textDocument["uri"])
-        document = workspace.get_document(textDocument["uri"])
-        if isinstance(document, Cell):
-            return self._cell_document__completion(document, position, **_kwargs)
-        return self.completions(textDocument["uri"], position)
-
     def _cell_document__completion(self, cellDocument, position=None, **_kwargs):
         workspace = self._match_uri_to_workspace(cellDocument.notebook_uri)
         notebookDocument = workspace.get_maybe_document(cellDocument.notebook_uri)
@@ -718,6 +710,15 @@ class PythonLSPServer(MethodDispatcher):
                     item["data"]["doc_uri"] = cellDocument.uri
 
             return completions
+
+    def m_text_document__completion(self, textDocument=None, position=None, **_kwargs):
+        # textDocument here is just a dict with a uri
+        workspace = self._match_uri_to_workspace(textDocument["uri"])
+        document = workspace.get_document(textDocument["uri"])
+        if isinstance(document, Cell):
+            return self._cell_document__completion(document, position, **_kwargs)
+        else:
+            return self.completions(textDocument["uri"], position)
 
     def _cell_document__definition(self, cellDocument, position=None, **_kwargs):
         workspace = self._match_uri_to_workspace(cellDocument.notebook_uri)
@@ -759,7 +760,8 @@ class PythonLSPServer(MethodDispatcher):
         document = workspace.get_document(textDocument["uri"])
         if isinstance(document, Cell):
             return self._cell_document__definition(document, position, **_kwargs)
-        return self.definitions(textDocument["uri"], position)
+        else:
+            return self.definitions(textDocument["uri"], position)
 
     def m_text_document__document_highlight(
         self, textDocument=None, position=None, **_kwargs
