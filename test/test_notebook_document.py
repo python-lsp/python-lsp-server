@@ -500,7 +500,9 @@ def test_notebook_completion(client_server_pair):
 
     # Open notebook
     with patch.object(server._endpoint, "notify") as mock_notify:
-        send_notebook_did_open(client, ["answer_to_life_universe_everything = 42", "answer_"])
+        send_notebook_did_open(
+            client, ["answer_to_life_universe_everything = 42", "answer_"]
+        )
         # wait for expected diagnostics messages
         wait_for_condition(lambda: mock_notify.call_count >= 2)
         assert len(server.workspace.documents) == 3
@@ -518,14 +520,14 @@ def test_notebook_completion(client_server_pair):
     )
     result = future.result(CALL_TIMEOUT_IN_SECONDS)
     assert result == {
-        'isIncomplete': False,
-        'items': [
+        "isIncomplete": False,
+        "items": [
             {
-                'data': {'doc_uri': 'cell_2_uri'},
-                'insertText': 'answer_to_life_universe_everything',
-                'kind': 6,
-                'label': 'answer_to_life_universe_everything',
-                'sortText': 'aanswer_to_life_universe_everything',
+                "data": {"doc_uri": "cell_2_uri"},
+                "insertText": "answer_to_life_universe_everything",
+                "kind": 6,
+                "label": "answer_to_life_universe_everything",
+                "sortText": "aanswer_to_life_universe_everything",
             },
         ],
     }
