@@ -20,6 +20,29 @@ UNNECESSITY_CODES = {
     "F523",  # .format(...) unused positional arguments
     "F841",  # local variable `name` is assigned to but never used
 }
+ERROR_CODES = {
+    # Errors from flake8 itself
+    "E999",  # syntax error
+    # Errors from the pyflakes plugin of flake8
+    #
+    # The following list should be kept in sync with the `pyflakes_lint` plugin.
+    # Here is a snippet to generate such a list:
+    #
+    #     from flake8.plugins.pyflakes import FLAKE8_PYFLAKES_CODES
+    #     from pylsp.plugins.pyflakes_lint import PYFLAKES_ERROR_MESSAGES
+    #     for m in PYFLAKES_ERROR_MESSAGES:
+    #         print(f'"{FLAKE8_PYFLAKES_CODES[m.__name__]}",  # {m.__name__}')
+    "F821",  # UndefinedName
+    "F822",  # UndefinedExport
+    "F823",  # UndefinedLocal
+    "F831",  # DuplicateArgument
+    "F407",  # FutureFeatureNotDefined
+    "F706",  # ReturnOutsideFunction
+    "F704",  # YieldOutsideFunction
+    "F702",  # ContinueOutsideLoop
+    "F701",  # BreakOutsideLoop
+    "F622",  # TwoStarredExpressions
+}
 
 
 @hookimpl
@@ -208,7 +231,7 @@ def parse_stdout(source, stdout):
         # show also the code in message
         msg = code + " " + msg
         severity = lsp.DiagnosticSeverity.Warning
-        if code == "E999" or code[0] == "F":
+        if code in ERROR_CODES:
             severity = lsp.DiagnosticSeverity.Error
         diagnostic = {
             "source": "flake8",
