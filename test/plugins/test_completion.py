@@ -579,6 +579,7 @@ def test_file_completions(workspace, tmpdir):
     # Request for completions
     com_position = {"line": 0, "character": 1}
     completions = pylsp_jedi_completions(doc._config, doc, com_position)
+
     # Check completions
     assert len(completions) == 2
     assert [c["kind"] == lsp.CompletionItemKind.File for c in completions]
