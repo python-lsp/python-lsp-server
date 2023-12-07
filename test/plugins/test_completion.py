@@ -579,13 +579,23 @@ def test_file_completions(workspace, tmpdir):
     # Request for completions
     com_position = {"line": 0, "character": 1}
     completions = pylsp_jedi_completions(doc._config, doc, com_position)
-
     # Check completions
     assert len(completions) == 2
     assert [c["kind"] == lsp.CompletionItemKind.File for c in completions]
     assert (
-        completions[0]["insertText"] == ("bar" + "\\\\")
-        if os.name == "nt"
-        else ("bar" + "\\/")
+        completions[0]["insertText"] == (
+            ("bar" + "\\") if os.name == "nt" else ("bar" + "/")
+        )
+    )
+    assert completions[1]["insertText"] == 'foo.txt"'
+
+    # When snippets are supported, ensure that path separators are escaped.
+    support_snippet = {"textDocument": {"completion": {"completionItem": {"snippetSupport": True}}}}
+    doc._config.capabilities.update(support_snippet)
+    completions = pylsp_jedi_completions(doc._config, doc, com_position)
+    assert (
+        completions[0]["insertText"] == (
+            ("bar" + "\\\\") if os.name == "nt" else ("bar" + "\\/")
+        )
     )
     assert completions[1]["insertText"] == 'foo.txt"'
