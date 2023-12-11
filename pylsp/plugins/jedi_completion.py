@@ -245,8 +245,8 @@ def _format_completion(
     if d.type == "path":
         path = os.path.normpath(d.name)
 
-        # If the completion ends with os.sep, it means it's a directory. So we add an escaped os.sep
-        # at the end to ease additional file completions.
+        # If the completion ends with os.sep, it means it's a directory. So we add os.sep at the end
+        # to ease additional file completions.
         if d.name.endswith(os.sep):
             if os.name == "nt":
                 path = path + "\\"
