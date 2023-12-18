@@ -270,6 +270,10 @@ def make_context(module_name, line, character_start, character_end):
     }
 
 
+def position(line, character):
+    return {"line": line, "character": character}
+
+
 @pytest.mark.skipif(IS_WIN, reason="Flaky on Windows")
 def test_autoimport_code_actions_and_completions_for_notebook_document(
     client_server_pair,
@@ -309,53 +313,31 @@ def test_autoimport_code_actions_and_completions_for_notebook_document(
     assert rope_autoimport_settings.get("memory", False) is True
 
     # 1.
-    quickfix_suggestions = server.code_actions(
-        "cell_1_uri", {}, make_context("os", 0, 0, 2)
-    )
-    assert any(
-        s for s in quickfix_suggestions if contains_autoimport_quickfix(s, "os")
-    ), "Can't find 'os' quickfix suggestion in cell_1_uri"
-    completion_suggestions = server.completions(
-        "cell_1_uri", {"line": 0, "character": 2}
-    ).get("items")
-    assert any(
-        s for s in completion_suggestions if contains_autoimport_completion(s, "os")
-    ), "Can't find 'os' completion suggestion in cell_1_uri"
+    quick_fixes = server.code_actions("cell_1_uri", {}, make_context("os", 0, 0, 2))
+    assert any(s for s in quick_fixes if contains_autoimport_quickfix(s, "os"))
+
+    completions = server.completions("cell_1_uri", position(0, 2)).get("items")
+    assert any(s for s in completions if contains_autoimport_completion(s, "os"))
 
     # 2.
     # We don't test code actions here as in this case, there would be no code actions sent bc
     # there wouldn't be a diagnostics message.
-    completion_suggestions = server.completions(
-        "cell_2_uri", {"line": 1, "character": 2}
-    ).get("items")
-    assert not any(
-        s for s in completion_suggestions if contains_autoimport_completion(s, "os")
-    ), "Found 'os' completion suggestion in cell_2_uri"
+    completions = server.completions("cell_2_uri", position(1, 2)).get("items")
+    assert not any(s for s in completions if contains_autoimport_completion(s, "os"))
 
     # 3.
     # Same as in 2.
-    completion_suggestions = server.completions(
-        "cell_3_uri", {"line": 0, "character": 2}
-    ).get("items")
-    assert not any(
-        s for s in completion_suggestions if contains_autoimport_completion(s, "os")
-    ), "Found 'os' completion suggestion in cell_3_uri"
+    completions = server.completions("cell_3_uri", position(0, 2)).get("items")
+    assert not any(s for s in completions if contains_autoimport_completion(s, "os"))
 
     # 4.
-    quickfix_suggestions = server.code_actions(
-        "cell_4_uri", {}, make_context("sys", 0, 0, 3)
-    )
-    assert any(
-        s for s in quickfix_suggestions if contains_autoimport_quickfix(s, "sys")
-    ), "Can't find 'sys' quickfix suggestion in cell_4_uri"
-    completion_suggestions = server.completions(
-        "cell_4_uri", {"line": 0, "character": 3}
-    ).get("items")
-    assert any(
-        s for s in completion_suggestions if contains_autoimport_completion(s, "sys")
-    ), "Can't find 'sys' completion suggestion in cell_4_uri"
+    quick_fixes = server.code_actions("cell_4_uri", {}, make_context("sys", 0, 0, 3))
+    assert any(s for s in quick_fixes if contains_autoimport_quickfix(s, "sys"))
+
+    completions = server.completions("cell_4_uri", position(0, 3)).get("items")
+    assert any(s for s in completions if contains_autoimport_completion(s, "sys"))
 
     # 5. if context doesn't contain message with "undefined name ...", we send empty suggestions
     context = {"diagnostics": [{"message": "A random message"}]}
-    quickfix_suggestions = server.code_actions("cell_4_uri", {}, context)
-    assert len(quickfix_suggestions) == 0
+    quick_fixes = server.code_actions("cell_4_uri", {}, context)
+    assert len(quick_fixes) == 0
