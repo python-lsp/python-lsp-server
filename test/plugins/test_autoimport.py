@@ -309,8 +309,9 @@ def test_autoimport_code_actions_and_completions_for_notebook_document(
     assert rope_autoimport_settings.get("memory", False) is True
 
     # 1.
-    context = make_context("os", 0, 0, 2)
-    quickfix_suggestions = server.code_actions("cell_1_uri", {}, context)
+    quickfix_suggestions = server.code_actions(
+        "cell_1_uri", {}, make_context("os", 0, 0, 2)
+    )
     assert any(
         s for s in quickfix_suggestions if contains_autoimport_quickfix(s, "os")
     ), "Can't find 'os' quickfix suggestion in cell_1_uri"
@@ -341,8 +342,9 @@ def test_autoimport_code_actions_and_completions_for_notebook_document(
     ), "Found 'os' completion suggestion in cell_3_uri"
 
     # 4.
-    context = make_context("sys", 0, 0, 3)
-    quickfix_suggestions = server.code_actions("cell_4_uri", {}, context)
+    quickfix_suggestions = server.code_actions(
+        "cell_4_uri", {}, make_context("sys", 0, 0, 3)
+    )
     assert any(
         s for s in quickfix_suggestions if contains_autoimport_quickfix(s, "sys")
     ), "Can't find 'sys' quickfix suggestion in cell_4_uri"
