@@ -28,11 +28,15 @@ from pylsp.workspace import Workspace
 DOC_URI = uris.from_fs_path(__file__)
 
 
-def contains_autoimport(suggestion: Dict[str, Any], module: str) -> bool:
+def contains_autoimport_completion(suggestion: Dict[str, Any], module: str) -> bool:
     """Checks if `suggestion` contains an autoimport for `module`."""
     return suggestion.get("label", "") == module and "import" in suggestion.get(
         "detail", ""
     )
+
+def contains_autoimport_quickfix(suggestion: Dict[str, Any], module: str) -> bool:
+    """Checks if `suggestion` contains an autoimport for `module`."""
+    return suggestion.get("title", "") == f"import {module}"
 
 
 @pytest.fixture(scope="session")
@@ -251,11 +255,21 @@ def test_autoimport_code_actions_get_correct_module_name(autoimport_workspace, m
     assert module_name == "os"
 
 
-# rope autoimport launches a sqlite database which checks from which thread it is called.
-# This makes the test below fail because we access the db from a different thread.
-# See https://stackoverflow.com/questions/48218065/objects-created-in-a-thread-can-only-be-used-in-that-same-thread
+def make_context(module_name, line, character_start, character_end):
+    return {
+        "diagnostics": [
+            {
+                "message": f"undefined name '{module_name}'",
+                "range": {
+                    "start": {"line": line, "character": character_start},
+                    "end": {"line": line, "character": character_end}
+                }
+            }
+        ]
+    }
+
 @pytest.mark.skipif(IS_WIN, reason="Flaky on Windows")
-def test_autoimport_completions_for_notebook_document(
+def test_autoimport_code_actions_and_completions_for_notebook_document(
     client_server_pair,
 ):
     client, server = client_server_pair
@@ -293,41 +307,61 @@ def test_autoimport_completions_for_notebook_document(
     assert rope_autoimport_settings.get("memory", False) is True
 
     # 1.
-    suggestions = server.completions("cell_1_uri", {"line": 0, "character": 2}).get(
-        "items"
-    )
+    context = make_context("os", 0, 0, 2)
+    quickfix_suggestions = server.code_actions("cell_1_uri", {}, context)
     assert any(
         suggestion
-        for suggestion in suggestions
-        if contains_autoimport(suggestion, "os")
-    )
+        for suggestion in quickfix_suggestions
+        if contains_autoimport_quickfix(suggestion, "os")
+    ), "Can't find os quickfix suggestion in cell_1_uri"
+    completion_suggestions = server.completions("cell_1_uri", {"line": 0, "character": 2}).get("items")
+    assert any(
+        suggestion
+        for suggestion in completion_suggestions
+        if contains_autoimport_completion(suggestion, "os")
+    ), "Can't find os completion suggestion in cell_1_uri"
 
     # 2.
-    suggestions = server.completions("cell_2_uri", {"line": 1, "character": 2}).get(
+    # We don't test code actions here as in this case, there would be no code actions sent bc
+    # there wouldn't be a diagnostics message.
+    completion_suggestions = server.completions("cell_2_uri", {"line": 1, "character": 2}).get(
         "items"
     )
     assert not any(
         suggestion
-        for suggestion in suggestions
-        if contains_autoimport(suggestion, "os")
-    )
+        for suggestion in completion_suggestions
+        if contains_autoimport_completion(suggestion, "os")
+    ), "Found os completion suggestion in cell_2_uri"
 
     # 3.
-    suggestions = server.completions("cell_3_uri", {"line": 0, "character": 2}).get(
+    # Same as in 2.
+    completion_suggestions = server.completions("cell_3_uri", {"line": 0, "character": 2}).get(
         "items"
     )
     assert not any(
         suggestion
-        for suggestion in suggestions
-        if contains_autoimport(suggestion, "os")
-    )
+        for suggestion in completion_suggestions
+        if contains_autoimport_completion(suggestion, "os")
+    ), "Found os completion suggestion in cell_3_uri"
 
     # 4.
-    suggestions = server.completions("cell_4_uri", {"line": 0, "character": 3}).get(
+    context = make_context("sys", 0, 0, 3)
+    quickfix_suggestions = server.code_actions("cell_4_uri", {}, context)
+    assert any(
+        suggestion
+        for suggestion in quickfix_suggestions
+        if contains_autoimport_quickfix(suggestion, "sys")
+    ), "Can't find 'sys' quickfix suggestion in cell_4_uri"
+    completion_suggestions = server.completions("cell_4_uri", {"line": 0, "character": 3}).get(
         "items"
     )
     assert any(
         suggestion
-        for suggestion in suggestions
-        if contains_autoimport(suggestion, "sys")
-    )
+        for suggestion in completion_suggestions
+        if contains_autoimport_completion(suggestion, "sys")
+    ), "Can't find 'sys' completion suggestion in cell_4_uri"
+
+    # 5. if context doesn't contain message with "undefined name ...", we send empty suggestions
+    context = {"diagnostics": [{ "message": "A random message"}]}
+    quickfix_suggestions = server.code_actions("cell_4_uri", {}, context)
+    assert len(quickfix_suggestions) == 0
