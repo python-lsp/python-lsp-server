@@ -302,7 +302,8 @@ def test_autoimport_code_actions_and_completions_for_notebook_document(
         #    already imported in the second cell.
         # 3. We don't receive an autoimport suggestion for "os" in the third cell because it's
         #    already imported in the second cell.
-        # 4. We receive an autoimport suggestion for "sys" because it's not already imported
+        # 4. We receive an autoimport suggestion for "sys" because it's not already imported.
+        # 5. If diagnostics doesn't contain "undefined name ...", we send empty quick fix suggestions.
         send_notebook_did_open(client, ["os", "import os\nos", "os", "sys"])
         wait_for_condition(lambda: mock_notify.call_count >= 3)
 
@@ -337,7 +338,7 @@ def test_autoimport_code_actions_and_completions_for_notebook_document(
     completions = server.completions("cell_4_uri", position(0, 3)).get("items")
     assert any(s for s in completions if contains_autoimport_completion(s, "sys"))
 
-    # 5. if context doesn't contain message with "undefined name ...", we send empty suggestions
+    # 5.
     context = {"diagnostics": [{"message": "A random message"}]}
     quick_fixes = server.code_actions("cell_4_uri", {}, context)
     assert len(quick_fixes) == 0
