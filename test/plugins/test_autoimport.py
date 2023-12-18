@@ -1,13 +1,16 @@
 # Copyright 2022- Python Language Server Contributors.
 
 from typing import Any, Dict, List
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
+
+from test.test_notebook_document import wait_for_condition
+from test.test_utils import send_initialize_request, send_notebook_did_open
 
 import jedi
 import parso
 import pytest
 
-from pylsp import lsp, uris
+from pylsp import IS_WIN, lsp, uris
 from pylsp.config.config import Config
 from pylsp.plugins.rope_autoimport import (
     _get_score,
@@ -251,79 +254,80 @@ def test_autoimport_code_actions_get_correct_module_name(autoimport_workspace, m
 # rope autoimport launches a sqlite database which checks from which thread it is called.
 # This makes the test below fail because we access the db from a different thread.
 # See https://stackoverflow.com/questions/48218065/objects-created-in-a-thread-can-only-be-used-in-that-same-thread
-# @pytest.mark.skipif(IS_WIN, reason="Flaky on Windows")
-# def test_autoimport_completions_for_notebook_document(
-#     client_server_pair,
-# ):
-#     client, server = client_server_pair
-#     send_initialize_request(client)
+@pytest.mark.skipif(IS_WIN, reason="Flaky on Windows")
+def test_autoimport_completions_for_notebook_document(
+    client_server_pair,
+):
+    client, server = client_server_pair
+    send_initialize_request(
+        client,
+        {
+            "pylsp": {
+                "plugins": {
+                    "rope_autoimport": {
+                        "memory": True,
+                        "enabled": True,
+                        "completions": {"enabled": True},
+                    },
+                }
+            }
+        },
+    )
 
-#     with patch.object(server._endpoint, "notify") as mock_notify:
-#         # Expectations:
-#         # 1. We receive an autoimport suggestion for "os" in the first cell because
-#         #    os is imported after that.
-#         # 2. We don't receive an autoimport suggestion for "os" in the second cell because it's
-#         #    already imported in the second cell.
-#         # 3. We don't receive an autoimport suggestion for "os" in the third cell because it's
-#         #    already imported in the second cell.
-#         # 4. We receive an autoimport suggestion for "sys" because it's not already imported
-#         send_notebook_did_open(client, ["os", "import os\nos", "os", "sys"])
-#         wait_for_condition(lambda: mock_notify.call_count >= 3)
+    with patch.object(server._endpoint, "notify") as mock_notify:
+        # Expectations:
+        # 1. We receive an autoimport suggestion for "os" in the first cell because
+        #    os is imported after that.
+        # 2. We don't receive an autoimport suggestion for "os" in the second cell because it's
+        #    already imported in the second cell.
+        # 3. We don't receive an autoimport suggestion for "os" in the third cell because it's
+        #    already imported in the second cell.
+        # 4. We receive an autoimport suggestion for "sys" because it's not already imported
+        send_notebook_did_open(client, ["os", "import os\nos", "os", "sys"])
+        wait_for_condition(lambda: mock_notify.call_count >= 3)
 
-#     server.m_workspace__did_change_configuration(
-#         settings={
-#             "pylsp": {
-#                 "plugins": {
-#                     "rope_autoimport": {
-#                         "memory": True,
-#                         "completions": {"enabled": True},
-#                     },
-#                 }
-#             }
-#         }
-#     )
-#     rope_autoimport_settings = server.workspace._config.plugin_settings(
-#         "rope_autoimport"
-#     )
-#     assert rope_autoimport_settings.get("completions", {}).get("enabled", False) is True
-#     assert rope_autoimport_settings.get("memory", False) is True
+    rope_autoimport_settings = server.workspace._config.plugin_settings(
+        "rope_autoimport"
+    )
+    assert rope_autoimport_settings.get("completions", {}).get("enabled", False) is True
+    assert rope_autoimport_settings.get("memory", False) is True
 
-#     # 1.
-#     suggestions = server.completions("cell_1_uri", {"line": 0, "character": 2}).get(
-#         "items"
-#     )
-#     assert any(
-#         suggestion
-#         for suggestion in suggestions
-#         if contains_autoimport(suggestion, "os")
-#     )
+    # 1.
+    suggestions = server.completions("cell_1_uri", {"line": 0, "character": 2}).get(
+        "items"
+    )
+    assert any(
+        suggestion
+        for suggestion in suggestions
+        if contains_autoimport(suggestion, "os")
+    )
 
-#     # 2.
-#     suggestions = server.completions("cell_2_uri", {"line": 1, "character": 2}).get(
-#         "items"
-#     )
-#     assert not any(
-#         suggestion
-#         for suggestion in suggestions
-#         if contains_autoimport(suggestion, "os")
-#     )
+    # 2.
+    suggestions = server.completions("cell_2_uri", {"line": 1, "character": 2}).get(
+        "items"
+    )
+    assert not any(
+        suggestion
+        for suggestion in suggestions
+        if contains_autoimport(suggestion, "os")
+    )
 
-#     # 3.
-#     suggestions = server.completions("cell_3_uri", {"line": 0, "character": 2}).get(
-#         "items"
-#     )
-#     assert not any(
-#         suggestion
-#         for suggestion in suggestions
-#         if contains_autoimport(suggestion, "os")
-#     )
+    # 3.
+    suggestions = server.completions("cell_3_uri", {"line": 0, "character": 2}).get(
+        "items"
+    )
+    assert not any(
+        suggestion
+        for suggestion in suggestions
+        if contains_autoimport(suggestion, "os")
+    )
 
-#     # 4.
-#     suggestions = server.completions("cell_4_uri", {"line": 0, "character": 3}).get(
-#         "items"
-#     )
-#     assert any(
-#         suggestion
-#         for suggestion in suggestions
-#         if contains_autoimport(suggestion, "sys")
-#     )
+    # 4.
+    suggestions = server.completions("cell_4_uri", {"line": 0, "character": 3}).get(
+        "items"
+    )
+    assert any(
+        suggestion
+        for suggestion in suggestions
+        if contains_autoimport(suggestion, "sys")
+    )
