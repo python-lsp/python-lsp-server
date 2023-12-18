@@ -8,7 +8,7 @@ import os
 import re
 import uuid
 import functools
-from typing import Literal, Optional, Generator, Callable, List
+from typing import Optional, Generator, Callable, List
 from threading import RLock
 
 import jedi
