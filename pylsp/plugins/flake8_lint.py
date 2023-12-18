@@ -9,9 +9,13 @@ import sys
 from pathlib import PurePath
 from subprocess import PIPE, Popen
 
+from flake8.plugins.pyflakes import FLAKE8_PYFLAKES_CODES
+
 from pylsp import hookimpl, lsp
+from pylsp.plugins.pyflakes_lint import PYFLAKES_ERROR_MESSAGES
 
 log = logging.getLogger(__name__)
+
 FIX_IGNORES_RE = re.compile(r"([^a-zA-Z0-9_,]*;.*(\W+||$))")
 UNNECESSITY_CODES = {
     "F401",  # `module` imported but unused
@@ -20,29 +24,14 @@ UNNECESSITY_CODES = {
     "F523",  # .format(...) unused positional arguments
     "F841",  # local variable `name` is assigned to but never used
 }
-ERROR_CODES = {
-    # Errors from flake8 itself
-    "E999",  # syntax error
+# NOTE: If the user sets the flake8 executable with workspace configuration, the
+# error codes in this set may be inaccurate.
+ERROR_CODES = (
     # Errors from the pyflakes plugin of flake8
-    #
-    # The following list should be kept in sync with the `pyflakes_lint` plugin.
-    # Here is a snippet to generate such a list:
-    #
-    #     from flake8.plugins.pyflakes import FLAKE8_PYFLAKES_CODES
-    #     from pylsp.plugins.pyflakes_lint import PYFLAKES_ERROR_MESSAGES
-    #     for m in PYFLAKES_ERROR_MESSAGES:
-    #         print(f'"{FLAKE8_PYFLAKES_CODES[m.__name__]}",  # {m.__name__}')
-    "F821",  # UndefinedName
-    "F822",  # UndefinedExport
-    "F823",  # UndefinedLocal
-    "F831",  # DuplicateArgument
-    "F407",  # FutureFeatureNotDefined
-    "F706",  # ReturnOutsideFunction
-    "F704",  # YieldOutsideFunction
-    "F702",  # ContinueOutsideLoop
-    "F701",  # BreakOutsideLoop
-    "F622",  # TwoStarredExpressions
-}
+    {FLAKE8_PYFLAKES_CODES.get(m.__name__, "E999") for m in PYFLAKES_ERROR_MESSAGES}
+    # Syntax error from flake8 itself
+    | {"E999"}
+)
 
 
 @hookimpl
