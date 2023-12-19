@@ -15,6 +15,7 @@ from pylsp.config.config import Config
 from pylsp.plugins.rope_autoimport import (
     _get_score,
     _should_insert,
+    cache,
     get_name_or_module,
     get_names,
 )
@@ -58,6 +59,7 @@ def autoimport_workspace(tmp_path_factory) -> Workspace:
         }
     )
     pylsp_initialize(workspace._config, workspace)
+    wait_for_condition(lambda: not cache.thread.is_alive())
     yield workspace
     workspace.close()
 
@@ -293,6 +295,7 @@ def test_autoimport_code_actions_and_completions_for_notebook_document(
             }
         },
     )
+    from time import sleep
 
     with patch.object(server._endpoint, "notify") as mock_notify:
         # Expectations:
@@ -312,6 +315,7 @@ def test_autoimport_code_actions_and_completions_for_notebook_document(
     )
     assert rope_autoimport_settings.get("completions", {}).get("enabled", False) is True
     assert rope_autoimport_settings.get("memory", False) is True
+    wait_for_condition(lambda: not cache.thread.is_alive())
 
     # 1.
     quick_fixes = server.code_actions("cell_1_uri", {}, make_context("os", 0, 0, 2))
