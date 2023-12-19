@@ -295,8 +295,6 @@ def test_autoimport_code_actions_and_completions_for_notebook_document(
             }
         },
     )
-    from time import sleep
-
     with patch.object(server._endpoint, "notify") as mock_notify:
         # Expectations:
         # 1. We receive an autoimport suggestion for "os" in the first cell because
@@ -308,7 +306,9 @@ def test_autoimport_code_actions_and_completions_for_notebook_document(
         # 4. We receive an autoimport suggestion for "sys" because it's not already imported.
         # 5. If diagnostics doesn't contain "undefined name ...", we send empty quick fix suggestions.
         send_notebook_did_open(client, ["os", "import os\nos", "os", "sys"])
-        wait_for_condition(lambda: mock_notify.call_count >= 3)
+        wait_for_condition(lambda: mock_notify.call_count >= 4)
+        # We received diagnostics messages for every cell
+        assert all('textDocument/publishDiagnostics' in c.args for c in mock_notify.call_args_list)
 
     rope_autoimport_settings = server.workspace._config.plugin_settings(
         "rope_autoimport"
