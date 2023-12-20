@@ -308,7 +308,10 @@ def test_autoimport_code_actions_and_completions_for_notebook_document(
         send_notebook_did_open(client, ["os", "import os\nos", "os", "sys"])
         wait_for_condition(lambda: mock_notify.call_count >= 4)
         # We received diagnostics messages for every cell
-        assert all('textDocument/publishDiagnostics' in c.args for c in mock_notify.call_args_list)
+        assert all(
+            "textDocument/publishDiagnostics" in c.args
+            for c in mock_notify.call_args_list
+        )
 
     rope_autoimport_settings = server.workspace._config.plugin_settings(
         "rope_autoimport"
