@@ -163,7 +163,6 @@ class PythonLSPServer(MethodDispatcher):
     """Implementation of the Microsoft VSCode Language Server Protocol
     https://github.com/Microsoft/language-server-protocol/blob/master/versions/protocol-1-x.md
     """
-
     # pylint: disable=too-many-public-methods,redefined-builtin
 
     def __init__(
@@ -348,6 +347,7 @@ class PythonLSPServer(MethodDispatcher):
                 )
                 workspace_config.update(self.config._settings)
                 self.workspaces[uri] = Workspace(uri, self._endpoint, workspace_config)
+
 
         self._dispatchers = self._hook("pylsp_dispatchers")
         self._hook("pylsp_initialize")

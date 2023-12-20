@@ -192,7 +192,7 @@ def pylsp_completions(
         not config.plugin_settings("rope_autoimport")
         .get("completions", {})
         .get("enabled", True)
-    ):
+    ) or cache.is_blocked():
         return []
 
     line = document.lines[position["line"]]
@@ -284,7 +284,7 @@ def pylsp_code_actions(
         not config.plugin_settings("rope_autoimport")
         .get("code_actions", {})
         .get("enabled", True)
-    ):
+    ) or cache.is_blocked():
         return []
 
     log.debug(f"textDocument/codeAction: {document} {range} {context}")
@@ -336,26 +336,31 @@ class AutoimportCache:
         memory: bool = config.plugin_settings("rope_autoimport").get("memory", False)
         rope_config = config.settings().get("rope", {})
         autoimport = workspace._rope_autoimport(rope_config, memory)
-        task_handle = PylspTaskHandle(workspace)
         resources: Optional[List[Resource]] = (
             None
             if files is None
             else [document._rope_resource(rope_config) for document in files]
         )
-
         self.thread = threading.Thread(
-            target=self.make_cache, args=(autoimport, task_handle, resources)
+            target=self._reload_cache, args=(workspace, autoimport, resources)
         )
         self.thread.start()
 
-    def make_cache(
+    def _reload_cache(
         self,
+        workspace: Workspace,
         autoimport: AutoImport,
-        task_handle: PylspTaskHandle,
-        resources: Optional[List[Resource]],
+        resources: Optional[List[Resource]] = None,
     ):
-        autoimport.generate_cache(task_handle=task_handle, resources=resources)
-        autoimport.generate_modules_cache(task_handle=task_handle)
+        # NOTE: task_handle bombards FE with ~10k $/progress messages while it builds the cache:
+        # task_handle = PylspTaskHandle(workspace)
+        # autoimport.generate_cache(task_handle=task_handle, resources=resources)
+        # autoimport.generate_modules_cache(task_handle=task_handle)
+        autoimport.generate_cache(resources=resources)
+        autoimport.generate_modules_cache()
+
+    def is_blocked(self):
+        return (cache.thread is None) or (cache.thread and cache.thread.is_alive())
 
 
 @hookimpl
@@ -367,13 +372,15 @@ def pylsp_initialize(config: Config, workspace: Workspace):
     cache.reload_cache(config, workspace)
 
 
-@hookimpl
-def pylsp_document_did_open(config: Config, workspace: Workspace):
-    """Initialize AutoImport.
+# NOTE: I added this guy for notebook document support to make sure the cache is kept
+# up to date when the user installed package in the notebook
+# @hookimpl
+# def pylsp_document_did_open(config: Config, workspace: Workspace):
+#     """Initialize AutoImport.
 
-    Generates the cache for local and global items.
-    """
-    cache.reload_cache(config, workspace)
+#     Generates the cache for local and global items.
+#     """
+#     cache.reload_cache(config, workspace)
 
 
 @hookimpl
