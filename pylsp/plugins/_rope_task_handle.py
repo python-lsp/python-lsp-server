@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import logging
+import time
+from functools import wraps
+
 from typing import Callable, ContextManager, List, Optional, Sequence
 
 from rope.base.taskhandle import BaseJobSet, BaseTaskHandle
@@ -9,6 +12,21 @@ from pylsp.workspace import Workspace
 
 log = logging.getLogger(__name__)
 Report = Callable[[str, int], None]
+
+
+def throttle(seconds=1):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            if not hasattr(wrapper, "last_call"):
+                wrapper.last_call = 0
+            if time.time() - wrapper.last_call >= seconds:
+                wrapper.last_call = time.time()
+                return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
 
 
 class PylspJobSet(BaseJobSet):
@@ -55,6 +73,7 @@ class PylspJobSet(BaseJobSet):
         self.count += 1
         self._report()
 
+    @throttle(0.5)
     def _report(self):
         percent = int(self.get_percent_done())
         message = f"{self.job_name} {self.done}/{self.count}"
