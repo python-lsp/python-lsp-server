@@ -58,8 +58,7 @@ def autoimport_workspace(tmp_path_factory) -> Workspace:
             }
         }
     )
-    pylsp_initialize(workspace._config, workspace)
-    wait_for_condition(lambda: not cache.thread.is_alive())
+    cache.reload_cache(workspace._config, workspace, single_thread=True)
     yield workspace
     workspace.close()
 

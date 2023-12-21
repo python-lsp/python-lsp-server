@@ -37,8 +37,9 @@ class AutoimportCache:
         config: Config,
         workspace: Workspace,
         files: Optional[List[Document]] = None,
+        single_thread: Optional[bool] = False,
     ):
-        if self.thread and self.thread.is_alive():
+        if self.is_blocked():
             return
 
         memory: bool = config.plugin_settings("rope_autoimport").get("memory", False)
@@ -49,12 +50,16 @@ class AutoimportCache:
             if files is None
             else [document._rope_resource(rope_config) for document in files]
         )
-        # Creating the cache may take 10-20s for a environment with 5k python modules. That's
-        # why we decided to move cache creation into its own thread.
-        self.thread = threading.Thread(
-            target=self._reload_cache, args=(workspace, autoimport, resources)
-        )
-        self.thread.start()
+
+        if single_thread:
+            self._reload_cache(workspace, autoimport, resources)
+        else:
+            # Creating the cache may take 10-20s for a environment with 5k python modules. That's
+            # why we decided to move cache creation into its own thread.
+            self.thread = threading.Thread(
+                target=self._reload_cache, args=(workspace, autoimport, resources)
+            )
+            self.thread.start()
 
     def _reload_cache(
         self,
@@ -67,7 +72,7 @@ class AutoimportCache:
         autoimport.generate_modules_cache(task_handle=task_handle)
 
     def is_blocked(self):
-        return (cache.thread is None) or (cache.thread and cache.thread.is_alive())
+        return cache.thread and cache.thread.is_alive()
 
 
 @hookimpl
