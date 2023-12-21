@@ -17,7 +17,7 @@ Report = Callable[[str, int], None]
 def throttle(seconds=1):
     def decorator(func):
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args, **kwargs):  # pylint: disable=inconsistent-return-statements
             if not hasattr(wrapper, "last_call"):
                 wrapper.last_call = 0
             if time.time() - wrapper.last_call >= seconds:

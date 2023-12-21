@@ -27,6 +27,8 @@ MAX_RESULTS_CODE_ACTIONS = 5
 
 
 class AutoimportCache:
+    """Handles the cache creation."""
+
     def __init__(self):
         self.thread = None
 
@@ -47,6 +49,8 @@ class AutoimportCache:
             if files is None
             else [document._rope_resource(rope_config) for document in files]
         )
+        # Creating the cache may take 10-20s for a environment with 5k python modules. That's
+        # why we decided to move cache creation into its own thread.
         self.thread = threading.Thread(
             target=self._reload_cache, args=(workspace, autoimport, resources)
         )
