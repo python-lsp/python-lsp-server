@@ -22,7 +22,6 @@ from pylsp.plugins.rope_autoimport import (
 from pylsp.plugins.rope_autoimport import (
     pylsp_completions as pylsp_autoimport_completions,
 )
-from pylsp.plugins.rope_autoimport import pylsp_initialize
 from pylsp.workspace import Workspace
 
 
