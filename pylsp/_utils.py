@@ -8,10 +8,9 @@ import os
 import pathlib
 import re
 import threading
+import time
 from typing import List, Optional
 
-import time
-from functools import wraps
 import docstring_to_markdown
 import jedi
 
@@ -61,7 +60,7 @@ def throttle(seconds=1):
     """Throttles calls to a function evey `seconds` seconds."""
 
     def decorator(func):
-        @wraps(func)
+        @functools.wraps(func)
         def wrapper(*args, **kwargs):  # pylint: disable=inconsistent-return-statements
             if not hasattr(wrapper, "last_call"):
                 wrapper.last_call = 0
