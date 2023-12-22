@@ -185,6 +185,14 @@ To run the test suite:
 pytest
 ```
 
+To run black and isort on the code base:
+
+```sh
+pip install isort black
+black pylsp test
+isort pylsp test  # runs automatically isort with --profile black
+```
+
 After adding configuration options to `schema.json`, refresh the `CONFIGURATION.md` file with
 
 ```
