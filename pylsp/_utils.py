@@ -10,10 +10,10 @@ import re
 import threading
 from typing import List, Optional
 
-import docstring_to_markdown
-import jedi
 import time
 from functools import wraps
+import docstring_to_markdown
+import jedi
 
 JEDI_VERSION = jedi.__version__
 
