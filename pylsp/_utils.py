@@ -59,6 +59,7 @@ def debounce(interval_s, keyed_by=None):
 
 def throttle(seconds=1):
     """Throttles calls to a function evey `seconds` seconds."""
+
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):  # pylint: disable=inconsistent-return-statements
