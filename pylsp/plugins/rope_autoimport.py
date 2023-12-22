@@ -72,7 +72,7 @@ class AutoimportCache:
         autoimport.generate_modules_cache(task_handle=task_handle)
 
     def is_blocked(self):
-        return cache.thread and cache.thread.is_alive()
+        return self.thread and self.thread.is_alive()
 
 
 @hookimpl

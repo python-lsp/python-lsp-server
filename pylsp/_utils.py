@@ -12,6 +12,8 @@ from typing import List, Optional
 
 import docstring_to_markdown
 import jedi
+import time
+from functools import wraps
 
 JEDI_VERSION = jedi.__version__
 
@@ -53,6 +55,22 @@ def debounce(interval_s, keyed_by=None):
         return debounced
 
     return wrapper
+
+
+def throttle(seconds=1):
+    """Throttles calls to a function evey `seconds` seconds."""
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):  # pylint: disable=inconsistent-return-statements
+            if not hasattr(wrapper, "last_call"):
+                wrapper.last_call = 0
+            if time.time() - wrapper.last_call >= seconds:
+                wrapper.last_call = time.time()
+                return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
 
 
 def find_parents(root, path, names):
