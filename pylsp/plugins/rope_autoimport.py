@@ -2,6 +2,7 @@
 
 import logging
 from typing import Any, Dict, Generator, List, Optional, Set, Union
+import threading
 
 import parso
 from jedi import Script
@@ -23,6 +24,55 @@ _score_pow = 5
 _score_max = 10**_score_pow
 MAX_RESULTS_COMPLETIONS = 1000
 MAX_RESULTS_CODE_ACTIONS = 5
+
+
+class AutoimportCache:
+    """Handles the cache creation."""
+
+    def __init__(self):
+        self.thread = None
+
+    def reload_cache(
+        self,
+        config: Config,
+        workspace: Workspace,
+        files: Optional[List[Document]] = None,
+        single_thread: Optional[bool] = False,
+    ):
+        if self.is_blocked():
+            return
+
+        memory: bool = config.plugin_settings("rope_autoimport").get("memory", False)
+        rope_config = config.settings().get("rope", {})
+        autoimport = workspace._rope_autoimport(rope_config, memory)
+        resources: Optional[List[Resource]] = (
+            None
+            if files is None
+            else [document._rope_resource(rope_config) for document in files]
+        )
+
+        if single_thread:
+            self._reload_cache(workspace, autoimport, resources)
+        else:
+            # Creating the cache may take 10-20s for a environment with 5k python modules. That's
+            # why we decided to move cache creation into its own thread.
+            self.thread = threading.Thread(
+                target=self._reload_cache, args=(workspace, autoimport, resources)
+            )
+            self.thread.start()
+
+    def _reload_cache(
+        self,
+        workspace: Workspace,
+        autoimport: AutoImport,
+        resources: Optional[List[Resource]] = None,
+    ):
+        task_handle = PylspTaskHandle(workspace)
+        autoimport.generate_cache(task_handle=task_handle, resources=resources)
+        autoimport.generate_modules_cache(task_handle=task_handle)
+
+    def is_blocked(self):
+        return self.thread and self.thread.is_alive()
 
 
 @hookimpl
@@ -191,7 +241,7 @@ def pylsp_completions(
         not config.plugin_settings("rope_autoimport")
         .get("completions", {})
         .get("enabled", True)
-    ):
+    ) or cache.is_blocked():
         return []
 
     line = document.lines[position["line"]]
@@ -283,7 +333,7 @@ def pylsp_code_actions(
         not config.plugin_settings("rope_autoimport")
         .get("code_actions", {})
         .get("enabled", True)
-    ):
+    ) or cache.is_blocked():
         return []
 
     log.debug(f"textDocument/codeAction: {document} {range} {context}")
@@ -319,29 +369,13 @@ def pylsp_code_actions(
     return code_actions
 
 
-def _reload_cache(
-    config: Config, workspace: Workspace, files: Optional[List[Document]] = None
-):
-    memory: bool = config.plugin_settings("rope_autoimport").get("memory", False)
-    rope_config = config.settings().get("rope", {})
-    autoimport = workspace._rope_autoimport(rope_config, memory)
-    task_handle = PylspTaskHandle(workspace)
-    resources: Optional[List[Resource]] = (
-        None
-        if files is None
-        else [document._rope_resource(rope_config) for document in files]
-    )
-    autoimport.generate_cache(task_handle=task_handle, resources=resources)
-    autoimport.generate_modules_cache(task_handle=task_handle)
-
-
 @hookimpl
 def pylsp_initialize(config: Config, workspace: Workspace):
     """Initialize AutoImport.
 
     Generates the cache for local and global items.
     """
-    _reload_cache(config, workspace)
+    cache.reload_cache(config, workspace)
 
 
 @hookimpl
@@ -350,13 +384,13 @@ def pylsp_document_did_open(config: Config, workspace: Workspace):
 
     Generates the cache for local and global items.
     """
-    _reload_cache(config, workspace)
+    cache.reload_cache(config, workspace)
 
 
 @hookimpl
 def pylsp_document_did_save(config: Config, workspace: Workspace, document: Document):
     """Update the names associated with this document."""
-    _reload_cache(config, workspace, [document])
+    cache.reload_cache(config, workspace, [document])
 
 
 @hookimpl
@@ -368,6 +402,9 @@ def pylsp_workspace_configuration_changed(config: Config, workspace: Workspace):
     Generates the cache for local and global items.
     """
     if config.plugin_settings("rope_autoimport").get("enabled", False):
-        _reload_cache(config, workspace)
+        cache.reload_cache(config, workspace)
     else:
         log.debug("autoimport: Skipping cache reload.")
+
+
+cache: AutoimportCache = AutoimportCache()
