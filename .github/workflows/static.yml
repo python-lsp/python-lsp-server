@@ -39,9 +39,11 @@ jobs:
       # This error cannot be resolved by adding a pylint: disable=unused-argument comment ...
       - run: |
           pip install -e .[pylint,pycodestyle,pyflakes]
-          pip install black
+          pip install isort black
       - name: Pylint checks
         run: pylint pylsp test
+      - name: Check import order with isort
+        run: isort --check --profile black pylsp test
       - name: Code style checks with black
         run: black --check pylsp test
       - name: Pyflakes checks

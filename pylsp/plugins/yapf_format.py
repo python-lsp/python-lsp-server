@@ -4,10 +4,9 @@
 import logging
 import os
 
+import whatthepatch
 from yapf.yapflib import file_resources, style
 from yapf.yapflib.yapf_api import FormatCode
-
-import whatthepatch
 
 from pylsp import hookimpl
 from pylsp._utils import get_eol_chars

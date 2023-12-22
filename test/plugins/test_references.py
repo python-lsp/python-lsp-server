@@ -6,9 +6,8 @@ import os
 import pytest
 
 from pylsp import uris
-from pylsp.workspace import Document
 from pylsp.plugins.references import pylsp_references
-
+from pylsp.workspace import Document
 
 DOC1_NAME = "test1.py"
 DOC2_NAME = "test2.py"

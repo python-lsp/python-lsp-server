@@ -7,7 +7,6 @@ from pylsp import uris
 from pylsp.plugins.definition import pylsp_definitions
 from pylsp.workspace import Document
 
-
 DOC_URI = uris.from_fs_path(__file__)
 DOC = """def a():
     pass

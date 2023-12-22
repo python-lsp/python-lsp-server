@@ -104,3 +104,6 @@ addopts = "--cov-report html --cov-report term --junitxml=pytest.xml --cov pylsp
 
 [tool.coverage.run]
 concurrency = ["multiprocessing", "thread"]
+
+[tool.isort]
+profile = "black"

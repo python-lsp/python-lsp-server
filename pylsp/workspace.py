@@ -1,19 +1,19 @@
 # Copyright 2017-2020 Palantir Technologies, Inc.
 # Copyright 2021- Python Language Server Contributors.
 
+import functools
 import io
 import logging
-from contextlib import contextmanager
 import os
 import re
 import uuid
-import functools
-from typing import Optional, Generator, Callable, List
+from contextlib import contextmanager
 from threading import RLock
+from typing import Callable, Generator, List, Optional
 
 import jedi
 
-from . import lsp, uris, _utils
+from . import _utils, lsp, uris
 
 log = logging.getLogger(__name__)
 

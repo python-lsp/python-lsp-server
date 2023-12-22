@@ -3,7 +3,7 @@
 
 import logging
 
-from pylsp import hookimpl, uris, _utils
+from pylsp import _utils, hookimpl, uris
 
 log = logging.getLogger(__name__)
 

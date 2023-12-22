@@ -1,23 +1,23 @@
 # Copyright 2017-2020 Palantir Technologies, Inc.
 # Copyright 2021- Python Language Server Contributors.
 
-from functools import partial
 import logging
 import os
 import socketserver
 import threading
 import uuid
-from typing import List, Dict, Any
-import ujson as json
+from functools import partial
+from typing import Any, Dict, List
 
+import ujson as json
 from pylsp_jsonrpc.dispatchers import MethodDispatcher
 from pylsp_jsonrpc.endpoint import Endpoint
 from pylsp_jsonrpc.streams import JsonRpcStreamReader, JsonRpcStreamWriter
 
-from . import lsp, _utils, uris
-from .config import config
-from .workspace import Workspace, Document, Notebook, Cell
+from . import _utils, lsp, uris
 from ._version import __version__
+from .config import config
+from .workspace import Cell, Document, Notebook, Workspace
 
 log = logging.getLogger(__name__)
 
@@ -109,6 +109,7 @@ def start_ws_lang_server(port, check_parent_process, handler_class):
     try:
         import asyncio
         from concurrent.futures import ThreadPoolExecutor
+
         import websockets
     except ImportError as e:
         raise ImportError(

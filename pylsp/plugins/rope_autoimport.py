@@ -1,8 +1,8 @@
 # Copyright 2022- Python Language Server Contributors.
 
 import logging
-from typing import Any, Dict, Generator, List, Optional, Set, Union
 import threading
+from typing import Any, Dict, Generator, List, Optional, Set, Union
 
 import parso
 from jedi import Script

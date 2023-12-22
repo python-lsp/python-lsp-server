@@ -2,10 +2,10 @@
 # Copyright 2021- Python Language Server Contributors.
 
 import logging
+
 from rope.contrib.codeassist import code_assist, sorted_proposals
 
 from pylsp import _utils, hookimpl, lsp
-
 
 log = logging.getLogger(__name__)
 

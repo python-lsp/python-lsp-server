@@ -4,10 +4,10 @@
 import os
 
 import pytest
+
 from pylsp import uris
 from pylsp.plugins.rope_rename import pylsp_rename
 from pylsp.workspace import Document
-
 
 DOC_NAME = "test1.py"
 DOC = """class Test1():
