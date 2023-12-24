@@ -2,15 +2,13 @@
 # Copyright 2021- Python Language Server Contributors.
 
 import os
-import time
 import sys
-
+import time
 from test.test_utils import ClientServerPair, send_initialize_request
 
+import pytest
 from flaky import flaky
 from pylsp_jsonrpc.exceptions import JsonRpcMethodNotFound
-import pytest
-
 
 RUNNING_IN_CI = bool(os.environ.get("CI"))
 

@@ -8,6 +8,7 @@ import re
 import sys
 
 import pydocstyle
+
 from pylsp import hookimpl, lsp
 
 log = logging.getLogger(__name__)

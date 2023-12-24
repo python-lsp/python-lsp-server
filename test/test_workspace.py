@@ -3,8 +3,8 @@ import os
 import pathlib
 
 import pytest
-from pylsp import uris
 
+from pylsp import uris
 
 DOC_URI = uris.from_fs_path(__file__)
 NOTEBOOK_URI = uris.from_fs_path("notebook_uri")

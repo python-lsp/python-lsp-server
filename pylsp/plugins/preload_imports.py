@@ -2,6 +2,7 @@
 # Copyright 2021- Python Language Server Contributors.
 
 import logging
+
 from pylsp import hookimpl
 
 log = logging.getLogger(__name__)

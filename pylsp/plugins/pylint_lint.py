@@ -5,11 +5,11 @@
 """Linter plugin for pylint."""
 import collections
 import logging
-import sys
-import re
-from subprocess import Popen, PIPE
 import os
+import re
 import shlex
+import sys
+from subprocess import PIPE, Popen
 
 from pylsp import hookimpl, lsp
 

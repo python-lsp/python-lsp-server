@@ -3,12 +3,10 @@
 
 import os
 from io import StringIO
+from test.test_utils import CALL_TIMEOUT_IN_SECONDS, ClientServerPair
 from unittest.mock import MagicMock
 
-from test.test_utils import ClientServerPair, CALL_TIMEOUT_IN_SECONDS
-
 import pytest
-
 from pylsp_jsonrpc.dispatchers import MethodDispatcher
 from pylsp_jsonrpc.endpoint import Endpoint
 from pylsp_jsonrpc.exceptions import JsonRpcException
@@ -16,8 +14,7 @@ from pylsp_jsonrpc.exceptions import JsonRpcException
 from pylsp import uris
 from pylsp.config.config import Config
 from pylsp.python_lsp import PythonLSPServer
-from pylsp.workspace import Workspace, Document
-
+from pylsp.workspace import Document, Workspace
 
 DOC_URI = uris.from_fs_path(__file__)
 DOC = """import sys

@@ -10,7 +10,7 @@ from typing import List, Mapping, Sequence, Union
 import pluggy
 from pluggy._hooks import HookImpl
 
-from pylsp import _utils, hookspecs, uris, PYLSP
+from pylsp import PYLSP, _utils, hookspecs, uris
 
 # See compatibility note on `group` keyword:
 #   https://docs.python.org/3/library/importlib.metadata.html#entry-points

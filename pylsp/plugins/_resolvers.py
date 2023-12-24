@@ -1,14 +1,13 @@
 # Copyright 2017-2020 Palantir Technologies, Inc.
 # Copyright 2021- Python Language Server Contributors.
 
-from collections import defaultdict
 import logging
+from collections import defaultdict
 from time import time
 
 from jedi.api.classes import Completion
 
 from pylsp import lsp
-
 
 log = logging.getLogger(__name__)
 

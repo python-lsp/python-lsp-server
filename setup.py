@@ -5,7 +5,6 @@
 
 from setuptools import setup
 
-
 if __name__ == "__main__":
     setup(
         name="python-lsp-server",  # to allow GitHub dependency tracking work
