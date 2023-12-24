@@ -1,6 +1,5 @@
 # Copyright 2017-2020 Palantir Technologies, Inc.
-# Copyright 2021- Python Language Server Contributors
-# pylint: disable=import-outside-toplevel
+# Copyright 2021- Python Language Server Contributors.
 
 import logging
 import sys
