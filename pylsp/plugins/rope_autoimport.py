@@ -94,7 +94,6 @@ def pylsp_settings() -> Dict[str, Dict[str, Dict[str, Any]]]:
     }
 
 
-# pylint: disable=too-many-return-statements
 def _should_insert(expr: tree.BaseNode, word_node: tree.Leaf) -> bool:
     """
     Check if we should insert the word_node on the given expr.
@@ -214,7 +213,7 @@ def _process_statements(
                 "kind": "quickfix",
                 "edit": {"changes": {doc_uri: [edit]}},
                 # data is a supported field for codeAction responses
-                # See https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_codeAction  # pylint: disable=line-too-long
+                # See https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_codeAction
                 "data": {"sortText": _sort_import(score)},
             }
         else:
@@ -225,7 +224,7 @@ def get_names(script: Script) -> Set[str]:
     """Get all names to ignore from the current file."""
     raw_names = script.get_names(definitions=True)
     log.debug(raw_names)
-    return set(name.name for name in raw_names)
+    return {name.name for name in raw_names}
 
 
 @hookimpl
@@ -257,14 +256,12 @@ def pylsp_completions(
     )
     autoimport = workspace._rope_autoimport(rope_config)
     suggestions = list(autoimport.search_full(word, ignored_names=ignored_names))
-    results = list(
-        sorted(
+    results = sorted(
             _process_statements(
                 suggestions, document.uri, word, autoimport, document, "completions"
             ),
             key=lambda statement: statement["sortText"],
         )
-    )
     if len(results) > MAX_RESULTS_COMPLETIONS:
         results = results[:MAX_RESULTS_COMPLETIONS]
     return results
@@ -306,7 +303,7 @@ def pylsp_code_actions(
     config: Config,
     workspace: Workspace,
     document: Document,
-    range: Dict,  # pylint: disable=redefined-builtin
+    range: Dict,
     context: Dict,
 ) -> List[Dict]:
     """
@@ -348,8 +345,7 @@ def pylsp_code_actions(
         autoimport = workspace._rope_autoimport(rope_config)
         suggestions = list(autoimport.search_full(word))
         log.debug("autoimport: suggestions: %s", suggestions)
-        results = list(
-            sorted(
+        results = sorted(
                 _process_statements(
                     suggestions,
                     document.uri,
@@ -360,7 +356,6 @@ def pylsp_code_actions(
                 ),
                 key=lambda statement: statement["data"]["sortText"],
             )
-        )
 
         if len(results) > MAX_RESULTS_CODE_ACTIONS:
             results = results[:MAX_RESULTS_CODE_ACTIONS]

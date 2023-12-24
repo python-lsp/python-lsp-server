@@ -21,8 +21,8 @@ class Directory(object):
 
     def add_member(self, id, name):
         self.members[id] = name
-        
-        
+
+
 subscripted_before_reference = {}
 subscripted_before_reference[0] = 0
 subscripted_before_reference

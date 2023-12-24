@@ -36,7 +36,7 @@ def tmp_workspace(temp_workspace_factory):
     )
 
 
-def test_references(tmp_workspace):  # pylint: disable=redefined-outer-name
+def test_references(tmp_workspace):
     # Over 'Test1' in class Test1():
     position = {"line": 0, "character": 8}
     DOC1_URI = uris.from_fs_path(os.path.join(tmp_workspace.root_path, DOC1_NAME))
@@ -66,7 +66,7 @@ def test_references(tmp_workspace):  # pylint: disable=redefined-outer-name
     assert doc2_usage_ref["range"]["end"] == {"line": 3, "character": 9}
 
 
-def test_references_builtin(tmp_workspace):  # pylint: disable=redefined-outer-name
+def test_references_builtin(tmp_workspace):
     # Over 'UnicodeError':
     position = {"line": 4, "character": 7}
     doc2_uri = uris.from_fs_path(os.path.join(str(tmp_workspace.root_path), DOC2_NAME))

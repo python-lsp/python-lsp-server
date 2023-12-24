@@ -46,7 +46,7 @@ def test_initialize(client_server_pair):
 )
 def test_exit_with_parent_process_died(
     client_exited_server,
-):  # pylint: disable=redefined-outer-name
+):
     # language server should have already exited before responding
     lsp_server, mock_process = (
         client_exited_server.client,

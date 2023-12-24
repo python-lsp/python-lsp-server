@@ -62,7 +62,6 @@ def autoimport_workspace(tmp_path_factory) -> Workspace:
     workspace.close()
 
 
-# pylint: disable=redefined-outer-name
 @pytest.fixture
 def completions(config: Config, autoimport_workspace: Workspace, request):
     document, position = request.param
@@ -232,7 +231,7 @@ def test_get_names():
         sfiosifo
     """
     results = get_names(jedi.Script(code=source))
-    assert results == set(["blah", "bleh", "e", "hello", "someone", "sfa", "a", "b"])
+    assert results == {"blah", "bleh", "e", "hello", "someone", "sfa", "a", "b"}
 
 
 # Tests ruff, flake8 and pyflakes messages

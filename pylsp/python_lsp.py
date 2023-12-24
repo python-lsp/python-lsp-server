@@ -45,7 +45,6 @@ class _StreamHandlerWrapper(socketserver.StreamRequestHandler):
             if os.name == "nt":
                 # Catch and pass on ConnectionResetError when parent process
                 # dies
-                # pylint: disable=no-member, undefined-variable
                 if isinstance(e, WindowsError) and e.winerror == 10054:
                     pass
 
@@ -57,7 +56,6 @@ def start_tcp_lang_server(bind_addr, port, check_parent_process, handler_class):
         raise ValueError("Handler class must be an instance of PythonLSPServer")
 
     def shutdown_server(check_parent_process, *args):
-        # pylint: disable=unused-argument
         if check_parent_process:
             log.debug("Shutting down server")
             # Shutdown call must be done on a thread, to prevent deadlocks
@@ -103,8 +101,6 @@ def start_ws_lang_server(port, check_parent_process, handler_class):
     if not issubclass(handler_class, PythonLSPServer):
         raise ValueError("Handler class must be an instance of PythonLSPServer")
 
-    # pylint: disable=import-outside-toplevel
-
     # imports needed only for websockets based server
     try:
         import asyncio
@@ -135,20 +131,18 @@ def start_ws_lang_server(port, check_parent_process, handler_class):
             async for message in websocket:
                 try:
                     log.debug("consuming payload and feeding it to LSP handler")
-                    # pylint: disable=c-extension-no-member
                     request = json.loads(message)
                     loop = asyncio.get_running_loop()
                     await loop.run_in_executor(tpool, pylsp_handler.consume, request)
-                except Exception as e:  # pylint: disable=broad-except
+                except Exception as e:
                     log.exception("Failed to process request %s, %s", message, str(e))
 
         def send_message(message, websocket):
             """Handler to send responses of  processed requests to respective web socket clients"""
             try:
-                # pylint: disable=c-extension-no-member
                 payload = json.dumps(message, ensure_ascii=False)
                 asyncio.run(websocket.send(payload))
-            except Exception as e:  # pylint: disable=broad-except
+            except Exception as e:
                 log.exception("Failed to write message %s, %s", message, str(e))
 
         async def run_server():
@@ -163,9 +157,6 @@ class PythonLSPServer(MethodDispatcher):
     """Implementation of the Microsoft VSCode Language Server Protocol
     https://github.com/Microsoft/language-server-protocol/blob/master/versions/protocol-1-x.md
     """
-
-    # pylint: disable=too-many-public-methods,redefined-builtin
-
     def __init__(
         self, rx, tx, check_parent_process=False, consumer=None, *, endpoint_cls=None
     ):
@@ -456,7 +447,7 @@ class PythonLSPServer(MethodDispatcher):
 
     def _lint_notebook_document(
         self, notebook_document, workspace
-    ):  # pylint: disable=too-many-locals
+    ):
         """
         Lint a notebook document.
 
@@ -810,7 +801,7 @@ class PythonLSPServer(MethodDispatcher):
 
     def m_workspace__did_change_workspace_folders(
         self, event=None, **_kwargs
-    ):  # pylint: disable=too-many-locals
+    ):
         if event is None:
             return
         added = event.get("added", [])

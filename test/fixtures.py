@@ -107,7 +107,7 @@ def consumer():
 
 
 @pytest.fixture()
-def endpoint(consumer):  # pylint: disable=redefined-outer-name
+def endpoint(consumer):
     class Dispatcher(FakeEditorMethodsMixin, MethodDispatcher):
         pass
 
@@ -115,7 +115,7 @@ def endpoint(consumer):  # pylint: disable=redefined-outer-name
 
 
 @pytest.fixture
-def workspace(tmpdir, endpoint):  # pylint: disable=redefined-outer-name
+def workspace(tmpdir, endpoint):
     """Return a workspace."""
     ws = Workspace(uris.from_fs_path(str(tmpdir)), endpoint)
     ws._config = Config(ws.root_uri, {}, 0, {})
@@ -124,7 +124,7 @@ def workspace(tmpdir, endpoint):  # pylint: disable=redefined-outer-name
 
 
 @pytest.fixture
-def workspace_other_root_path(tmpdir, endpoint):  # pylint: disable=redefined-outer-name
+def workspace_other_root_path(tmpdir, endpoint):
     """Return a workspace with a root_path other than tmpdir."""
     ws_path = str(tmpdir.mkdir("test123").mkdir("test456"))
     ws = Workspace(uris.from_fs_path(ws_path), endpoint)
@@ -133,7 +133,7 @@ def workspace_other_root_path(tmpdir, endpoint):  # pylint: disable=redefined-ou
 
 
 @pytest.fixture
-def config(workspace):  # pylint: disable=redefined-outer-name
+def config(workspace):
     """Return a config object."""
     cfg = Config(workspace.root_uri, {}, 0, {})
     cfg._plugin_settings = {
@@ -143,12 +143,12 @@ def config(workspace):  # pylint: disable=redefined-outer-name
 
 
 @pytest.fixture
-def doc(workspace):  # pylint: disable=redefined-outer-name
+def doc(workspace):
     return Document(DOC_URI, workspace, DOC)
 
 
 @pytest.fixture
-def temp_workspace_factory(workspace):  # pylint: disable=redefined-outer-name
+def temp_workspace_factory(workspace):
     """
     Returns a function that creates a temporary workspace from the files dict.
     The dict is in the format {"file_name": "file_contents"}

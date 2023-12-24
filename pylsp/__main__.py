@@ -9,7 +9,7 @@ import time
 
 try:
     import ujson as json
-except Exception:  # pylint: disable=broad-except
+except Exception:
     import json
 
 from .python_lsp import (

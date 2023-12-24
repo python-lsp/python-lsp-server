@@ -15,7 +15,7 @@ from pylsp import hookimpl, lsp
 
 try:
     import ujson as json
-except Exception:  # pylint: disable=broad-except
+except Exception:
     import json
 
 log = logging.getLogger(__name__)
@@ -50,7 +50,7 @@ class PylintLinter:
     @classmethod
     def lint(
         cls, document, is_saved, flags=""
-    ):  # pylint: disable=too-many-locals,too-many-branches
+    ):
         """Plugin interface to pylsp linter.
 
         Args:
@@ -289,7 +289,7 @@ def _run_pylint_stdio(pylint_executable, document, flags):
         cmd = [sys.executable, "-m", "pylint"]
         cmd.extend(flags)
         cmd.extend(["--from-stdin", document.path])
-        p = Popen(  # pylint: disable=consider-using-with
+        p = Popen(
             cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE
         )
     (stdout, stderr) = p.communicate(document.source.encode())
