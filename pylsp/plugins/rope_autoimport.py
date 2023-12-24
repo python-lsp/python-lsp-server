@@ -257,11 +257,11 @@ def pylsp_completions(
     autoimport = workspace._rope_autoimport(rope_config)
     suggestions = list(autoimport.search_full(word, ignored_names=ignored_names))
     results = sorted(
-            _process_statements(
-                suggestions, document.uri, word, autoimport, document, "completions"
-            ),
-            key=lambda statement: statement["sortText"],
-        )
+        _process_statements(
+            suggestions, document.uri, word, autoimport, document, "completions"
+        ),
+        key=lambda statement: statement["sortText"],
+    )
     if len(results) > MAX_RESULTS_COMPLETIONS:
         results = results[:MAX_RESULTS_COMPLETIONS]
     return results
@@ -276,7 +276,7 @@ def _get_score(
 ) -> int:
     import_length = len("import")
     full_statement_score = len(full_statement) - import_length
-    suggested_name_score = ((len(suggested_name) - len(desired_name))) ** 2
+    suggested_name_score = (len(suggested_name) - len(desired_name)) ** 2
     source_score = 20 * source
     return suggested_name_score + full_statement_score + source_score
 
@@ -346,16 +346,16 @@ def pylsp_code_actions(
         suggestions = list(autoimport.search_full(word))
         log.debug("autoimport: suggestions: %s", suggestions)
         results = sorted(
-                _process_statements(
-                    suggestions,
-                    document.uri,
-                    word,
-                    autoimport,
-                    document,
-                    "code_actions",
-                ),
-                key=lambda statement: statement["data"]["sortText"],
-            )
+            _process_statements(
+                suggestions,
+                document.uri,
+                word,
+                autoimport,
+                document,
+                "code_actions",
+            ),
+            key=lambda statement: statement["data"]["sortText"],
+        )
 
         if len(results) > MAX_RESULTS_CODE_ACTIONS:
             results = results[:MAX_RESULTS_CODE_ACTIONS]

@@ -48,9 +48,7 @@ class PylintLinter:
     last_diags = collections.defaultdict(list)
 
     @classmethod
-    def lint(
-        cls, document, is_saved, flags=""
-    ):
+    def lint(cls, document, is_saved, flags=""):
         """Plugin interface to pylsp linter.
 
         Args:
@@ -289,9 +287,7 @@ def _run_pylint_stdio(pylint_executable, document, flags):
         cmd = [sys.executable, "-m", "pylint"]
         cmd.extend(flags)
         cmd.extend(["--from-stdin", document.path])
-        p = Popen(
-            cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE
-        )
+        p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
     (stdout, stderr) = p.communicate(document.source.encode())
     if stderr:
         log.error("Error while running pylint '%s'", stderr.decode())

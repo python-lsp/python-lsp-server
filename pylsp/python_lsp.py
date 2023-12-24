@@ -157,6 +157,7 @@ class PythonLSPServer(MethodDispatcher):
     """Implementation of the Microsoft VSCode Language Server Protocol
     https://github.com/Microsoft/language-server-protocol/blob/master/versions/protocol-1-x.md
     """
+
     def __init__(
         self, rx, tx, check_parent_process=False, consumer=None, *, endpoint_cls=None
     ):
@@ -445,9 +446,7 @@ class PythonLSPServer(MethodDispatcher):
             doc_uri, flatten(self._hook("pylsp_lint", doc_uri, is_saved=is_saved))
         )
 
-    def _lint_notebook_document(
-        self, notebook_document, workspace
-    ):
+    def _lint_notebook_document(self, notebook_document, workspace):
         """
         Lint a notebook document.
 
@@ -799,9 +798,7 @@ class PythonLSPServer(MethodDispatcher):
             for doc_uri in workspace.documents:
                 self.lint(doc_uri, is_saved=False)
 
-    def m_workspace__did_change_workspace_folders(
-        self, event=None, **_kwargs
-    ):
+    def m_workspace__did_change_workspace_folders(self, event=None, **_kwargs):
         if event is None:
             return
         added = event.get("added", [])

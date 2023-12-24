@@ -9,9 +9,7 @@ log = logging.getLogger(__name__)
 
 
 @hookimpl
-def pylsp_rename(
-    config, workspace, document, position, new_name
-):
+def pylsp_rename(config, workspace, document, position, new_name):
     log.debug(
         "Executing rename of %s to %s", document.word_at_position(position), new_name
     )
