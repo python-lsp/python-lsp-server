@@ -2,5 +2,5 @@ include README.md
 include versioneer.py
 include pylsp/_version.py
 include LICENSE
-include .pylintrc
+include ruff.toml
 recursive-include test *.py
