@@ -36,6 +36,7 @@ indent-width = 4
 target-version = "py38"
 
 [lint]
+# https://docs.astral.sh/ruff/rules/
 select = ["E", "F", "W", "C", "I"]
 ignore = [
     "C901",  # McCabe complexity warning
