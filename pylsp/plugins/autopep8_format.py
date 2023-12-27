@@ -33,7 +33,7 @@ def pylsp_format_range(
     range["end"]["character"] = 0
 
     # Add 1 for 1-indexing vs LSP's 0-indexing
-    line_range = (range["start"]["line"] + 1, range["end"]["line"] + 1)
+    line_range = (range["start"]["line"] + 1, range["end"]["line"])
     return _format(config, document, line_range=line_range)
 
 
