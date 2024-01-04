@@ -2,15 +2,11 @@
 # Copyright 2021- Python Language Server Contributors.
 
 import argparse
+import json
 import logging
 import logging.config
 import sys
 import time
-
-try:
-    import ujson as json
-except Exception:  # pylint: disable=broad-except
-    import json
 
 from .python_lsp import (
     PythonLSPServer,

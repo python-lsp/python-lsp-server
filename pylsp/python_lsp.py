@@ -2,13 +2,13 @@
 # Copyright 2021- Python Language Server Contributors.
 
 from functools import partial
+import json
 import logging
 import os
 import socketserver
 import threading
 import uuid
 from typing import List, Dict, Any
-import ujson as json
 
 from pylsp_jsonrpc.dispatchers import MethodDispatcher
 from pylsp_jsonrpc.endpoint import Endpoint

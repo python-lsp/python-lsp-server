@@ -4,6 +4,7 @@
 
 """Linter plugin for pylint."""
 import collections
+import json
 import logging
 import sys
 import re
@@ -13,10 +14,6 @@ import shlex
 
 from pylsp import hookimpl, lsp
 
-try:
-    import ujson as json
-except Exception:  # pylint: disable=broad-except
-    import json
 
 log = logging.getLogger(__name__)
 
