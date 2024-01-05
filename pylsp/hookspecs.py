@@ -63,6 +63,10 @@ def pylsp_document_highlight(config, workspace, document, position):
 def pylsp_document_symbols(config, workspace, document):
     pass
 
+@hookspec
+def pylsp_workspace_symbols(config, workspace, document):
+    pass
+
 
 @hookspec(firstresult=True)
 def pylsp_execute_command(config, workspace, command, arguments):

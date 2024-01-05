@@ -278,6 +278,7 @@ class PythonLSPServer(MethodDispatcher):
             "documentHighlightProvider": True,
             "documentRangeFormattingProvider": True,
             "documentSymbolProvider": True,
+            "workspaceSymbolProvider": True,
             "definitionProvider": True,
             "executeCommandProvider": {
                 "commands": flatten(self._hook("pylsp_commands"))
@@ -414,6 +415,7 @@ class PythonLSPServer(MethodDispatcher):
 
     def definitions(self, doc_uri, position):
         return flatten(self._hook("pylsp_definitions", doc_uri, position=position))
+
 
     def document_symbols(self, doc_uri):
         return flatten(self._hook("pylsp_document_symbols", doc_uri))
@@ -888,6 +890,12 @@ class PythonLSPServer(MethodDispatcher):
 
     def m_workspace__execute_command(self, command=None, arguments=None):
         return self.execute_command(command, arguments)
+
+    def m_workspace__symbol(self, query=None):
+        l=list(self.workspace.documents.keys())
+        if len(l)==0:
+            return []
+        return flatten(self._hook("pylsp_workspace_symbols", l[0]))
 
 
 def flatten(list_of_lists):

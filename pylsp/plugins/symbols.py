@@ -9,9 +9,35 @@ from pylsp.lsp import SymbolKind
 
 log = logging.getLogger(__name__)
 
-
+from pylsp.uris import to_fs_path 
 @hookimpl
-def pylsp_document_symbols(config, document):
+def pylsp_document_symbols(config,document,workspace):
+    return pylsp_document_symbols_int(config,document,workspace) 
+
+@hookimpl 
+def pylsp_workspace_symbols(config,document,workspace):
+    from jedi.inference.references import _find_project_modules
+    workspace._root_path = to_fs_path(workspace._root_path)
+    
+    fil=_find_project_modules(document.jedi_script()._inference_state,[])
+    fil=map(lambda f:str(f.path), fil)
+    symb=[] 
+    def do(f):
+        doc=workspace.get_document(to_fs_path(f)) 
+        try:
+            return pylsp_document_symbols_int(config,doc,disable_all_scopes=True)
+        except OSError: 
+            log.warn('Fail to process file '+f)
+            return [] 
+    for f in fil: 
+        print(f)
+        symb+=do(f) 
+    return symb 
+
+
+    # ios = recurse_find_python_folders_and_files(FolderIO(str(self._path)))
+
+def pylsp_document_symbols_int(config, document,disable_all_scopes=False):
     # pylint: disable=broad-except
     # pylint: disable=too-many-nested-blocks
     # pylint: disable=too-many-locals
@@ -19,8 +45,8 @@ def pylsp_document_symbols(config, document):
     # pylint: disable=too-many-statements
 
     symbols_settings = config.plugin_settings("jedi_symbols")
-    all_scopes = symbols_settings.get("all_scopes", True)
-    add_import_symbols = symbols_settings.get("include_import_symbols", True)
+    all_scopes = not disable_all_scopes and symbols_settings.get("all_scopes", True)
+    add_import_symbols = not disable_all_scopes and symbols_settings.get("include_import_symbols", True)
     definitions = document.jedi_names(all_scopes=all_scopes)
     symbols = []
     exclude = set({})
@@ -91,7 +117,7 @@ def pylsp_document_symbols(config, document):
                 else:
                     continue
 
-        if _include_def(d) and Path(document.path) == Path(d.module_path):
+        if _include_def(d) and Path(to_fs_path(str(document.path))) == Path(to_fs_path(str(d.module_path))):
             tuple_range = _tuple_range(d)
             if tuple_range in exclude:
                 continue
@@ -108,7 +134,7 @@ def pylsp_document_symbols(config, document):
                 "name": d.name,
                 "containerName": _container(d),
                 "location": {
-                    "uri": document.uri,
+                    "uri": str(d.module_path),
                     "range": _range(d),
                 },
                 "kind": _kind(d) if kind is None else _SYMBOL_KIND_MAP[kind],
