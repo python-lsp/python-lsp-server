@@ -1,6 +1,7 @@
 # Copyright 2017-2020 Palantir Technologies, Inc.
 # Copyright 2021- Python Language Server Contributors.
 
+
 from functools import partial
 import logging
 import os
@@ -9,6 +10,7 @@ import threading
 import uuid
 from typing import List, Dict, Any
 import ujson as json
+
 
 from pylsp_jsonrpc.dispatchers import MethodDispatcher
 from pylsp_jsonrpc.endpoint import Endpoint
@@ -892,10 +894,7 @@ class PythonLSPServer(MethodDispatcher):
         return self.execute_command(command, arguments)
 
     def m_workspace__symbol(self, query=None):
-        l=list(self.workspace.documents.keys())
-        if len(l)==0:
-            return []
-        return flatten(self._hook("pylsp_workspace_symbols", l[0]))
+        return flatten(self._hook("pylsp_workspace_symbols"))
 
 
 def flatten(list_of_lists):

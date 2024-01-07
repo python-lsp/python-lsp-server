@@ -1,8 +1,10 @@
 # Copyright 2017-2020 Palantir Technologies, Inc.
+import re
 # Copyright 2021- Python Language Server Contributors.
 
 import logging
 from pathlib import Path
+from jedi.file_io import FolderIO
 
 from pylsp import hookimpl
 from pylsp.lsp import SymbolKind
@@ -11,24 +13,34 @@ log = logging.getLogger(__name__)
 
 from pylsp.uris import to_fs_path 
 @hookimpl
-def pylsp_document_symbols(config,document,workspace):
-    return pylsp_document_symbols_int(config,document,workspace) 
+def pylsp_document_symbols(config,document):
+    return pylsp_document_symbols_int(config,document) 
 
 @hookimpl 
 def pylsp_workspace_symbols(config,document,workspace):
-    from jedi.inference.references import _find_project_modules
-    workspace._root_path = to_fs_path(workspace._root_path)
-    
-    fil=_find_project_modules(document.jedi_script()._inference_state,[])
-    fil=map(lambda f:str(f.path), fil)
-    symb=[] 
     def do(f):
-        doc=workspace.get_document(to_fs_path(f)) 
+        for p in ignore_paths:
+            if re.search(p, f, re.IGNORECASE):
+                log.debug("Ignoring path %s", f)
+                return []
+        doc=workspace.get_document(to_fs_path(f))
         try:
             return pylsp_document_symbols_int(config,doc,disable_all_scopes=True)
-        except OSError: 
+        except OSError:
             log.warn('Fail to process file '+f)
-            return [] 
+            return []
+        except Exception as e :
+            log.exception('Failed , exception in file '+f + ' ' +str(e))
+            return []
+    symbols_settings = config.plugin_settings("jedi_symbols")
+    ignore_paths= symbols_settings.get("ignore_paths", [])
+    log.debug("ignore_paths: %s", ignore_paths)
+    from jedi.inference.references import recurse_find_python_files 
+    fil = recurse_find_python_files(FolderIO(workspace._root_path), [])
+    fil=map(lambda f:str(f.path), fil)
+    symb=[] 
+
+
     for f in fil: 
         print(f)
         symb+=do(f) 
