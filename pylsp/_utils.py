@@ -61,7 +61,7 @@ def throttle(seconds=1):
 
     def decorator(func):
         @functools.wraps(func)
-        def wrapper(*args, **kwargs):  # pylint: disable=inconsistent-return-statements
+        def wrapper(*args, **kwargs):
             if not hasattr(wrapper, "last_call"):
                 wrapper.last_call = 0
             if time.time() - wrapper.last_call >= seconds:

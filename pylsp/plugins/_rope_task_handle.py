@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 import logging
-
 from typing import Callable, ContextManager, List, Optional, Sequence
 
 from rope.base.taskhandle import BaseJobSet, BaseTaskHandle
 
-from pylsp.workspace import Workspace
 from pylsp._utils import throttle
+from pylsp.workspace import Workspace
 
 log = logging.getLogger(__name__)
 Report = Callable[[str, int], None]

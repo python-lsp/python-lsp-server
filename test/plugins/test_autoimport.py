@@ -1,10 +1,9 @@
 # Copyright 2022- Python Language Server Contributors.
 
-from typing import Any, Dict, List
-from unittest.mock import Mock, patch
-
 from test.test_notebook_document import wait_for_condition
 from test.test_utils import send_initialize_request, send_notebook_did_open
+from typing import Any, Dict, List
+from unittest.mock import Mock, patch
 
 import jedi
 import parso
@@ -23,7 +22,6 @@ from pylsp.plugins.rope_autoimport import (
     pylsp_completions as pylsp_autoimport_completions,
 )
 from pylsp.workspace import Workspace
-
 
 DOC_URI = uris.from_fs_path(__file__)
 
@@ -62,7 +60,6 @@ def autoimport_workspace(tmp_path_factory) -> Workspace:
     workspace.close()
 
 
-# pylint: disable=redefined-outer-name
 @pytest.fixture
 def completions(config: Config, autoimport_workspace: Workspace, request):
     document, position = request.param
@@ -232,7 +229,7 @@ def test_get_names():
         sfiosifo
     """
     results = get_names(jedi.Script(code=source))
-    assert results == set(["blah", "bleh", "e", "hello", "someone", "sfa", "a", "b"])
+    assert results == {"blah", "bleh", "e", "hello", "someone", "sfa", "a", "b"}
 
 
 # Tests ruff, flake8 and pyflakes messages
