@@ -5,34 +5,7 @@
 3. Activate: `source .venv/bin/activate`
 4. Install an editable installation: `pip3 install -e .`
     - This will ensure you'll see your edits immediately without reinstalling the project
-
-## Configure your editor
-
-In Sublime Text 4, open LSP-pylsp settings and change the path to the `pylsp` command:
-
-```json
-{
-    "command": ["/home/user/projects/python-lsp-server/run", "-vvv", "--log-file", "pylsp.log"]
-}
-```
-
-Option `-v` increases verbosity and `--log-file` will write all log messages
-into a file, which can be used for debugging.
-
-Running command `LSP: Troubleshoot server` you should now see the configured command,
-if not, then the configuration doesn't work as expected.
-
-To enabled plugins like `ruff`, you also need to point your editor to the correct
-`PYTHONPATH`:
-
-```json
-{
-    "command": ["/home/user/projects/python-lsp-server/run", "-vvv", "--log-file", "pylsp.log"],
-    "env": {
-        "PYTHONPATH": "/home/user/projects/python-lsp-server/.venv/lib/python3.11/site-packages",
-    },
-}
-```
+5. Configure your editor to point the pylsp executable to the one in `.venv`
 
 ## Trying out if it works
 
