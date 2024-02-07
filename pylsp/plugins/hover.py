@@ -1,6 +1,7 @@
 # Copyright 2017-2020 Palantir Technologies, Inc.
 # Copyright 2021- Python Language Server Contributors.
 
+import itertools
 import logging
 
 from pylsp import _utils, hookimpl
@@ -42,38 +43,49 @@ def _find_docstring(definitions):
     return types[0].docstring(raw=True)
 
 
-def _find_signatures(definitions, word):
-    # Get the signatures of all definitions
-    signatures = [
-        signature.to_string()
-        for definition in definitions
-        for signature in definition.get_signatures()
-        if signature.type not in ["module"]
-    ]
+def _find_signatures_and_types(definitions):
+    def _line_number(definition):
+        """Helper for sorting definitions by line number (which might be None)."""
+        return definition.line if definition.line is not None else 0
 
-    if len(signatures) != 0:
+    def _get_signatures(definition):
+        """Get the signatures of functions and classes."""
+        return [
+            signature.to_string()
+            for signature in definition.get_signatures()
+            if signature.type in ["class", "function"]
+        ]
+
+    definitions = sorted(definitions, key=_line_number)
+    signatures_per_def = [_get_signatures(d) for d in definitions]
+    types_per_def = [d.infer() for d in definitions]
+
+    # a flat list with all signatures
+    signatures = list(itertools.chain(*signatures_per_def))
+
+    # We want to show the type if there is at least one type that does not
+    # correspond to a signature
+    if any(
+        len(s) == 0 and len(t) > 0 for s, t in zip(signatures_per_def, types_per_def)
+    ):
+        # Get all types (also the ones that correspond to a signature)
+        types = set(itertools.chain(*types_per_def))
+        type_names = [t.name for t in sorted(types, key=_line_number)]
+
+        if len(type_names) == 1:
+            return [*signatures, type_names[0]]
+        elif len(type_names) > 1:
+            return [*signatures, f"Union[{', '.join(type_names)}]"]
+
+    else:
+        # The type does not add any information because it is already in the signatures
         return signatures
-
-    # If we did not find a signature, infer the possible types of all definitions
-    types = [
-        t.name
-        for d in sorted(definitions, key=lambda d: d.line)
-        for t in sorted(d.infer(), key=lambda t: t.line)
-    ]
-    if len(types) == 1:
-        return [types[0]]
-    elif len(types) > 1:
-        return [f"Union[{', '.join(types)}]"]
 
 
 @hookimpl
 def pylsp_hover(config, document, position):
     code_position = _utils.position_to_jedi_linecolumn(document, position)
-
-    # TODO(Review)
-    # We could also use Script.help here. It would not resolve keywords
     definitions = document.jedi_script(use_document_path=True).help(**code_position)
-    word = document.word_at_position(position)
 
     hover_capabilities = config.capabilities.get("textDocument", {}).get("hover", {})
     supported_markup_kinds = hover_capabilities.get("contentFormat", ["markdown"])
@@ -83,6 +95,6 @@ def pylsp_hover(config, document, position):
         "contents": _utils.format_docstring(
             _find_docstring(definitions),
             preferred_markup_kind,
-            signatures=_find_signatures(definitions, word),
+            signatures=_find_signatures_and_types(definitions),
         )
     }
