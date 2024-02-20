@@ -534,11 +534,8 @@ class Document:
 
         environment = self.get_enviroment(environment_path, env_vars=env_vars)
 
-        sys_path = list(self._extra_sys_path) + environment.get_sys_path()
-        if prioritize:
-            sys_path += extra_paths + sys_path
-        else:
-            sys_path += sys_path + extra_paths
+        sys_path = self.sys_path(environment_path, env_vars, prioritize, extra_paths)
+
         project_path = self._workspace.root_path
 
         # Extend sys_path with document's path if requested
@@ -573,14 +570,18 @@ class Document:
 
         return environment
 
-    def sys_path(self, environment_path=None, env_vars=None):
-        # TODO: when safe to break API, remove this method.
+    def sys_path(self, environment_path=None, env_vars=None, prioritize=False, extra_paths=[]):
         # Copy our extra sys path
         path = list(self._extra_sys_path)
         environment = self.get_enviroment(
             environment_path=environment_path, env_vars=env_vars
         )
         path.extend(environment.get_sys_path())
+        if prioritize:
+            path += extra_paths + path
+        else:
+            path += path + extra_paths
+
         return path
 
 

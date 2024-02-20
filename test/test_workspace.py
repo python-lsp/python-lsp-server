@@ -70,7 +70,7 @@ def test_non_root_project(pylsp, metafiles):
     test_uri = uris.from_fs_path(os.path.join(project_root, "hello/test.py"))
     pylsp.workspace.put_document(test_uri, "assert True")
     test_doc = pylsp.workspace.get_document(test_uri)
-    assert project_root in test_doc.get_enviroment().get_sys_path()
+    assert project_root in test_doc.sys_path()
 
 
 def test_root_project_with_no_setup_py(pylsp):
@@ -79,7 +79,7 @@ def test_root_project_with_no_setup_py(pylsp):
     test_uri = uris.from_fs_path(os.path.join(workspace_root, "hello/test.py"))
     pylsp.workspace.put_document(test_uri, "assert True")
     test_doc = pylsp.workspace.get_document(test_uri)
-    assert workspace_root in test_doc.get_enviroment().get_sys_path()
+    assert workspace_root in test_doc.sys_path()
 
 
 def test_multiple_workspaces_from_initialize(pylsp_w_workspace_folders):
