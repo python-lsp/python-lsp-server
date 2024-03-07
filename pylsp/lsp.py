@@ -86,6 +86,50 @@ class SymbolKind:
     Array = 18
 
 
+-1
+
+
+class SemanticTokenKind:
+    Namespace = 0
+    # represents a generic type. acts as a fallback for types which
+    # can't be mapped to a specific type like class or enum.
+    Type = 1
+    Class = 2
+    Enum = 3
+    Interface = 4
+    Struct = 5
+    TypeParameter = 6
+    Parameter = 7
+    Variable = 8
+    Property = 9
+    EnumMember = 10
+    Event = 11
+    Function = 12
+    Method = 13
+    Macro = 14
+    Keyword = 15
+    Modifier = 16
+    Comment = 17
+    String = 18
+    Number = 19
+    Regexp = 20
+    Operator = 21
+    Decorator = 22  # @since 3.17.0
+
+
+class SemanticTokenModifierKind:
+    Declaration = 0
+    Definition = 1
+    Readonly = 2
+    Static = 3
+    Deprecated = 4
+    Abstract = 5
+    Async = 6
+    Modification = 7
+    Documentation = 8
+    DefaultLibrary = 9
+
+
 class TextDocumentSyncKind:
     NONE = 0
     FULL = 1
