@@ -253,8 +253,6 @@ class PythonLSPServer(MethodDispatcher):
         hook_handlers = self.config.plugin_manager.subset_hook_caller(
             hook_name, self.config.disabled_plugins
         )
-        log.info("DOEKE! disabled %s", self.config.disabled_plugins)
-        log.info("DOEKE! hook impls %s", hook_handlers._hookimpls)
         return hook_handlers(
             config=self.config, workspace=workspace, document=doc, **kwargs
         )
@@ -437,11 +435,9 @@ class PythonLSPServer(MethodDispatcher):
         )
 
     def hover(self, doc_uri, position):
-        log.info("DOEKE! python_lsp.hover")
         return self._hook("pylsp_hover", doc_uri, position=position) or {"contents": ""}
 
     def semantic_tokens(self, doc_uri):
-        log.info("DOEKE! python_lsp.semantic_tokens")
         return self._hook("pylsp_semantic_tokens", doc_uri) or {
             "data": [1, 0, 10, 0, 0]
         }
@@ -772,11 +768,9 @@ class PythonLSPServer(MethodDispatcher):
         return self.highlight(textDocument["uri"], position)
 
     def m_text_document__hover(self, textDocument=None, position=None, **_kwargs):
-        log.info("DOEKE! python_lsp.m_text_document__hover")
         return self.hover(textDocument["uri"], position)
 
     def m_text_document__semantic_tokens__full(self, textDocument=None, **_kwargs):
-        log.info("DOEKE! python_lsp.m_text_document__semantic_tokens__full")
         return self.semantic_tokens(textDocument["uri"])
 
     def m_text_document__document_symbol(self, textDocument=None, **_kwargs):
