@@ -94,6 +94,11 @@ def pylsp_hover(config, workspace, document, position):
 
 
 @hookspec
+def pylsp_semantic_tokens(config, workspace, document):
+    pass
+
+
+@hookspec
 def pylsp_initialize(config, workspace):
     pass
 

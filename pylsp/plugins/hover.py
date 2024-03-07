@@ -10,6 +10,7 @@ log = logging.getLogger(__name__)
 
 @hookimpl
 def pylsp_hover(config, document, position):
+    log.info("DOEKE! hover.pylsp_hover")
     code_position = _utils.position_to_jedi_linecolumn(document, position)
     definitions = document.jedi_script(use_document_path=True).infer(**code_position)
     word = document.word_at_position(position)
