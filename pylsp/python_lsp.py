@@ -277,7 +277,20 @@ class PythonLSPServer(MethodDispatcher):
             },
             "hoverProvider": True,
             "semanticTokensProvider": {
-                "legend": {"tokenTypes": ["function"], "tokenModifiers": []},
+                "legend": {
+                    "tokenTypes": [
+                        semantic_token_type.value.name
+                        for semantic_token_type in sorted(
+                            lsp.SemanticTokenType, key=lambda x: x.value
+                        )
+                    ],
+                    "tokenModifiers": [
+                        semantic_token_modifier.value.name
+                        for semantic_token_modifier in sorted(
+                            lsp.SemanticTokenModifier, key=lambda x: x.value
+                        )
+                    ],
+                },
                 "range": False,
                 "full": True,
             },
