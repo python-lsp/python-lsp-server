@@ -451,9 +451,7 @@ class PythonLSPServer(MethodDispatcher):
         return self._hook("pylsp_hover", doc_uri, position=position) or {"contents": ""}
 
     def semantic_tokens(self, doc_uri):
-        return self._hook("pylsp_semantic_tokens", doc_uri) or {
-            "data": [1, 0, 10, 0, 0]
-        }
+        return self._hook("pylsp_semantic_tokens", doc_uri) or {"data": []}
 
     @_utils.debounce(LINT_DEBOUNCE_S, keyed_by="doc_uri")
     def lint(self, doc_uri, is_saved):
