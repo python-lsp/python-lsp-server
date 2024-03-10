@@ -570,7 +570,9 @@ class Document:
 
         return environment
 
-    def sys_path(self, environment_path=None, env_vars=None, prioritize=False, extra_paths=[]):
+    def sys_path(
+        self, environment_path=None, env_vars=None, prioritize=False, extra_paths=[]
+    ):
         # Copy our extra sys path
         path = list(self._extra_sys_path)
         environment = self.get_enviroment(
