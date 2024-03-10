@@ -1,17 +1,3 @@
-"""
-Cases to consider
-- Treesitter highlighting infers class, variable, function by casing and local context.
-  e.g. if a class is declared as ``class dingus`` and later referenced as
-  1. ``dingus``
-  2. ``dingus()``
-  then the declaration will be highlighted in the class color, 1. in a variable color,
-  and 2. in a function color.
-- Parameter highlighting. Params in the signature of a function and usage of a function
-  should be highlighted the same color (turn of hlargs plugin to verify)
-- Builtins?
-- Dunders? "real" builtin dunders vs something the coder just put dunders around
-"""
-
 # Copyright 2017-2020 Palantir Technologies, Inc.
 # Copyright 2021- Python Language Server Contributors.
 
@@ -21,7 +7,7 @@ from jedi.api.classes import Name
 
 from pylsp import hookimpl
 from pylsp.config.config import Config
-from pylsp.lsp import SemanticTokenModifier, SemanticTokenType
+from pylsp.lsp import SemanticTokenType
 from pylsp.workspace import Document
 
 log = logging.getLogger(__name__)
@@ -41,7 +27,20 @@ TYPE_MAP = {
 }
 
 
-def _semantic_token(n: Name) -> tuple[int, int, int, int, int] | None:
+def _raw_semantic_token(n: Name) -> list[int] | None:
+    """Find an appropriate semantic token for the name.
+
+    This works by looking up the definition (using jedi ``goto``) of the name and
+    matching the definition's type to one of the availabile semantic tokens. Further
+    improvements are possible by inspecting context, e.g. semantic token modifiers such
+    as ``abstract`` or ``async`` or even different tokens, e.g. ``property`` or
+    ``method``. Dunder methods may warrant special treatment/modifiers as well.
+
+    The return is a "raw" semantic token rather than a "diff." This is in the form of a
+    length 5 array of integers where the elements are the line number, starting
+    character, length, token index, and modifiers (as an integer whose binary
+    representation has bits set at the indices of all applicable modifiers).
+    """
     definitions = n.goto(
         follow_imports=True,
         follow_builtin_imports=True,
@@ -49,46 +48,67 @@ def _semantic_token(n: Name) -> tuple[int, int, int, int, int] | None:
         prefer_stubs=False,
     )
     if not definitions:
-        log.info("DOEKE! no definitions")
+        log.debug(
+            "no definitions found for name %s (%s:%s)", n.description, n.line, n.column
+        )
         return None
     if len(definitions) > 1:
-        log.info("DOEKE! more than one definition")
+        log.debug(
+            "multiple definitions found for name %s (%s:%s)",
+            n.description,
+            n.line,
+            n.column,
+        )
     definition, *_ = definitions
-    log.info("DOEKE! definition type: %s", definition.type)
     if (definition_type := TYPE_MAP.get(definition.type, None)) is None:
+        log.debug(
+            "no matching semantic token for name %s (%s:%s)",
+            n.description,
+            n.line,
+            n.column,
+        )
         return None
-    # if d.name == "self":
-    #     modifier = (
-    #         2**SemanticTokenModifier.Readonly.value.value
-    #         + 2**SemanticTokenModifier.DefaultLibrary.value.value
-    #     )
-    # else:
-    #     modifier = 0
-    return (n.line - 1, n.column, len(n.name), definition_type, 0)
+    return [n.line - 1, n.column, len(n.name), definition_type, 0]
+
+
+def _diff_position(
+    token_line: int, token_start_char: int, current_line: int, current_start_char: int
+) -> tuple[int, int, int, int]:
+    """Compute the diff position for a semantic token.
+
+    This returns the delta line and column as well as what should be considered the
+    "new" current line and column.
+    """
+    delta_start_char = (
+        token_start_char - current_start_char
+        if token_line == current_line
+        else token_start_char
+    )
+    delta_line = token_line - current_line
+    return (delta_line, delta_start_char, token_line, token_start_char)
 
 
 @hookimpl
 def pylsp_semantic_tokens(config: Config, document: Document):
+    # Currently unused, but leaving it here for easy adding of settings.
     symbols_settings = config.plugin_settings("semantic_tokens")
+
     names = document.jedi_names(all_scopes=True, definitions=True, references=True)
     data = []
     line, start_char = 0, 0
     for n in names:
-        log.info("DOEKE! name: %s, (%s:%s)", n.name, n.line, n.column)
-        log.info("DOEKE! type: %s", n.type)
-        raw_token = _semantic_token(n)
-        # log.info("DOEKE! raw token %s", raw_token)
-        if raw_token is None:
-            continue
-        t_line, t_start_char, t_length, t_type, t_mod = raw_token
-        delta_start_char, start_char = (
-            (t_start_char - start_char, t_start_char)
-            if t_line == line
-            else (t_start_char, t_start_char)
+        token = _raw_semantic_token(n)
+        log.debug(
+            "raw token for name %s (%s:%s): %s", n.description, n.line, n.column, token
         )
-        delta_line, line = t_line - line, t_line
-        new_token = [delta_line, delta_start_char, t_length, t_type, t_mod]
-        log.info("DOEKE! diff token %s", new_token)
-        data.extend(new_token)
+        if token is None:
+            continue
+        token[0], token[1], line, start_char = _diff_position(
+            token[0], token[1], line, start_char
+        )
+        log.debug(
+            "diff token for name %s (%s:%s): %s", n.description, n.line, n.column, token
+        )
+        data.extend(token)
 
     return {"data": data}
