@@ -1,9 +1,9 @@
 # Setup the environment
 
 1. Clone the repo: `git clone git@github.com:python-lsp/python-lsp-server.git`
-2. Create the virtual environment: `python3 -m venv .venv`
+2. Create the virtual environment: `python -m venv .venv`
 3. Activate: `source .venv/bin/activate`
-4. Install an editable installation: `pip3 install -e .`
+4. Install an editable installation: `pip install -e .`
     - This will ensure you'll see your edits immediately without reinstalling the project
 5. Configure your editor to point the pylsp executable to the one in `.venv`
 
@@ -26,8 +26,8 @@ Now the project is setup in a way you can quickly iterate change you want to add
 
 # Running tests
 
-1. Install runtime dependencies: `pip3 install .[all]`
-2. Install test dependencies: `pip3 install .[test]`
+1. Install runtime dependencies: `pip install .[all]`
+2. Install test dependencies: `pip install .[test]`
 3. Run `pytest`: `pytest -v`
 
 ## Useful pytest options
