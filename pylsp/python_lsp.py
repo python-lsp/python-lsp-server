@@ -9,7 +9,11 @@ import uuid
 from functools import partial
 from typing import Any, Dict, List
 
-import ujson as json
+try:
+    import ujson as json
+except Exception:
+    import json
+
 from pylsp_jsonrpc.dispatchers import MethodDispatcher
 from pylsp_jsonrpc.endpoint import Endpoint
 from pylsp_jsonrpc.streams import JsonRpcStreamReader, JsonRpcStreamWriter
