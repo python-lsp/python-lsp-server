@@ -280,6 +280,24 @@ class PythonLSPServer(MethodDispatcher):
                 "commands": flatten(self._hook("pylsp_commands"))
             },
             "hoverProvider": True,
+            "semanticTokensProvider": {
+                "legend": {
+                    "tokenTypes": [
+                        semantic_token_type.value.name
+                        for semantic_token_type in sorted(
+                            lsp.SemanticTokenType, key=lambda x: x.value
+                        )
+                    ],
+                    "tokenModifiers": [
+                        semantic_token_modifier.value.name
+                        for semantic_token_modifier in sorted(
+                            lsp.SemanticTokenModifier, key=lambda x: x.value
+                        )
+                    ],
+                },
+                "range": False,
+                "full": True,
+            },
             "referencesProvider": True,
             "renameProvider": True,
             "foldingRangeProvider": True,
@@ -435,6 +453,9 @@ class PythonLSPServer(MethodDispatcher):
 
     def hover(self, doc_uri, position):
         return self._hook("pylsp_hover", doc_uri, position=position) or {"contents": ""}
+
+    def semantic_tokens(self, doc_uri):
+        return self._hook("pylsp_semantic_tokens", doc_uri) or {"data": []}
 
     @_utils.debounce(LINT_DEBOUNCE_S, keyed_by="doc_uri")
     def lint(self, doc_uri, is_saved):
@@ -763,6 +784,9 @@ class PythonLSPServer(MethodDispatcher):
 
     def m_text_document__hover(self, textDocument=None, position=None, **_kwargs):
         return self.hover(textDocument["uri"], position)
+
+    def m_text_document__semantic_tokens__full(self, textDocument=None, **_kwargs):
+        return self.semantic_tokens(textDocument["uri"])
 
     def m_text_document__document_symbol(self, textDocument=None, **_kwargs):
         return self.document_symbols(textDocument["uri"])

@@ -232,6 +232,11 @@
       "default": true,
       "description": "Enable or disable the plugin."
     },
+    "pylsp.plugins.semantic_tokens.enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Enable or disable the plugin."
+    },
     "pylsp.plugins.jedi_references.enabled": {
       "type": "boolean",
       "default": true,
