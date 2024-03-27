@@ -9,10 +9,44 @@ from pylsp.workspace import Document
 
 DOC_URI = uris.from_fs_path(__file__)
 DOC = """
+from random import randint
+from typing import overload
 
-def main():
-    \"\"\"hello world\"\"\"
+class A:
+    \"\"\"Docstring for class A\"\"\"
+
+    b = 42
+    \"\"\"Docstring for the class property A.b\"\"\"
+
+    def foo(self):
+        \"\"\"Docstring for A.foo\"\"\"
+        pass
+
+if randint(0, 1) == 0:
+    int_or_string_value = 10
+else:
+    int_or_string_value = "10"
+
+@overload
+def overload_function(s: int) -> int:
+    ...
+
+@overload
+def overload_function(s: str) -> str:
+    ...
+
+def overload_function(s):
+    \"\"\"Docstring of overload function\"\"\"
     pass
+
+int_value = 10
+string_value = "foo"
+instance_of_a = A()
+copy_of_class_a = A
+copy_of_property_b = A.b
+int_or_string_value
+overload_function
+
 """
 
 NUMPY_DOC = """
@@ -21,6 +55,83 @@ import numpy as np
 np.sin
 
 """
+
+
+def _hover_result_in_doc(workspace, position):
+    doc = Document(DOC_URI, workspace, DOC)
+    return pylsp_hover(
+        doc._config, doc, {"line": position[0], "character": position[1]}
+    )["contents"]["value"]
+
+
+def test_hover_over_nothing(workspace):
+    # Over blank line
+    assert "" == _hover_result_in_doc(workspace, (3, 0))
+
+
+def test_hover_on_keyword(workspace):
+    # Over "class" in "class A:"
+    res = _hover_result_in_doc(workspace, (4, 1))
+    assert "Class definitions" in res
+
+
+def test_hover_on_variables(workspace):
+    # Over "int_value" in "int_value = 10"
+    res = _hover_result_in_doc(workspace, (31, 2))
+    assert "int" in res  # type
+
+    # Over "string_value" in "string_value = "foo""
+    res = _hover_result_in_doc(workspace, (32, 2))
+    assert "string" in res  # type
+
+
+def test_hover_on_class(workspace):
+    # Over "A" in "class A:"
+    res = _hover_result_in_doc(workspace, (4, 7))
+    assert "A()" in res  # signature
+    assert "Docstring for class A" in res  # docstring
+
+    # Over "A" in "instance_of_a = A()"
+    res = _hover_result_in_doc(workspace, (33, 17))
+    assert "A()" in res  # signature
+    assert "Docstring for class A" in res  # docstring
+
+    # Over "copy_of_class_a" in "copy_of_class_a = A" - needs infer
+    res = _hover_result_in_doc(workspace, (34, 4))
+    assert "A()" in res  # signature
+    assert "Docstring for class A" in res  # docstring
+
+
+def test_hover_on_property(workspace):
+    # Over "b" in "b = 42"
+    res = _hover_result_in_doc(workspace, (7, 5))
+    assert "int" in res  # type
+    assert "Docstring for the class property A.b" in res  # docstring
+
+    # Over "b" in "A.b"
+    res = _hover_result_in_doc(workspace, (35, 24))
+    assert "int" in res  # type
+    assert "Docstring for the class property A.b" in res  # docstring
+
+
+def test_hover_on_method(workspace):
+    # Over "foo" in "def foo(self):"
+    res = _hover_result_in_doc(workspace, (10, 10))
+    assert "foo(self)" in res  # signature
+    assert "Docstring for A.foo" in res  # docstring
+
+
+def test_hover_multiple_definitions(workspace):
+    # Over "int_or_string_value"
+    res = _hover_result_in_doc(workspace, (36, 5))
+    assert "```python\nUnion[int, str]\n```" == res.strip()  # only type
+
+    # Over "overload_function"
+    res = _hover_result_in_doc(workspace, (37, 5))
+    assert (
+        "overload_function(s: int) -> int\noverload_function(s: str) -> str" in res
+    )  # signature
+    assert "Docstring of overload function" in res  # docstring
 
 
 def test_numpy_hover(workspace):
@@ -38,7 +149,9 @@ def test_numpy_hover(workspace):
     doc = Document(DOC_URI, workspace, NUMPY_DOC)
 
     contents = ""
-    assert contents in pylsp_hover(doc._config, doc, no_hov_position)["contents"]
+    assert (
+        contents in pylsp_hover(doc._config, doc, no_hov_position)["contents"]["value"]
+    )
 
     contents = "NumPy\n=====\n\nProvides\n"
     assert (
@@ -69,21 +182,6 @@ def test_numpy_hover(workspace):
                 "value"
             ]
         )
-
-
-def test_hover(workspace):
-    # Over 'main' in def main():
-    hov_position = {"line": 2, "character": 6}
-    # Over the blank second line
-    no_hov_position = {"line": 1, "character": 0}
-
-    doc = Document(DOC_URI, workspace, DOC)
-
-    contents = {"kind": "markdown", "value": "```python\nmain()\n```\n\n\nhello world"}
-
-    assert {"contents": contents} == pylsp_hover(doc._config, doc, hov_position)
-
-    assert {"contents": ""} == pylsp_hover(doc._config, doc, no_hov_position)
 
 
 def test_document_path_hover(workspace_other_root_path, tmpdir):
