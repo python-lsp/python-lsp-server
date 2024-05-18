@@ -521,7 +521,7 @@ class Document:
         extra_paths = []
         environment_path = None
         env_vars = None
-        prioritize = False
+        prioritize_extra_paths = False
 
         if self._config:
             jedi_settings = self._config.plugin_settings(
@@ -538,7 +538,7 @@ class Document:
 
             extra_paths = jedi_settings.get("extra_paths") or []
             env_vars = jedi_settings.get("env_vars")
-            prioritize = jedi_settings.get("prioritize")
+            prioritize_extra_paths = jedi_settings.get("prioritize_extra_paths")
 
         # Drop PYTHONPATH from env_vars before creating the environment to
         # ensure that Jedi can startup properly without module name collision.
@@ -547,8 +547,7 @@ class Document:
         env_vars.pop("PYTHONPATH", None)
 
         environment = self.get_enviroment(environment_path, env_vars=env_vars)
-
-        sys_path = self.sys_path(environment_path, env_vars, prioritize, extra_paths)
+        sys_path = self.sys_path(environment_path, env_vars, prioritize_extra_paths, extra_paths)
 
         project_path = self._workspace.root_path
 
@@ -585,7 +584,7 @@ class Document:
         return environment
 
     def sys_path(
-        self, environment_path=None, env_vars=None, prioritize=False, extra_paths=[]
+        self, environment_path=None, env_vars=None, prioritize_extra_paths=False, extra_paths=[]
     ):
         # Copy our extra sys path
         path = list(self._extra_sys_path)
@@ -593,7 +592,7 @@ class Document:
             environment_path=environment_path, env_vars=env_vars
         )
         path.extend(environment.get_sys_path())
-        if prioritize:
+        if prioritize_extra_paths:
             path += extra_paths + path
         else:
             path += path + extra_paths
