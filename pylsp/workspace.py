@@ -547,7 +547,9 @@ class Document:
         env_vars.pop("PYTHONPATH", None)
 
         environment = self.get_enviroment(environment_path, env_vars=env_vars)
-        sys_path = self.sys_path(environment_path, env_vars, prioritize_extra_paths, extra_paths)
+        sys_path = self.sys_path(
+            environment_path, env_vars, prioritize_extra_paths, extra_paths
+        )
 
         project_path = self._workspace.root_path
 
@@ -584,7 +586,11 @@ class Document:
         return environment
 
     def sys_path(
-        self, environment_path=None, env_vars=None, prioritize_extra_paths=False, extra_paths=[]
+        self,
+        environment_path=None,
+        env_vars=None,
+        prioritize_extra_paths=False,
+        extra_paths=[],
     ):
         # Copy our extra sys path
         path = list(self._extra_sys_path)
