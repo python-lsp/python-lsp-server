@@ -8,7 +8,7 @@ import pytest
 
 from pylsp import uris
 from pylsp.lsp import SymbolKind
-from pylsp.plugins.symbols import pylsp_document_symbols
+from pylsp.plugins.document_symbols import pylsp_document_symbols
 from pylsp.workspace import Document
 
 PY2 = sys.version[0] == "2"
@@ -50,7 +50,7 @@ def helper_check_symbols_all_scope(symbols):
 
 def test_symbols(config, workspace):
     doc = Document(DOC_URI, workspace, DOC)
-    config.update({"plugins": {"jedi_symbols": {"all_scopes": False}}})
+    config.update({"plugins": {"jedi_document_symbols": {"all_scopes": False}}})
     symbols = pylsp_document_symbols(config, doc)
 
     # All four symbols (import sys, a, B, main)

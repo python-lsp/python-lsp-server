@@ -100,6 +100,46 @@ class Workspace:
     def root_uri(self):
         return self._root_uri
 
+    def complete_search(self, query):
+        project = self.jedi_project()
+        return project.complete_search(query)
+
+    def jedi_project(self, use_document_path=False):
+        extra_paths = []
+        environment_path = None
+        env_vars = None
+
+        if self._config:
+            jedi_settings = self._config.plugin_settings(
+                "jedi", document_path=self.root_path
+            )
+            jedi.settings.auto_import_modules = jedi_settings.get(
+                "auto_import_modules", DEFAULT_AUTO_IMPORT_MODULES
+            )
+            environment_path = jedi_settings.get("environment")
+            # Jedi itself cannot deal with homedir-relative paths.
+            # On systems, where it is expected, expand the home directory.
+            if environment_path and os.name != "nt":
+                environment_path = os.path.expanduser(environment_path)
+
+            extra_paths = jedi_settings.get("extra_paths") or []
+            env_vars = jedi_settings.get("env_vars")
+
+        # Drop PYTHONPATH from env_vars before creating the environment because that makes
+        # Jedi throw an error.
+        if env_vars is None:
+            env_vars = os.environ.copy()
+        env_vars.pop("PYTHONPATH", None)
+
+        sys_path = extra_paths  # self.sys_path(environment_path, env_vars=env_vars) + extra_paths
+        project_path = self.root_path
+
+        # Extend sys_path with document's path if requested
+        if use_document_path:
+            sys_path += [os.path.normpath(os.path.dirname(self.path))]
+
+        return jedi.Project(path=project_path, sys_path=sys_path)
+
     def is_local(self):
         return (self._root_uri_scheme in ["", "file"]) and os.path.exists(
             self._root_path

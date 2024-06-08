@@ -298,6 +298,7 @@ class PythonLSPServer(MethodDispatcher):
                 "workspaceFolders": {"supported": True, "changeNotifications": True}
             },
             "experimental": merge(self._hook("pylsp_experimental_capabilities")),
+            "workspaceSymbolProvider": True,
         }
         log.info("Server capabilities: %s", server_capabilities)
         return server_capabilities
@@ -432,6 +433,11 @@ class PythonLSPServer(MethodDispatcher):
             flatten(self._hook("pylsp_document_highlight", doc_uri, position=position))
             or None
         )
+
+    def workspace_symbol(self, query):
+        response = self._hook("pylsp_workspace_symbol", query=query)
+        log.debug("Workspace symbol hook returned: %s", response)
+        return flatten(response)
 
     def hover(self, doc_uri, position):
         return self._hook("pylsp_hover", doc_uri, position=position) or {"contents": ""}
@@ -766,6 +772,9 @@ class PythonLSPServer(MethodDispatcher):
 
     def m_text_document__document_symbol(self, textDocument=None, **_kwargs):
         return self.document_symbols(textDocument["uri"])
+
+    def m_workspace__symbol(self, textDocument=None, **_kwargs):
+        return self.workspace_symbol(_kwargs["query"])
 
     def m_text_document__formatting(self, textDocument=None, options=None, **_kwargs):
         return self.format_document(textDocument["uri"], options)

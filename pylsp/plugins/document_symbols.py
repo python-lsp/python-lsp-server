@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 
 @hookimpl
 def pylsp_document_symbols(config, document):
-    symbols_settings = config.plugin_settings("jedi_symbols")
+    symbols_settings = config.plugin_settings("jedi_document_symbols")
     all_scopes = symbols_settings.get("all_scopes", True)
     add_import_symbols = symbols_settings.get("include_import_symbols", True)
     definitions = document.jedi_names(all_scopes=all_scopes)

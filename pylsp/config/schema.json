@@ -242,20 +242,25 @@
       "default": true,
       "description": "Enable or disable the plugin."
     },
-    "pylsp.plugins.jedi_symbols.enabled": {
+    "pylsp.plugins.jedi_document_symbols.enabled": {
       "type": "boolean",
       "default": true,
       "description": "Enable or disable the plugin."
     },
-    "pylsp.plugins.jedi_symbols.all_scopes": {
+    "pylsp.plugins.jedi_document_symbols.all_scopes": {
       "type": "boolean",
       "default": true,
       "description": "If True lists the names of all scopes instead of only the module namespace."
     },
-    "pylsp.plugins.jedi_symbols.include_import_symbols": {
+    "pylsp.plugins.jedi_document_symbols.include_import_symbols": {
       "type": "boolean",
       "default": true,
       "description": "If True includes symbols imported from other libraries."
+    },
+    "pylsp.plugins.jedi_workspace_symbols.enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "If True includes workspace symbols."
     },
     "pylsp.plugins.mccabe.enabled": {
       "type": "boolean",
