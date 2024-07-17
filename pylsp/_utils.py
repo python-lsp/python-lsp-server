@@ -264,7 +264,7 @@ def position_to_jedi_linecolumn(document, position):
         code_position = {
             "line": position["line"] + 1,
             "column": clip_column(
-                position["character"], document.lines, position["line"]
+                column=position["character"], lines=document.lines, line_number=position["line"]
             ),
         }
     return code_position

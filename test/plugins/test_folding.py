@@ -117,7 +117,7 @@ for i in range(0, 3)
 
 
 def test_folding(workspace):
-    doc = Document(DOC_URI, workspace, DOC)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=DOC)
     ranges = pylsp_folding_range(doc)
     expected = [
         {"startLine": 1, "endLine": 6},
@@ -161,7 +161,7 @@ def test_folding(workspace):
 
 
 def test_folding_syntax_error(workspace):
-    doc = Document(DOC_URI, workspace, SYNTAX_ERR)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=SYNTAX_ERR)
     ranges = pylsp_folding_range(doc)
     expected = [
         {"startLine": 1, "endLine": 6},

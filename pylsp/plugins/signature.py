@@ -17,7 +17,7 @@ DOC_REGEX = [SPHINX, EPYDOC, GOOGLE]
 
 @hookimpl
 def pylsp_signature_help(config, document, position):
-    code_position = _utils.position_to_jedi_linecolumn(document, position)
+    code_position = _utils.position_to_jedi_linecolumn(document=document, position=position)
     signatures = document.jedi_script().get_signatures(**code_position)
 
     if not signatures:
@@ -44,7 +44,7 @@ def pylsp_signature_help(config, document, position):
     sig = {
         "label": function_sig,
         "documentation": _utils.format_docstring(
-            s.docstring(raw=True), markup_kind=preferred_markup_kind
+            contents=s.docstring(raw=True), markup_kind=preferred_markup_kind
         ),
     }
 
@@ -54,7 +54,7 @@ def pylsp_signature_help(config, document, position):
             {
                 "label": p.name,
                 "documentation": _utils.format_docstring(
-                    _param_docs(docstring, p.name), markup_kind=preferred_markup_kind
+                    contents=_param_docs(docstring=docstring, param_name=p.name), markup_kind=preferred_markup_kind
                 ),
             }
             for p in s.params

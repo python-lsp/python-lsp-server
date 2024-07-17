@@ -29,8 +29,8 @@ import sys
 
 
 def test_pyflakes(workspace):
-    doc = Document(DOC_URI, workspace, DOC)
-    diags = pyflakes_lint.pylsp_lint(workspace, doc)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=DOC)
+    diags = pyflakes_lint.pylsp_lint(workspace=workspace, document=doc)
 
     # One we're expecting is:
     msg = "'sys' imported but unused"
@@ -41,8 +41,8 @@ def test_pyflakes(workspace):
 
 
 def test_syntax_error_pyflakes(workspace):
-    doc = Document(DOC_URI, workspace, DOC_SYNTAX_ERR)
-    diag = pyflakes_lint.pylsp_lint(workspace, doc)[0]
+    doc = Document(uri=DOC_URI, workspace=workspace, source=DOC_SYNTAX_ERR)
+    diag = pyflakes_lint.pylsp_lint(workspace=workspace, document=doc)[0]
 
     if sys.version_info[:2] >= (3, 10):
         assert diag["message"] == "expected ':'"
@@ -53,8 +53,8 @@ def test_syntax_error_pyflakes(workspace):
 
 
 def test_undefined_name_pyflakes(workspace):
-    doc = Document(DOC_URI, workspace, DOC_UNDEFINED_NAME_ERR)
-    diag = pyflakes_lint.pylsp_lint(workspace, doc)[0]
+    doc = Document(uri=DOC_URI, workspace=workspace, source=DOC_UNDEFINED_NAME_ERR)
+    diag = pyflakes_lint.pylsp_lint(workspace=workspace, document=doc)[0]
 
     assert diag["message"] == "undefined name 'b'"
     assert diag["range"]["start"] == {"line": 0, "character": 4}
@@ -62,8 +62,8 @@ def test_undefined_name_pyflakes(workspace):
 
 
 def test_unicode_encoding(workspace):
-    doc = Document(DOC_URI, workspace, DOC_ENCODING)
-    diags = pyflakes_lint.pylsp_lint(workspace, doc)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=DOC_ENCODING)
+    diags = pyflakes_lint.pylsp_lint(workspace=workspace, document=doc)
 
     assert len(diags) == 1
     assert diags[0]["message"] == "'sys' imported but unused"

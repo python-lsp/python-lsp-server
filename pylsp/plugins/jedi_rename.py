@@ -13,7 +13,7 @@ def pylsp_rename(config, workspace, document, position, new_name):
     log.debug(
         "Executing rename of %s to %s", document.word_at_position(position), new_name
     )
-    kwargs = _utils.position_to_jedi_linecolumn(document, position)
+    kwargs = _utils.position_to_jedi_linecolumn(document=document, position=position)
     kwargs["new_name"] = new_name
     try:
         refactoring = document.jedi_script().rename(**kwargs)

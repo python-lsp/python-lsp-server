@@ -90,7 +90,7 @@ def test_notebook_document__did_open(
     with patch.object(server._endpoint, "notify") as mock_notify:
         # Test as many edge cases as possible for the diagnostics messages
         send_notebook_did_open(
-            client, ["", "\n", "\nimport sys\n\nabc\n\n", "x", "y\n"]
+            client=client, cells=["", "\n", "\nimport sys\n\nabc\n\n", "x", "y\n"]
         )
         wait_for_condition(lambda: mock_notify.call_count >= 5)
         expected_call_args = [
@@ -191,7 +191,7 @@ def test_notebook_document__did_change(
 
     # Open notebook
     with patch.object(server._endpoint, "notify") as mock_notify:
-        send_notebook_did_open(client, ["import sys", ""])
+        send_notebook_did_open(client=client, cells=["import sys", ""])
         wait_for_condition(lambda: mock_notify.call_count >= 2)
         assert len(server.workspace.documents) == 3
         for uri in ["cell_1_uri", "cell_2_uri", "notebook_uri"]:
@@ -426,7 +426,7 @@ def test_notebook__did_close(
 
     # Open notebook
     with patch.object(server._endpoint, "notify") as mock_notify:
-        send_notebook_did_open(client, ["import sys", ""])
+        send_notebook_did_open(client=client, cells=["import sys", ""])
         wait_for_condition(lambda: mock_notify.call_count >= 2)
         assert len(server.workspace.documents) == 3
         for uri in ["cell_1_uri", "cell_2_uri", "notebook_uri"]:
@@ -461,7 +461,7 @@ def test_notebook_definition(client_server_pair):
 
     # Open notebook
     with patch.object(server._endpoint, "notify") as mock_notify:
-        send_notebook_did_open(client, ["y=2\nx=1", "x"])
+        send_notebook_did_open(client=client, cells=["y=2\nx=1", "x"])
         # wait for expected diagnostics messages
         wait_for_condition(lambda: mock_notify.call_count >= 2)
         assert len(server.workspace.documents) == 3
@@ -500,7 +500,7 @@ def test_notebook_completion(client_server_pair):
     # Open notebook
     with patch.object(server._endpoint, "notify") as mock_notify:
         send_notebook_did_open(
-            client, ["answer_to_life_universe_everything = 42", "answer_"]
+            client=client, cells=["answer_to_life_universe_everything = 42", "answer_"]
         )
         # wait for expected diagnostics messages
         wait_for_condition(lambda: mock_notify.call_count >= 2)

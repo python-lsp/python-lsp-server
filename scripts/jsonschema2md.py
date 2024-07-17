@@ -79,7 +79,7 @@ def main(argv):
     parser.add_argument("markdown", type=FileType("w+"), default=sys.stdout)
     arguments = parser.parse_args(argv[1:])
     schema = json.loads(arguments.schema.read())
-    markdown = convert_schema(schema, source=arguments.schema.name)
+    markdown = convert_schema(schema=schema, source=arguments.schema.name)
     arguments.markdown.write(markdown)
 
 

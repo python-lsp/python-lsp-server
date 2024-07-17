@@ -53,8 +53,8 @@ def documented_hello():
 
 def test_rope_import_completion(config, workspace):
     com_position = {"line": 0, "character": 7}
-    doc = Document(DOC_URI, workspace, DOC)
-    items = pylsp_rope_completions(config, workspace, doc, com_position)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=DOC)
+    items = pylsp_rope_completions(config=config, workspace=workspace, document=doc, position=com_position)
     assert items is None
 
 
@@ -125,8 +125,8 @@ def test_jedi_completion_type(case, config, workspace):
     ):
         return
 
-    doc = Document(DOC_URI, workspace, case.document)
-    items = pylsp_jedi_completions(config, doc, case.position)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=case.document)
+    items = pylsp_jedi_completions(config=config, document=doc, position=case.position)
     items = {i["label"]: i for i in items}
     assert items[case.label]["kind"] == case.expected
 
@@ -134,23 +134,23 @@ def test_jedi_completion_type(case, config, workspace):
 def test_jedi_completion(config, workspace):
     # Over 'i' in os.path.isabs(...)
     com_position = {"line": 1, "character": 15}
-    doc = Document(DOC_URI, workspace, DOC)
-    items = pylsp_jedi_completions(config, doc, com_position)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=DOC)
+    items = pylsp_jedi_completions(config=config, document=doc, position=com_position)
 
     assert items
     labels = [i["label"] for i in items]
     assert "isfile(path)" in labels
 
     # Test we don't throw with big character
-    pylsp_jedi_completions(config, doc, {"line": 1, "character": 1000})
+    pylsp_jedi_completions(config=config, document=doc, position={"line": 1, "character": 1000})
 
 
 def test_jedi_completion_item_resolve(config, workspace):
     # Over the blank line
     com_position = {"line": 8, "character": 0}
-    doc = Document(DOC_URI, workspace, DOC)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=DOC)
     config.update({"plugins": {"jedi_completion": {"resolve_at_most": math.inf}}})
-    completions = pylsp_jedi_completions(config, doc, com_position)
+    completions = pylsp_jedi_completions(config=config, document=doc, position=com_position)
 
     items = {c["label"]: c for c in completions}
 
@@ -160,7 +160,7 @@ def test_jedi_completion_item_resolve(config, workspace):
     assert "detail" not in documented_hello_item
 
     resolved_documented_hello = pylsp_jedi_completion_item_resolve(
-        doc._config, completion_item=documented_hello_item, document=doc
+        config=doc._config, completion_item=documented_hello_item, document=doc
     )
     expected_doc = {
         "kind": "markdown",
@@ -173,9 +173,9 @@ def test_jedi_completion_with_fuzzy_enabled(config, workspace):
     # Over 'i' in os.path.isabs(...)
     config.update({"plugins": {"jedi_completion": {"fuzzy": True}}})
     com_position = {"line": 1, "character": 15}
-    doc = Document(DOC_URI, workspace, DOC)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=DOC)
 
-    items = pylsp_jedi_completions(config, doc, com_position)
+    items = pylsp_jedi_completions(config=config, document=doc, position=com_position)
 
     assert items
 
@@ -185,23 +185,23 @@ def test_jedi_completion_with_fuzzy_enabled(config, workspace):
     assert items[0]["label"] == expected
 
     # Test we don't throw with big character
-    pylsp_jedi_completions(config, doc, {"line": 1, "character": 1000})
+    pylsp_jedi_completions(config=config, document=doc, position={"line": 1, "character": 1000})
 
 
 def test_jedi_completion_resolve_at_most(config, workspace):
     # Over 'i' in os.path.isabs(...)
     com_position = {"line": 1, "character": 15}
-    doc = Document(DOC_URI, workspace, DOC)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=DOC)
 
     # Do not resolve any labels
     config.update({"plugins": {"jedi_completion": {"resolve_at_most": 0}}})
-    items = pylsp_jedi_completions(config, doc, com_position)
+    items = pylsp_jedi_completions(config=config, document=doc, position=com_position)
     labels = {i["label"] for i in items}
     assert "isabs" in labels
 
     # Resolve all items
     config.update({"plugins": {"jedi_completion": {"resolve_at_most": math.inf}}})
-    items = pylsp_jedi_completions(config, doc, com_position)
+    items = pylsp_jedi_completions(config=config, document=doc, position=com_position)
     labels = {i["label"] for i in items}
     assert "isfile(path)" in labels
 
@@ -211,7 +211,7 @@ def test_rope_completion(config, workspace):
     com_position = {"line": 1, "character": 15}
     workspace.put_document(DOC_URI, source=DOC)
     doc = workspace.get_document(DOC_URI)
-    items = pylsp_rope_completions(config, workspace, doc, com_position)
+    items = pylsp_rope_completions(config=config, workspace=workspace, document=doc, position=com_position)
 
     assert items
     assert items[0]["label"] == "isabs"
@@ -220,9 +220,9 @@ def test_rope_completion(config, workspace):
 def test_jedi_completion_ordering(config, workspace):
     # Over the blank line
     com_position = {"line": 8, "character": 0}
-    doc = Document(DOC_URI, workspace, DOC)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=DOC)
     config.update({"plugins": {"jedi_completion": {"resolve_at_most": math.inf}}})
-    completions = pylsp_jedi_completions(config, doc, com_position)
+    completions = pylsp_jedi_completions(config=config, document=doc, position=com_position)
 
     items = {c["label"]: c["sortText"] for c in completions}
 
@@ -233,8 +233,8 @@ def test_jedi_completion_ordering(config, workspace):
 def test_jedi_property_completion(config, workspace):
     # Over the 'w' in 'print Hello().world'
     com_position = {"line": 18, "character": 15}
-    doc = Document(DOC_URI, workspace, DOC)
-    completions = pylsp_jedi_completions(config, doc, com_position)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=DOC)
+    completions = pylsp_jedi_completions(config=config, document=doc, position=com_position)
 
     items = {c["label"]: c["sortText"] for c in completions}
 
@@ -245,14 +245,14 @@ def test_jedi_property_completion(config, workspace):
 def test_jedi_method_completion(config, workspace):
     # Over the 'y' in 'print Hello().every'
     com_position = {"line": 20, "character": 19}
-    doc = Document(DOC_URI, workspace, DOC)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=DOC)
 
     config.capabilities["textDocument"] = {
         "completion": {"completionItem": {"snippetSupport": True}}
     }
     config.update({"plugins": {"jedi_completion": {"include_params": True}}})
 
-    completions = pylsp_jedi_completions(config, doc, com_position)
+    completions = pylsp_jedi_completions(config=config, document=doc, position=com_position)
     everyone_method = [
         completion
         for completion in completions
@@ -266,7 +266,7 @@ def test_jedi_method_completion(config, workspace):
     # Disable param snippets
     config.update({"plugins": {"jedi_completion": {"include_params": False}}})
 
-    completions = pylsp_jedi_completions(config, doc, com_position)
+    completions = pylsp_jedi_completions(config=config, document=doc, position=com_position)
     everyone_method = [
         completion
         for completion in completions
@@ -285,8 +285,8 @@ def test_pyqt_completion(config, workspace):
     # Over 'QA' in 'from PyQt5.QtWidgets import QApplication'
     doc_pyqt = "from PyQt5.QtWidgets import QA"
     com_position = {"line": 0, "character": len(doc_pyqt)}
-    doc = Document(DOC_URI, workspace, doc_pyqt)
-    completions = pylsp_jedi_completions(config, doc, com_position)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=doc_pyqt)
+    completions = pylsp_jedi_completions(config=config, document=doc, position=com_position)
 
     assert completions is not None
 
@@ -294,8 +294,8 @@ def test_pyqt_completion(config, workspace):
 def test_numpy_completions(config, workspace):
     doc_numpy = "import numpy as np; np."
     com_position = {"line": 0, "character": len(doc_numpy)}
-    doc = Document(DOC_URI, workspace, doc_numpy)
-    items = pylsp_jedi_completions(config, doc, com_position)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=doc_numpy)
+    items = pylsp_jedi_completions(config=config, document=doc, position=com_position)
 
     assert items
     assert any("array" in i["label"] for i in items)
@@ -304,8 +304,8 @@ def test_numpy_completions(config, workspace):
 def test_pandas_completions(config, workspace):
     doc_pandas = "import pandas as pd; pd."
     com_position = {"line": 0, "character": len(doc_pandas)}
-    doc = Document(DOC_URI, workspace, doc_pandas)
-    items = pylsp_jedi_completions(config, doc, com_position)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=doc_pandas)
+    items = pylsp_jedi_completions(config=config, document=doc, position=com_position)
 
     assert items
     assert any("DataFrame" in i["label"] for i in items)
@@ -314,8 +314,8 @@ def test_pandas_completions(config, workspace):
 def test_matplotlib_completions(config, workspace):
     doc_mpl = "import matplotlib.pyplot as plt; plt."
     com_position = {"line": 0, "character": len(doc_mpl)}
-    doc = Document(DOC_URI, workspace, doc_mpl)
-    items = pylsp_jedi_completions(config, doc, com_position)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=doc_mpl)
+    items = pylsp_jedi_completions(config=config, document=doc, position=com_position)
 
     assert items
     assert any("plot" in i["label"] for i in items)
@@ -324,23 +324,23 @@ def test_matplotlib_completions(config, workspace):
 def test_snippets_completion(config, workspace):
     doc_snippets = "from collections import defaultdict \na=defaultdict"
     com_position = {"line": 0, "character": 35}
-    doc = Document(DOC_URI, workspace, doc_snippets)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=doc_snippets)
     config.capabilities["textDocument"] = {
         "completion": {"completionItem": {"snippetSupport": True}}
     }
     config.update({"plugins": {"jedi_completion": {"include_params": True}}})
-    completions = pylsp_jedi_completions(config, doc, com_position)
+    completions = pylsp_jedi_completions(config=config, document=doc, position=com_position)
     assert completions[0]["insertText"] == "defaultdict"
 
     com_position = {"line": 1, "character": len(doc_snippets)}
-    completions = pylsp_jedi_completions(config, doc, com_position)
+    completions = pylsp_jedi_completions(config=config, document=doc, position=com_position)
     assert completions[0]["insertText"] == "defaultdict($0)"
     assert completions[0]["insertTextFormat"] == lsp.InsertTextFormat.Snippet
 
 
 def test_snippets_completion_at_most(config, workspace):
     doc_snippets = "from collections import defaultdict \na=defaultdict"
-    doc = Document(DOC_URI, workspace, doc_snippets)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=doc_snippets)
     config.capabilities["textDocument"] = {
         "completion": {"completionItem": {"snippetSupport": True}}
     }
@@ -348,7 +348,7 @@ def test_snippets_completion_at_most(config, workspace):
     config.update({"plugins": {"jedi_completion": {"resolve_at_most": 0}}})
 
     com_position = {"line": 1, "character": len(doc_snippets)}
-    completions = pylsp_jedi_completions(config, doc, com_position)
+    completions = pylsp_jedi_completions(config=config, document=doc, position=com_position)
     assert completions[0]["insertText"] == "defaultdict"
     assert not completions[0].get("insertTextFormat", None)
 
@@ -356,7 +356,7 @@ def test_snippets_completion_at_most(config, workspace):
 def test_completion_with_class_objects(config, workspace):
     doc_text = "class FOOBAR(Object): pass\nFOOB"
     com_position = {"line": 1, "character": 4}
-    doc = Document(DOC_URI, workspace, doc_text)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=doc_text)
     config.capabilities["textDocument"] = {
         "completion": {"completionItem": {"snippetSupport": True}}
     }
@@ -370,7 +370,7 @@ def test_completion_with_class_objects(config, workspace):
             }
         }
     )
-    completions = pylsp_jedi_completions(config, doc, com_position)
+    completions = pylsp_jedi_completions(config=config, document=doc, position=com_position)
     assert len(completions) == 2
 
     assert completions[0]["label"] == "FOOBAR"
@@ -383,7 +383,7 @@ def test_completion_with_class_objects(config, workspace):
 def test_completion_with_function_objects(config, workspace):
     doc_text = "def foobar(): pass\nfoob"
     com_position = {"line": 1, "character": 4}
-    doc = Document(DOC_URI, workspace, doc_text)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=doc_text)
     config.capabilities["textDocument"] = {
         "completion": {"completionItem": {"snippetSupport": True}}
     }
@@ -397,7 +397,7 @@ def test_completion_with_function_objects(config, workspace):
             }
         }
     )
-    completions = pylsp_jedi_completions(config, doc, com_position)
+    completions = pylsp_jedi_completions(config=config, document=doc, position=com_position)
     assert len(completions) == 2
 
     assert completions[0]["label"] == "foobar()"
@@ -410,12 +410,12 @@ def test_completion_with_function_objects(config, workspace):
 def test_snippet_parsing(config, workspace):
     doc = "divmod"
     completion_position = {"line": 0, "character": 6}
-    doc = Document(DOC_URI, workspace, doc)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=doc)
     config.capabilities["textDocument"] = {
         "completion": {"completionItem": {"snippetSupport": True}}
     }
     config.update({"plugins": {"jedi_completion": {"include_params": True}}})
-    completions = pylsp_jedi_completions(config, doc, completion_position)
+    completions = pylsp_jedi_completions(config=config, document=doc, position=completion_position)
 
     out = "divmod(${1:x}, ${2:y})$0"
     if JEDI_VERSION == "0.18.0":
@@ -425,35 +425,35 @@ def test_snippet_parsing(config, workspace):
 
 def test_multiline_import_snippets(config, workspace):
     document = "from datetime import(\n date,\n datetime)\na=date"
-    doc = Document(DOC_URI, workspace, document)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=document)
     config.capabilities["textDocument"] = {
         "completion": {"completionItem": {"snippetSupport": True}}
     }
     config.update({"plugins": {"jedi_completion": {"include_params": True}}})
 
     position = {"line": 1, "character": 5}
-    completions = pylsp_jedi_completions(config, doc, position)
+    completions = pylsp_jedi_completions(config=config, document=doc, position=position)
     assert completions[0]["insertText"] == "date"
 
     position = {"line": 2, "character": 9}
-    completions = pylsp_jedi_completions(config, doc, position)
+    completions = pylsp_jedi_completions(config=config, document=doc, position=position)
     assert completions[0]["insertText"] == "datetime"
 
 
 def test_multiline_snippets(config, workspace):
     document = "from datetime import\\\n date,\\\n datetime \na=date"
-    doc = Document(DOC_URI, workspace, document)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=document)
     config.capabilities["textDocument"] = {
         "completion": {"completionItem": {"snippetSupport": True}}
     }
     config.update({"plugins": {"jedi_completion": {"include_params": True}}})
 
     position = {"line": 1, "character": 5}
-    completions = pylsp_jedi_completions(config, doc, position)
+    completions = pylsp_jedi_completions(config=config, document=doc, position=position)
     assert completions[0]["insertText"] == "date"
 
     position = {"line": 2, "character": 9}
-    completions = pylsp_jedi_completions(config, doc, position)
+    completions = pylsp_jedi_completions(config=config, document=doc, position=position)
     assert completions[0]["insertText"] == "datetime"
 
 
@@ -464,15 +464,15 @@ def test_multistatement_snippet(config, workspace):
     config.update({"plugins": {"jedi_completion": {"include_params": True}}})
 
     document = "a = 1; from datetime import date"
-    doc = Document(DOC_URI, workspace, document)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=document)
     position = {"line": 0, "character": len(document)}
-    completions = pylsp_jedi_completions(config, doc, position)
+    completions = pylsp_jedi_completions(config=config, document=doc, position=position)
     assert completions[0]["insertText"] == "date"
 
     document = "from math import fmod; a = fmod"
-    doc = Document(DOC_URI, workspace, document)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=document)
     position = {"line": 0, "character": len(document)}
-    completions = pylsp_jedi_completions(config, doc, position)
+    completions = pylsp_jedi_completions(config=config, document=doc, position=position)
     assert completions[0]["insertText"] == "fmod(${1:x}, ${2:y})$0"
 
 
@@ -490,11 +490,11 @@ def spam():
     # Content of doc to test completion
     doc_content = """import foo
 foo.s"""
-    doc = Document(DOC_URI, workspace, doc_content)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=doc_content)
 
     # After 'foo.s' without extra paths
     com_position = {"line": 1, "character": 5}
-    completions = pylsp_jedi_completions(doc._config, doc, com_position)
+    completions = pylsp_jedi_completions(config=doc._config, document=doc, position=com_position)
     assert completions is None
 
     # Update config extra paths
@@ -503,7 +503,7 @@ foo.s"""
 
     # After 'foo.s' with extra paths
     com_position = {"line": 1, "character": 5}
-    completions = pylsp_jedi_completions(doc._config, doc, com_position)
+    completions = pylsp_jedi_completions(config=doc._config, document=doc, position=com_position)
     assert completions[0]["label"] == "spam()"
 
 
@@ -514,7 +514,7 @@ def test_jedi_completion_environment(workspace):
     # Content of doc to test completion
     doc_content = """import logh
 """
-    doc = Document(DOC_URI, workspace, doc_content)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=doc_content)
 
     # After 'import logh' with default environment
     com_position = {"line": 0, "character": 11}
@@ -523,7 +523,7 @@ def test_jedi_completion_environment(workspace):
 
     settings = {"pylsp": {"plugins": {"jedi": {"environment": None}}}}
     doc.update_config(settings)
-    completions = pylsp_jedi_completions(doc._config, doc, com_position)
+    completions = pylsp_jedi_completions(config=doc._config, document=doc, position=com_position)
     assert completions is None
 
     # Update config extra environment
@@ -532,10 +532,10 @@ def test_jedi_completion_environment(workspace):
     doc.update_config(settings)
 
     # After 'import logh' with new environment
-    completions = pylsp_jedi_completions(doc._config, doc, com_position)
+    completions = pylsp_jedi_completions(config=doc._config, document=doc, position=com_position)
     assert completions[0]["label"] == "loghub"
 
-    resolved = pylsp_jedi_completion_item_resolve(doc._config, completions[0], doc)
+    resolved = pylsp_jedi_completion_item_resolve(config=doc._config, completion_item=completions[0], document=doc)
     assert "changelog generator" in resolved["documentation"]["value"].lower()
 
 
@@ -555,10 +555,10 @@ def foo():
 mymodule.f"""
     doc_path = str(tmpdir) + os.path.sep + "myfile.py"
     doc_uri = uris.from_fs_path(doc_path)
-    doc = Document(doc_uri, workspace_other_root_path, doc_content)
+    doc = Document(uri=doc_uri, workspace=workspace_other_root_path, source=doc_content)
 
     com_position = {"line": 1, "character": 10}
-    completions = pylsp_jedi_completions(doc._config, doc, com_position)
+    completions = pylsp_jedi_completions(config=doc._config, document=doc, position=com_position)
     assert completions[0]["label"] == "foo()"
 
 
@@ -572,11 +572,11 @@ def test_file_completions(workspace, tmpdir):
 
     # Content of doc to test completion
     doc_content = '"'
-    doc = Document(DOC_URI, workspace, doc_content)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=doc_content)
 
     # Request for completions
     com_position = {"line": 0, "character": 1}
-    completions = pylsp_jedi_completions(doc._config, doc, com_position)
+    completions = pylsp_jedi_completions(config=doc._config, document=doc, position=com_position)
 
     # Check completions
     assert len(completions) == 2
@@ -591,7 +591,7 @@ def test_file_completions(workspace, tmpdir):
         "textDocument": {"completion": {"completionItem": {"snippetSupport": True}}}
     }
     doc._config.capabilities.update(support_snippet)
-    completions = pylsp_jedi_completions(doc._config, doc, com_position)
+    completions = pylsp_jedi_completions(config=doc._config, document=doc, position=com_position)
     assert completions[0]["insertText"] == (
         ("bar" + "\\\\") if os.name == "nt" else ("bar" + "\\/")
     )

@@ -31,7 +31,7 @@ def temp_document(doc_text, workspace):
         with tempfile.NamedTemporaryFile(mode="w", delete=False) as temp_file:
             name = temp_file.name
             temp_file.write(doc_text)
-        yield Document(uris.from_fs_path(name), workspace)
+        yield Document(uri=uris.from_fs_path(name), workspace=workspace)
     finally:
         os.remove(name)
 
@@ -42,8 +42,8 @@ def write_temp_doc(document, contents):
 
 
 def test_pylint(config, workspace):
-    with temp_document(DOC, workspace) as doc:
-        diags = pylint_lint.pylsp_lint(config, workspace, doc, True)
+    with temp_document(doc_text=DOC, workspace=workspace) as doc:
+        diags = pylint_lint.pylsp_lint(config=config, workspace=workspace, document=doc, is_saved=True)
 
         msg = "[unused-import] Unused import sys"
         unused_import = [d for d in diags if d["message"] == msg][0]
@@ -54,7 +54,7 @@ def test_pylint(config, workspace):
 
         # test running pylint in stdin
         config.plugin_settings("pylint")["executable"] = "pylint"
-        diags = pylint_lint.pylsp_lint(config, workspace, doc, True)
+        diags = pylint_lint.pylsp_lint(config=config, workspace=workspace, document=doc, is_saved=True)
 
         msg = "Unused import sys (unused-import)"
         unused_import = [d for d in diags if d["message"] == msg][0]
@@ -67,8 +67,8 @@ def test_pylint(config, workspace):
 
 
 def test_syntax_error_pylint(config, workspace):
-    with temp_document(DOC_SYNTAX_ERR, workspace) as doc:
-        diag = pylint_lint.pylsp_lint(config, workspace, doc, True)[0]
+    with temp_document(doc_text=DOC_SYNTAX_ERR, workspace=workspace) as doc:
+        diag = pylint_lint.pylsp_lint(config=config, workspace=workspace, document=doc, is_saved=True)[0]
 
         assert diag["message"].startswith("[syntax-error]")
         assert diag["message"].count("expected ':'") or diag["message"].count(
@@ -81,7 +81,7 @@ def test_syntax_error_pylint(config, workspace):
 
         # test running pylint in stdin
         config.plugin_settings("pylint")["executable"] = "pylint"
-        diag = pylint_lint.pylsp_lint(config, workspace, doc, True)[0]
+        diag = pylint_lint.pylsp_lint(config=config, workspace=workspace, document=doc, is_saved=True)[0]
 
         assert diag["message"].count("expected ':'") or diag["message"].count(
             "invalid syntax"
@@ -95,9 +95,9 @@ def test_lint_free_pylint(config, workspace):
     # Can't use temp_document because it might give us a file that doesn't
     # match pylint's naming requirements. We should be keeping this file clean
     # though, so it works for a test of an empty lint.
-    ws = Workspace(str(Path(__file__).absolute().parents[2]), workspace._endpoint)
+    ws = Workspace(root_uri=str(Path(__file__).absolute().parents[2]), endpoint=workspace._endpoint)
     assert not pylint_lint.pylsp_lint(
-        config, ws, Document(uris.from_fs_path(__file__), ws), True
+        config=config, workspace=ws, document=Document(uri=uris.from_fs_path(__file__), workspace=ws), is_saved=True
     )
 
 
@@ -112,14 +112,14 @@ def test_lint_caching(workspace):
     # file has capital letters in its name.
 
     flags = "--disable=invalid-name"
-    with temp_document(DOC, workspace) as doc:
+    with temp_document(doc_text=DOC, workspace=workspace) as doc:
         # Start with a file with errors.
         diags = pylint_lint.PylintLinter.lint(doc, True, flags)
         assert diags
 
         # Fix lint errors and write the changes to disk. Run the linter in the
         # in-memory mode to check the cached diagnostic behavior.
-        write_temp_doc(doc, "")
+        write_temp_doc(document=doc, contents="")
         assert pylint_lint.PylintLinter.lint(doc, False, flags) == diags
 
         # Now check the on-disk behavior.
@@ -131,9 +131,9 @@ def test_lint_caching(workspace):
 
 def test_per_file_caching(config, workspace):
     # Ensure that diagnostics are cached per-file.
-    with temp_document(DOC, workspace) as doc:
-        assert pylint_lint.pylsp_lint(config, workspace, doc, True)
+    with temp_document(doc_text=DOC, workspace=workspace) as doc:
+        assert pylint_lint.pylsp_lint(config=config, workspace=workspace, document=doc, is_saved=True)
 
     assert not pylint_lint.pylsp_lint(
-        config, workspace, Document(uris.from_fs_path(__file__), workspace), False
+        config=config, workspace=workspace, document=Document(uri=uris.from_fs_path(__file__), workspace=workspace), is_saved=False
     )

@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 
 @hookimpl
 def pylsp_references(document, position, exclude_declaration):
-    code_position = _utils.position_to_jedi_linecolumn(document, position)
+    code_position = _utils.position_to_jedi_linecolumn(document=document, position=position)
     usages = document.jedi_script().get_references(**code_position)
 
     if exclude_declaration:
@@ -20,7 +20,7 @@ def pylsp_references(document, position, exclude_declaration):
     # Filter out builtin modules
     return [
         {
-            "uri": uris.uri_with(document.uri, path=str(d.module_path))
+            "uri": uris.uri_with(uri=document.uri, path=str(d.module_path))
             if d.module_path
             else document.uri,
             "range": {

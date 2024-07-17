@@ -18,7 +18,7 @@ def pylsp_settings():
 
 def _resolve_completion(completion, data, markup_kind):
     try:
-        doc = _utils.format_docstring(data.get_doc(), markup_kind=markup_kind)
+        doc = _utils.format_docstring(contents=data.get_doc(), markup_kind=markup_kind)
     except Exception as e:
         log.debug("Failed to resolve Rope completion: %s", e)
         doc = ""
@@ -74,7 +74,7 @@ def pylsp_completions(config, workspace, document, position):
             "data": {"doc_uri": document.uri},
         }
         if resolve_eagerly:
-            item = _resolve_completion(item, d, preferred_markup_kind)
+            item = _resolve_completion(completion=item, data=d, markup_kind=preferred_markup_kind)
         new_definitions.append(item)
 
     # most recently retrieved completion items, used for resolution
@@ -105,7 +105,7 @@ def pylsp_completion_item_resolve(config, completion_item, document):
 
     if shared_data:
         completion, data = shared_data
-        return _resolve_completion(completion, data, preferred_markup_kind)
+        return _resolve_completion(completion=completion, data=data, markup_kind=preferred_markup_kind)
     return completion_item
 
 

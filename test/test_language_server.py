@@ -20,7 +20,7 @@ def client_exited_server():
     """A fixture that sets up a client/server pair that support checking parent process aliveness
     and assert the server has already exited
     """
-    client_server_pair_obj = ClientServerPair(True, True)
+    client_server_pair_obj = ClientServerPair(start_server_in_process=True, check_parent_process=True)
 
     yield client_server_pair_obj
 

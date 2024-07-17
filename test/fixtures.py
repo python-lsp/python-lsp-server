@@ -67,7 +67,7 @@ class FakeEndpoint(Endpoint):
 @pytest.fixture
 def pylsp(tmpdir):
     """Return an initialized python LS"""
-    ls = FakePythonLSPServer(StringIO, StringIO, endpoint_cls=FakeEndpoint)
+    ls = FakePythonLSPServer(rx=StringIO, tx=StringIO, endpoint_cls=FakeEndpoint)
 
     ls.m_initialize(
         processId=1, rootUri=uris.from_fs_path(str(tmpdir)), initializationOptions={}
@@ -79,7 +79,7 @@ def pylsp(tmpdir):
 @pytest.fixture
 def pylsp_w_workspace_folders(tmpdir):
     """Return an initialized python LS"""
-    ls = FakePythonLSPServer(StringIO, StringIO, endpoint_cls=FakeEndpoint)
+    ls = FakePythonLSPServer(rx=StringIO, tx=StringIO, endpoint_cls=FakeEndpoint)
 
     folder1 = tmpdir.mkdir("folder1")
     folder2 = tmpdir.mkdir("folder2")
@@ -114,8 +114,8 @@ def endpoint(consumer):
 @pytest.fixture
 def workspace(tmpdir, endpoint):
     """Return a workspace."""
-    ws = Workspace(uris.from_fs_path(str(tmpdir)), endpoint)
-    ws._config = Config(ws.root_uri, {}, 0, {})
+    ws = Workspace(root_uri=uris.from_fs_path(str(tmpdir)), endpoint=endpoint)
+    ws._config = Config(root_uri=ws.root_uri, init_opts={}, process_id=0, capabilities={})
     yield ws
     ws.close()
 
@@ -124,15 +124,15 @@ def workspace(tmpdir, endpoint):
 def workspace_other_root_path(tmpdir, endpoint):
     """Return a workspace with a root_path other than tmpdir."""
     ws_path = str(tmpdir.mkdir("test123").mkdir("test456"))
-    ws = Workspace(uris.from_fs_path(ws_path), endpoint)
-    ws._config = Config(ws.root_uri, {}, 0, {})
+    ws = Workspace(root_uri=uris.from_fs_path(ws_path), endpoint=endpoint)
+    ws._config = Config(root_uri=ws.root_uri, init_opts={}, process_id=0, capabilities={})
     return ws
 
 
 @pytest.fixture
 def config(workspace):
     """Return a config object."""
-    cfg = Config(workspace.root_uri, {}, 0, {})
+    cfg = Config(root_uri=workspace.root_uri, init_opts={}, process_id=0, capabilities={})
     cfg._plugin_settings = {
         "plugins": {"pylint": {"enabled": False, "args": [], "executable": None}}
     }
@@ -141,7 +141,7 @@ def config(workspace):
 
 @pytest.fixture
 def doc(workspace):
-    return Document(DOC_URI, workspace, DOC)
+    return Document(uri=DOC_URI, workspace=workspace, source=DOC)
 
 
 @pytest.fixture

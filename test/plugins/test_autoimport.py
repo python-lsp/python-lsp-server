@@ -42,9 +42,9 @@ def contains_autoimport_quickfix(suggestion: Dict[str, Any], module: str) -> boo
 def autoimport_workspace(tmp_path_factory) -> Workspace:
     "Special autoimport workspace. Persists across sessions to make in-memory sqlite3 database fast."
     workspace = Workspace(
-        uris.from_fs_path(str(tmp_path_factory.mktemp("pylsp"))), Mock()
+        root_uri=uris.from_fs_path(str(tmp_path_factory.mktemp("pylsp"))), endpoint=Mock()
     )
-    workspace._config = Config(workspace.root_uri, {}, 0, {})
+    workspace._config = Config(root_uri=workspace.root_uri, init_opts={}, process_id=0, capabilities={})
     workspace._config.update(
         {
             "rope_autoimport": {
@@ -67,7 +67,7 @@ def completions(config: Config, autoimport_workspace: Workspace, request):
     autoimport_workspace.put_document(DOC_URI, source=document)
     doc = autoimport_workspace.get_document(DOC_URI)
     yield pylsp_autoimport_completions(
-        config, autoimport_workspace, doc, com_position, None
+        config=config, workspace=autoimport_workspace, document=doc, position=com_position, ignored_names=None
     )
     autoimport_workspace.rm_document(DOC_URI)
 
@@ -75,7 +75,7 @@ def completions(config: Config, autoimport_workspace: Workspace, request):
 def should_insert(phrase: str, position: int):
     expr = parso.parse(phrase)
     word_node = expr.get_leaf_for_position((1, position))
-    return _should_insert(expr, word_node)
+    return _should_insert(expr=expr, word_node=word_node)
 
 
 def check_dict(query: Dict, results: List[Dict]) -> bool:
@@ -89,7 +89,7 @@ def check_dict(query: Dict, results: List[Dict]) -> bool:
 def test_autoimport_completion(completions):
     assert completions
     assert check_dict(
-        {"label": "pathlib", "kind": lsp.CompletionItemKind.Module}, completions
+        query={"label": "pathlib", "kind": lsp.CompletionItemKind.Module}, results=completions
     )
 
 
@@ -146,7 +146,7 @@ def test_autoimport_class_incomplete(completions):
 @pytest.mark.parametrize("completions", [("""def func(s:Lis""", 12)], indirect=True)
 def test_autoimport_function_typing(completions):
     assert len(completions) > 0
-    assert check_dict({"label": "List"}, completions)
+    assert check_dict(query={"label": "List"}, results=completions)
 
 
 @pytest.mark.parametrize(
@@ -154,7 +154,7 @@ def test_autoimport_function_typing(completions):
 )
 def test_autoimport_function_typing_complete(completions):
     assert len(completions) > 0
-    assert check_dict({"label": "List"}, completions)
+    assert check_dict(query={"label": "List"}, results=completions)
 
 
 @pytest.mark.parametrize(
@@ -162,7 +162,7 @@ def test_autoimport_function_typing_complete(completions):
 )
 def test_autoimport_function_typing_return(completions):
     assert len(completions) > 0
-    assert check_dict({"label": "Generator"}, completions)
+    assert check_dict(query={"label": "Generator"}, results=completions)
 
 
 def test_autoimport_defined_name(config, workspace):
@@ -171,10 +171,10 @@ def test_autoimport_defined_name(config, workspace):
     workspace.put_document(DOC_URI, source=document)
     doc = workspace.get_document(DOC_URI)
     completions = pylsp_autoimport_completions(
-        config, workspace, doc, com_position, None
+        config=config, workspace=workspace, document=doc, position=com_position, ignored_names=None
     )
     workspace.rm_document(DOC_URI)
-    assert not check_dict({"label": "List"}, completions)
+    assert not check_dict(query={"label": "List"}, results=completions)
 
 
 class TestShouldInsert:
@@ -196,24 +196,24 @@ class TestShouldInsert:
 
 
 def test_sort_sources():
-    result1 = _get_score(1, "import pathlib", "pathlib", "pathli")
-    result2 = _get_score(2, "import pathlib", "pathlib", "pathli")
+    result1 = _get_score(source=1, full_statement="import pathlib", suggested_name="pathlib", desired_name="pathli")
+    result2 = _get_score(source=2, full_statement="import pathlib", suggested_name="pathlib", desired_name="pathli")
     assert result1 < result2
 
 
 def test_sort_statements():
     result1 = _get_score(
-        2, "from importlib_metadata import pathlib", "pathlib", "pathli"
+        source=2, full_statement="from importlib_metadata import pathlib", suggested_name="pathlib", desired_name="pathli"
     )
-    result2 = _get_score(2, "import pathlib", "pathlib", "pathli")
+    result2 = _get_score(source=2, full_statement="import pathlib", suggested_name="pathlib", desired_name="pathli")
     assert result1 > result2
 
 
 def test_sort_both():
     result1 = _get_score(
-        3, "from importlib_metadata import pathlib", "pathlib", "pathli"
+        source=3, full_statement="from importlib_metadata import pathlib", suggested_name="pathlib", desired_name="pathli"
     )
-    result2 = _get_score(2, "import pathlib", "pathlib", "pathli")
+    result2 = _get_score(source=2, full_statement="import pathlib", suggested_name="pathlib", desired_name="pathli")
     assert result1 > result2
 
 
@@ -248,7 +248,7 @@ def test_autoimport_code_actions_get_correct_module_name(autoimport_workspace, m
         },
         "message": message,
     }
-    module_name = get_name_or_module(doc, diagnostic)
+    module_name = get_name_or_module(document=doc, diagnostic=diagnostic)
     autoimport_workspace.rm_document(DOC_URI)
     assert module_name == "os"
 
@@ -277,8 +277,8 @@ def test_autoimport_code_actions_and_completions_for_notebook_document(
 ):
     client, server = client_server_pair
     send_initialize_request(
-        client,
-        {
+        client=client,
+        initialization_options={
             "pylsp": {
                 "plugins": {
                     "rope_autoimport": {
@@ -300,7 +300,7 @@ def test_autoimport_code_actions_and_completions_for_notebook_document(
         #    already imported in the second cell.
         # 4. We receive an autoimport suggestion for "sys" because it's not already imported.
         # 5. If diagnostics doesn't contain "undefined name ...", we send empty quick fix suggestions.
-        send_notebook_did_open(client, ["os", "import os\nos", "os", "sys"])
+        send_notebook_did_open(client=client, cells=["os", "import os\nos", "os", "sys"])
         wait_for_condition(lambda: mock_notify.call_count >= 4)
         # We received diagnostics messages for every cell
         assert all(
@@ -316,29 +316,29 @@ def test_autoimport_code_actions_and_completions_for_notebook_document(
     wait_for_condition(lambda: not cache.is_blocked())
 
     # 1.
-    quick_fixes = server.code_actions("cell_1_uri", {}, make_context("os", 0, 0, 2))
-    assert any(s for s in quick_fixes if contains_autoimport_quickfix(s, "os"))
+    quick_fixes = server.code_actions("cell_1_uri", {}, make_context(module_name="os", line=0, character_start=0, character_end=2))
+    assert any(s for s in quick_fixes if contains_autoimport_quickfix(suggestion=s, module="os"))
 
-    completions = server.completions("cell_1_uri", position(0, 2)).get("items")
-    assert any(s for s in completions if contains_autoimport_completion(s, "os"))
+    completions = server.completions("cell_1_uri", position(line=0, character=2)).get("items")
+    assert any(s for s in completions if contains_autoimport_completion(suggestion=s, module="os"))
 
     # 2.
     # We don't test code actions here as in this case, there would be no code actions sent bc
     # there wouldn't be a diagnostics message.
-    completions = server.completions("cell_2_uri", position(1, 2)).get("items")
-    assert not any(s for s in completions if contains_autoimport_completion(s, "os"))
+    completions = server.completions("cell_2_uri", position(line=1, character=2)).get("items")
+    assert not any(s for s in completions if contains_autoimport_completion(suggestion=s, module="os"))
 
     # 3.
     # Same as in 2.
-    completions = server.completions("cell_3_uri", position(0, 2)).get("items")
-    assert not any(s for s in completions if contains_autoimport_completion(s, "os"))
+    completions = server.completions("cell_3_uri", position(line=0, character=2)).get("items")
+    assert not any(s for s in completions if contains_autoimport_completion(suggestion=s, module="os"))
 
     # 4.
-    quick_fixes = server.code_actions("cell_4_uri", {}, make_context("sys", 0, 0, 3))
-    assert any(s for s in quick_fixes if contains_autoimport_quickfix(s, "sys"))
+    quick_fixes = server.code_actions("cell_4_uri", {}, make_context(module_name="sys", line=0, character_start=0, character_end=3))
+    assert any(s for s in quick_fixes if contains_autoimport_quickfix(suggestion=s, module="sys"))
 
-    completions = server.completions("cell_4_uri", position(0, 3)).get("items")
-    assert any(s for s in completions if contains_autoimport_completion(s, "sys"))
+    completions = server.completions("cell_4_uri", position(line=0, character=3)).get("items")
+    assert any(s for s in completions if contains_autoimport_completion(suggestion=s, module="sys"))
 
     # 5.
     context = {"diagnostics": [{"message": "A random message"}]}
