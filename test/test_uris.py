@@ -1,11 +1,10 @@
 # Copyright 2017-2020 Palantir Technologies, Inc.
 # Copyright 2021- Python Language Server Contributors.
 
-from test import unix_only, windows_only
-
 import pytest
 
 from pylsp import uris
+from test import unix_only, windows_only
 
 
 @unix_only
@@ -70,4 +69,4 @@ def test_win_from_fs_path(path, uri):
     ],
 )
 def test_uri_with(uri, kwargs, new_uri):
-    assert uris.uri_with(uri=uri, scheme=**kwargs) == new_uri
+    assert uris.uri_with(uri=uri, **kwargs) == new_uri

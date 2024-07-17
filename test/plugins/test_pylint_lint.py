@@ -135,5 +135,8 @@ def test_per_file_caching(config, workspace):
         assert pylint_lint.pylsp_lint(config=config, workspace=workspace, document=doc, is_saved=True)
 
     assert not pylint_lint.pylsp_lint(
-        config=config, workspace=workspace, document=Document(uri=uris.from_fs_path(__file__), workspace=workspace), is_saved=False
+        config=config,
+        workspace=workspace,
+        document=Document(uri=uris.from_fs_path(__file__), workspace=workspace),
+        is_saved=False
     )
