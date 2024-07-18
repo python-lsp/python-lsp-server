@@ -12,18 +12,18 @@ log = logging.getLogger(__name__)
 class ConfigSource:
     """Base class for implementing a config source."""
 
-    def __init__(self, root_path):
+    def __init__(self, root_path) -> None:
         self.root_path = root_path
         self.is_windows = sys.platform == "win32"
         self.xdg_home = os.environ.get(
             "XDG_CONFIG_HOME", os.path.expanduser("~/.config")
         )
 
-    def user_config(self):
+    def user_config(self) -> None:
         """Return user-level (i.e. home directory) configuration."""
         raise NotImplementedError()
 
-    def project_config(self, document_path):
+    def project_config(self, document_path) -> None:
         """Return project-level (i.e. workspace directory) configuration."""
         raise NotImplementedError()
 
