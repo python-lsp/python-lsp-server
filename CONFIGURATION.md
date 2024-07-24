@@ -9,6 +9,7 @@ This server can be configured using the `workspace/didChangeConfiguration` metho
 | `pylsp.plugins.flake8.enabled` | `boolean` | Enable or disable the plugin. | `false` |
 | `pylsp.plugins.flake8.exclude` | `array` of `string` items | List of files or directories to exclude. | `[]` |
 | `pylsp.plugins.flake8.extendIgnore` | `array` of `string` items | List of errors and warnings to append to ignore list. | `[]` |
+| `pylsp.plugins.flake8.extendSelect` | `array` of `string` items | List of errors and warnings to append to select list. | `[]` |
 | `pylsp.plugins.flake8.executable` | `string` | Path to the flake8 executable. | `"flake8"` |
 | `pylsp.plugins.flake8.filename` | `string` | Only check for filenames matching the patterns in this list. | `null` |
 | `pylsp.plugins.flake8.hangClosing` | `boolean` | Hang closing bracket instead of matching indentation of opening bracket's line. | `null` |

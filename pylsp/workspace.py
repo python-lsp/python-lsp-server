@@ -41,6 +41,7 @@ class Workspace:
     M_INITIALIZE_PROGRESS = "window/workDoneProgress/create"
     M_APPLY_EDIT = "workspace/applyEdit"
     M_SHOW_MESSAGE = "window/showMessage"
+    M_LOG_MESSAGE = "window/logMessage"
 
     def __init__(self, root_uri, endpoint, config=None) -> None:
         self._config = config
@@ -176,10 +177,18 @@ class Workspace:
     def apply_edit(self, edit):
         return self._endpoint.request(self.M_APPLY_EDIT, {"edit": edit})
 
-    def publish_diagnostics(self, doc_uri, diagnostics) -> None:
+    def publish_diagnostics(self, doc_uri, diagnostics, doc_version=None) -> None:
+        params = {
+            "uri": doc_uri,
+            "diagnostics": diagnostics,
+        }
+
+        if doc_version:
+            params["version"] = doc_version
+
         self._endpoint.notify(
             self.M_PUBLISH_DIAGNOSTICS,
-            params={"uri": doc_uri, "diagnostics": diagnostics},
+            params=params,
         )
 
     @contextmanager
@@ -314,6 +323,11 @@ class Workspace:
                 "token": token,
                 "value": value,
             },
+        )
+
+    def log_message(self, message, msg_type=lsp.MessageType.Info):
+        self._endpoint.notify(
+            self.M_LOG_MESSAGE, params={"type": msg_type, "message": message}
         )
 
     def show_message(self, message, msg_type=lsp.MessageType.Info) -> None:
