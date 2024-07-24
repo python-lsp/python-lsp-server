@@ -5,7 +5,7 @@ from pylsp import hookspec
 
 
 @hookspec
-def pylsp_code_actions(config, workspace, document, range, context) -> None:
+def pylsp_code_actions(config, workspace, document, range, context):
     pass
 
 
