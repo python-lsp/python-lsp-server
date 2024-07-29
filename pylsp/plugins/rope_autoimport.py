@@ -383,7 +383,9 @@ def pylsp_document_did_open(config: Config, workspace: Workspace) -> None:
 
 
 @hookimpl
-def pylsp_document_did_save(config: Config, workspace: Workspace, document: Document) -> None:
+def pylsp_document_did_save(
+    config: Config, workspace: Workspace, document: Document
+) -> None:
     """Update the names associated with this document."""
     cache.reload_cache(config, workspace, [document])
 

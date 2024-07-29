@@ -30,7 +30,9 @@ def test_set_flake8_using_init_opts(client_server_pair) -> None:
 
 
 @pytest.mark.skipif(IS_WIN, reason="Flaky on Windows")
-def test_set_flake8_using_workspace_did_change_configuration(client_server_pair) -> None:
+def test_set_flake8_using_workspace_did_change_configuration(
+    client_server_pair,
+) -> None:
     client, server = client_server_pair
     send_initialize_request(client, None)
     assert (

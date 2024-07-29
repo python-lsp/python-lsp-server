@@ -237,7 +237,9 @@ def test_get_names() -> None:
     "message",
     ["Undefined name `os`", "F821 undefined name 'numpy'", "undefined name 'numpy'"],
 )
-def test_autoimport_code_actions_get_correct_module_name(autoimport_workspace, message) -> None:
+def test_autoimport_code_actions_get_correct_module_name(
+    autoimport_workspace, message
+) -> None:
     source = "os.path.join('a', 'b')"
     autoimport_workspace.put_document(DOC_URI, source=source)
     doc = autoimport_workspace.get_document(DOC_URI)

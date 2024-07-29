@@ -85,7 +85,9 @@ class ClientServerPair:
         check_parent_process: if True, the server_process will check if the parent process is alive.
     """
 
-    def __init__(self, start_server_in_process=False, check_parent_process=False) -> None:
+    def __init__(
+        self, start_server_in_process=False, check_parent_process=False
+    ) -> None:
         # Client to Server pipe
         csr, csw = os.pipe()
         # Server to client pipe

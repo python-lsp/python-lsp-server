@@ -109,7 +109,9 @@ def pylsp_lint(config, workspace, document, is_saved) -> None:
 
 
 @hookspec
-def pylsp_references(config, workspace, document, position, exclude_declaration) -> None:
+def pylsp_references(
+    config, workspace, document, position, exclude_declaration
+) -> None:
     pass
 
 

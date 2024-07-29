@@ -448,7 +448,9 @@ class PythonLSPServer(MethodDispatcher):
         elif isinstance(document_object, Notebook):
             self._lint_notebook_document(document_object, workspace)
 
-    def _lint_text_document(self, doc_uri, workspace, is_saved, doc_version=None) -> None:
+    def _lint_text_document(
+        self, doc_uri, workspace, is_saved, doc_version=None
+    ) -> None:
         workspace.publish_diagnostics(
             doc_uri,
             flatten(self._hook("pylsp_lint", doc_uri, is_saved=is_saved)),
