@@ -63,14 +63,14 @@ def test_range_format(config, workspace) -> None:
 
 def test_no_change(config, workspace) -> None:
     doc = Document(uri=DOC_URI, workspace=workspace, source=GOOD_DOC)
-    
+
     assert not pylsp_format_document(config=config, workspace=workspace, document=doc, options=None)
 
 
 def test_hanging_indentation(config, workspace) -> None:
     doc = Document(uri=DOC_URI, workspace=workspace, source=INDENTED_DOC)
     res = pylsp_format_document(config=config, workspace=workspace, document=doc, options=None)
-    
+
     assert len(res) == 1
     assert res[0]["newText"] == CORRECT_INDENTED_DOC
 

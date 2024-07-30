@@ -76,7 +76,7 @@ def test_symbols(config, workspace):
 def test_symbols_all_scopes(config, workspace) -> None:
     doc = Document(uri=DOC_URI, workspace=workspace, source=DOC)
     symbols = pylsp_document_symbols(config=config, document=doc)
-    
+
     helper_check_symbols_all_scope(symbols)
 
 
