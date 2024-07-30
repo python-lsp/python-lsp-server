@@ -2,16 +2,11 @@
 # Copyright 2021- Python Language Server Contributors.
 
 import os
+
 import pluggy
 
-PYLSP = "pylsp"
-IS_WIN = os.name == "nt"
-
-hookspec = pluggy.HookspecMarker(PYLSP)
-hookimpl = pluggy.HookimplMarker(PYLSP)
-
 from . import _version
-__version__ = _version.__version__
+from ._version import __version__
 
 
 def convert_version_info(version: str) -> (int, ..., str):
@@ -28,5 +23,11 @@ def convert_version_info(version: str) -> (int, ..., str):
 
 
 _version.VERSION_INFO = convert_version_info(__version__)
+
+PYLSP = "pylsp"
+IS_WIN = os.name == "nt"
+
+hookspec = pluggy.HookspecMarker(PYLSP)
+hookimpl = pluggy.HookimplMarker(PYLSP)
 
 __all__ = ("__version__",)
