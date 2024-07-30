@@ -40,7 +40,9 @@ def pylsp_completions(config, document, position):
     """Get formatted completions for current code position"""
     settings = config.plugin_settings("jedi_completion", document_path=document.path)
     resolve_eagerly = settings.get("eager", False)
-    code_position = _utils.position_to_jedi_linecolumn(document=document, position=position)
+    code_position = _utils.position_to_jedi_linecolumn(
+        document=document, position=position
+    )
 
     code_position["fuzzy"] = settings.get("fuzzy", False)
     completions = document.jedi_script(use_document_path=True).complete(**code_position)
@@ -67,7 +69,9 @@ def pylsp_completions(config, document, position):
         SNIPPET_RESOLVER.cached_modules = modules_to_cache_for
 
     include_params = (
-        snippet_support and should_include_params and use_snippets(document=document, position=position)
+        snippet_support
+        and should_include_params
+        and use_snippets(document=document, position=position)
     )
     include_class_objects = (
         snippet_support
@@ -152,7 +156,9 @@ def pylsp_completion_item_resolve(config, completion_item, document):
 
     if shared_data:
         completion, data = shared_data
-        return _resolve_completion(completion=completion, d=data, markup_kind=preferred_markup_kind)
+        return _resolve_completion(
+            completion=completion, d=data, markup_kind=preferred_markup_kind
+        )
     return completion_item
 
 
@@ -237,7 +243,9 @@ def _format_completion(
     }
 
     if resolve:
-        completion = _resolve_completion(completion=completion, d=d, markup_kind=markup_kind)
+        completion = _resolve_completion(
+            completion=completion, d=d, markup_kind=markup_kind
+        )
 
     # Adjustments for file completions
     if d.type == "path":

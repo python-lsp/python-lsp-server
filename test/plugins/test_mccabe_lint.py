@@ -36,4 +36,6 @@ def test_mccabe(config, workspace) -> None:
 
 def test_mccabe_syntax_error(config, workspace) -> None:
     doc = Document(uri=DOC_URI, workspace=workspace, source=DOC_SYNTAX_ERR)
-    assert mccabe_lint.pylsp_lint(config=config, workspace=workspace, document=doc) is None
+    assert (
+        mccabe_lint.pylsp_lint(config=config, workspace=workspace, document=doc) is None
+    )

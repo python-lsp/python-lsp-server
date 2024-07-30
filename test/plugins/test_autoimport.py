@@ -42,9 +42,12 @@ def contains_autoimport_quickfix(suggestion: Dict[str, Any], module: str) -> boo
 def autoimport_workspace(tmp_path_factory) -> Workspace:
     "Special autoimport workspace. Persists across sessions to make in-memory sqlite3 database fast."
     workspace = Workspace(
-        root_uri=uris.from_fs_path(str(tmp_path_factory.mktemp("pylsp"))), endpoint=Mock()
+        root_uri=uris.from_fs_path(str(tmp_path_factory.mktemp("pylsp"))),
+        endpoint=Mock(),
     )
-    workspace._config = Config(root_uri=workspace.root_uri, init_opts={}, process_id=0, capabilities={})
+    workspace._config = Config(
+        root_uri=workspace.root_uri, init_opts={}, process_id=0, capabilities={}
+    )
     workspace._config.update(
         {
             "rope_autoimport": {
@@ -67,7 +70,11 @@ def completions(config: Config, autoimport_workspace: Workspace, request) -> Non
     autoimport_workspace.put_document(DOC_URI, source=document)
     doc = autoimport_workspace.get_document(DOC_URI)
     yield pylsp_autoimport_completions(
-        config=config, workspace=autoimport_workspace, document=doc, position=com_position, ignored_names=None
+        config=config,
+        workspace=autoimport_workspace,
+        document=doc,
+        position=com_position,
+        ignored_names=None,
     )
     autoimport_workspace.rm_document(DOC_URI)
 
@@ -89,7 +96,8 @@ def check_dict(query: Dict, results: List[Dict]) -> bool:
 def test_autoimport_completion(completions) -> None:
     assert completions
     assert check_dict(
-        query={"label": "pathlib", "kind": lsp.CompletionItemKind.Module}, results=completions
+        query={"label": "pathlib", "kind": lsp.CompletionItemKind.Module},
+        results=completions,
     )
 
 
@@ -171,7 +179,11 @@ def test_autoimport_defined_name(config, workspace) -> None:
     workspace.put_document(DOC_URI, source=document)
     doc = workspace.get_document(DOC_URI)
     completions = pylsp_autoimport_completions(
-        config=config, workspace=workspace, document=doc, position=com_position, ignored_names=None
+        config=config,
+        workspace=workspace,
+        document=doc,
+        position=com_position,
+        ignored_names=None,
     )
     workspace.rm_document(DOC_URI)
     assert not check_dict(query={"label": "List"}, results=completions)
@@ -196,24 +208,50 @@ class TestShouldInsert:
 
 
 def test_sort_sources() -> None:
-    result1 = _get_score(source=1, full_statement="import pathlib", suggested_name="pathlib", desired_name="pathli")
-    result2 = _get_score(source=2, full_statement="import pathlib", suggested_name="pathlib", desired_name="pathli")
+    result1 = _get_score(
+        source=1,
+        full_statement="import pathlib",
+        suggested_name="pathlib",
+        desired_name="pathli",
+    )
+    result2 = _get_score(
+        source=2,
+        full_statement="import pathlib",
+        suggested_name="pathlib",
+        desired_name="pathli",
+    )
     assert result1 < result2
 
 
 def test_sort_statements() -> None:
     result1 = _get_score(
-        source=2, full_statement="from importlib_metadata import pathlib", suggested_name="pathlib", desired_name="pathli"
+        source=2,
+        full_statement="from importlib_metadata import pathlib",
+        suggested_name="pathlib",
+        desired_name="pathli",
     )
-    result2 = _get_score(source=2, full_statement="import pathlib", suggested_name="pathlib", desired_name="pathli")
+    result2 = _get_score(
+        source=2,
+        full_statement="import pathlib",
+        suggested_name="pathlib",
+        desired_name="pathli",
+    )
     assert result1 > result2
 
 
 def test_sort_both() -> None:
     result1 = _get_score(
-        source=3, full_statement="from importlib_metadata import pathlib", suggested_name="pathlib", desired_name="pathli"
+        source=3,
+        full_statement="from importlib_metadata import pathlib",
+        suggested_name="pathlib",
+        desired_name="pathli",
     )
-    result2 = _get_score(source=2, full_statement="import pathlib", suggested_name="pathlib", desired_name="pathli")
+    result2 = _get_score(
+        source=2,
+        full_statement="import pathlib",
+        suggested_name="pathlib",
+        desired_name="pathli",
+    )
     assert result1 > result2
 
 
@@ -302,7 +340,9 @@ def test_autoimport_code_actions_and_completions_for_notebook_document(
         #    already imported in the second cell.
         # 4. We receive an autoimport suggestion for "sys" because it's not already imported.
         # 5. If diagnostics doesn't contain "undefined name ...", we send empty quick fix suggestions.
-        send_notebook_did_open(client=client, cells=["os", "import os\nos", "os", "sys"])
+        send_notebook_did_open(
+            client=client, cells=["os", "import os\nos", "os", "sys"]
+        )
         wait_for_condition(lambda: mock_notify.call_count >= 4)
         # We received diagnostics messages for every cell
         assert all(
@@ -318,29 +358,69 @@ def test_autoimport_code_actions_and_completions_for_notebook_document(
     wait_for_condition(lambda: not cache.is_blocked())
 
     # 1.
-    quick_fixes = server.code_actions("cell_1_uri", {}, make_context(module_name="os", line=0, character_start=0, character_end=2))
-    assert any(s for s in quick_fixes if contains_autoimport_quickfix(suggestion=s, module="os"))
+    quick_fixes = server.code_actions(
+        "cell_1_uri",
+        {},
+        make_context(module_name="os", line=0, character_start=0, character_end=2),
+    )
+    assert any(
+        s
+        for s in quick_fixes
+        if contains_autoimport_quickfix(suggestion=s, module="os")
+    )
 
-    completions = server.completions("cell_1_uri", position(line=0, character=2)).get("items")
-    assert any(s for s in completions if contains_autoimport_completion(suggestion=s, module="os"))
+    completions = server.completions("cell_1_uri", position(line=0, character=2)).get(
+        "items"
+    )
+    assert any(
+        s
+        for s in completions
+        if contains_autoimport_completion(suggestion=s, module="os")
+    )
 
     # 2.
     # We don't test code actions here as in this case, there would be no code actions sent bc
     # there wouldn't be a diagnostics message.
-    completions = server.completions("cell_2_uri", position(line=1, character=2)).get("items")
-    assert not any(s for s in completions if contains_autoimport_completion(suggestion=s, module="os"))
+    completions = server.completions("cell_2_uri", position(line=1, character=2)).get(
+        "items"
+    )
+    assert not any(
+        s
+        for s in completions
+        if contains_autoimport_completion(suggestion=s, module="os")
+    )
 
     # 3.
     # Same as in 2.
-    completions = server.completions("cell_3_uri", position(line=0, character=2)).get("items")
-    assert not any(s for s in completions if contains_autoimport_completion(suggestion=s, module="os"))
+    completions = server.completions("cell_3_uri", position(line=0, character=2)).get(
+        "items"
+    )
+    assert not any(
+        s
+        for s in completions
+        if contains_autoimport_completion(suggestion=s, module="os")
+    )
 
     # 4.
-    quick_fixes = server.code_actions("cell_4_uri", {}, make_context(module_name="sys", line=0, character_start=0, character_end=3))
-    assert any(s for s in quick_fixes if contains_autoimport_quickfix(suggestion=s, module="sys"))
+    quick_fixes = server.code_actions(
+        "cell_4_uri",
+        {},
+        make_context(module_name="sys", line=0, character_start=0, character_end=3),
+    )
+    assert any(
+        s
+        for s in quick_fixes
+        if contains_autoimport_quickfix(suggestion=s, module="sys")
+    )
 
-    completions = server.completions("cell_4_uri", position(line=0, character=3)).get("items")
-    assert any(s for s in completions if contains_autoimport_completion(suggestion=s, module="sys"))
+    completions = server.completions("cell_4_uri", position(line=0, character=3)).get(
+        "items"
+    )
+    assert any(
+        s
+        for s in completions
+        if contains_autoimport_completion(suggestion=s, module="sys")
+    )
 
     # 5.
     context = {"diagnostics": [{"message": "A random message"}]}

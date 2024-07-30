@@ -39,7 +39,13 @@ def test_jedi_rename(tmp_workspace, config) -> None:
     DOC_URI = uris.from_fs_path(os.path.join(tmp_workspace.root_path, DOC_NAME))
     doc = Document(uri=DOC_URI, workspace=tmp_workspace)
 
-    result = pylsp_rename(config=config, workspace=tmp_workspace, document=doc, position=position, new_name="ShouldBeRenamed")
+    result = pylsp_rename(
+        config=config,
+        workspace=tmp_workspace,
+        document=doc,
+        position=position,
+        new_name="ShouldBeRenamed",
+    )
     assert len(result.keys()) == 1
 
     changes = result.get("documentChanges")
@@ -86,7 +92,13 @@ def test_jedi_rename(tmp_workspace, config) -> None:
     DOC_URI = uris.from_fs_path(os.path.join(tmp_workspace.root_path, DOC_NAME_SIMPLE))
     doc = Document(uri=DOC_URI, workspace=tmp_workspace)
 
-    result = pylsp_rename(config=config, workspace=tmp_workspace, document=doc, position=position, new_name="bar")
+    result = pylsp_rename(
+        config=config,
+        workspace=tmp_workspace,
+        document=doc,
+        position=position,
+        new_name="bar",
+    )
     assert len(result.keys()) == 1
 
     changes = result.get("documentChanges")

@@ -22,7 +22,9 @@ INITIALIZATION_OPTIONS = {
 @pytest.mark.skipif(IS_WIN, reason="Flaky on Windows")
 def test_set_flake8_using_init_opts(client_server_pair) -> None:
     client, server = client_server_pair
-    send_initialize_request(client=client, initialization_options=INITIALIZATION_OPTIONS)
+    send_initialize_request(
+        client=client, initialization_options=INITIALIZATION_OPTIONS
+    )
     for key, value in INITIALIZATION_OPTIONS["pylsp"]["plugins"].items():
         assert server.workspace._config.settings().get("plugins").get(key).get(
             "enabled"

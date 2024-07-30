@@ -192,9 +192,9 @@ def test_find_parents(tmpdir) -> None:
     path = subsubdir.ensure("path.py")
     test_cfg = tmpdir.ensure("test.cfg")
 
-    assert _utils.find_parents(root=tmpdir.strpath, path=path.strpath, names=["test.cfg"]) == [
-        test_cfg.strpath
-    ]
+    assert _utils.find_parents(
+        root=tmpdir.strpath, path=path.strpath, names=["test.cfg"]
+    ) == [test_cfg.strpath]
 
 
 def test_merge_dicts() -> None:

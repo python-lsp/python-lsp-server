@@ -46,7 +46,9 @@ def pylsp_definitions(
     config: Config, document: Document, position: Dict[str, int]
 ) -> List[Dict[str, Any]]:
     settings = config.plugin_settings("jedi_definition")
-    code_position = _utils.position_to_jedi_linecolumn(document=document, position=position)
+    code_position = _utils.position_to_jedi_linecolumn(
+        document=document, position=position
+    )
     script = document.jedi_script(use_document_path=True)
     auto_import_modules = jedi.settings.auto_import_modules
 
@@ -57,7 +59,10 @@ def pylsp_definitions(
             follow_builtin_imports=settings.get("follow_builtin_imports", True),
             **code_position,
         )
-        definitions = [_resolve_definition(maybe_defn=d, script=script, settings=settings) for d in definitions]
+        definitions = [
+            _resolve_definition(maybe_defn=d, script=script, settings=settings)
+            for d in definitions
+        ]
     finally:
         jedi.settings.auto_import_modules = auto_import_modules
 

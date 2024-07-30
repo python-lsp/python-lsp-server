@@ -10,7 +10,9 @@ log = logging.getLogger(__name__)
 
 @hookimpl
 def pylsp_references(document, position, exclude_declaration):
-    code_position = _utils.position_to_jedi_linecolumn(document=document, position=position)
+    code_position = _utils.position_to_jedi_linecolumn(
+        document=document, position=position
+    )
     usages = document.jedi_script().get_references(**code_position)
 
     if exclude_declaration:

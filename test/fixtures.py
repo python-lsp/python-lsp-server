@@ -115,7 +115,9 @@ def endpoint(consumer):
 def workspace(tmpdir, endpoint) -> None:
     """Return a workspace."""
     ws = Workspace(root_uri=uris.from_fs_path(str(tmpdir)), endpoint=endpoint)
-    ws._config = Config(root_uri=ws.root_uri, init_opts={}, process_id=0, capabilities={})
+    ws._config = Config(
+        root_uri=ws.root_uri, init_opts={}, process_id=0, capabilities={}
+    )
     yield ws
     ws.close()
 
@@ -125,14 +127,18 @@ def workspace_other_root_path(tmpdir, endpoint):
     """Return a workspace with a root_path other than tmpdir."""
     ws_path = str(tmpdir.mkdir("test123").mkdir("test456"))
     ws = Workspace(root_uri=uris.from_fs_path(ws_path), endpoint=endpoint)
-    ws._config = Config(root_uri=ws.root_uri, init_opts={}, process_id=0, capabilities={})
+    ws._config = Config(
+        root_uri=ws.root_uri, init_opts={}, process_id=0, capabilities={}
+    )
     return ws
 
 
 @pytest.fixture
 def config(workspace):
     """Return a config object."""
-    cfg = Config(root_uri=workspace.root_uri, init_opts={}, process_id=0, capabilities={})
+    cfg = Config(
+        root_uri=workspace.root_uri, init_opts={}, process_id=0, capabilities={}
+    )
     cfg._plugin_settings = {
         "plugins": {"pylint": {"enabled": False, "args": [], "executable": None}}
     }

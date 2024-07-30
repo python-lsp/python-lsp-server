@@ -98,7 +98,12 @@ def pylsp_lint(workspace, document):
         # ensure the same source is used for flake8 execution and result parsing;
         # single source access improves performance as it is only one disk access
         source = document.source
-        output = run_flake8(flake8_executable=flake8_executable, args=args, document=document, source=source)
+        output = run_flake8(
+            flake8_executable=flake8_executable,
+            args=args,
+            document=document,
+            source=source,
+        )
         return parse_stdout(source=source, stdout=output)
 
 

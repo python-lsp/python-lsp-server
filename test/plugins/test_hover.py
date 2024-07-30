@@ -38,24 +38,35 @@ def test_numpy_hover(workspace) -> None:
     doc = Document(uri=DOC_URI, workspace=workspace, source=NUMPY_DOC)
 
     contents = ""
-    assert contents in pylsp_hover(config=doc._config, document=doc, position=no_hov_position)["contents"]
-
-    contents = "NumPy\n=====\n\nProvides\n"
     assert (
         contents
-        in pylsp_hover(config=doc._config, document=doc, position=numpy_hov_position_1)["contents"]["value"]
+        in pylsp_hover(config=doc._config, document=doc, position=no_hov_position)[
+            "contents"
+        ]
     )
 
     contents = "NumPy\n=====\n\nProvides\n"
     assert (
         contents
-        in pylsp_hover(config=doc._config, document=doc, position=numpy_hov_position_2)["contents"]["value"]
+        in pylsp_hover(config=doc._config, document=doc, position=numpy_hov_position_1)[
+            "contents"
+        ]["value"]
     )
 
     contents = "NumPy\n=====\n\nProvides\n"
     assert (
         contents
-        in pylsp_hover(config=doc._config, document=doc, position=numpy_hov_position_3)["contents"]["value"]
+        in pylsp_hover(config=doc._config, document=doc, position=numpy_hov_position_2)[
+            "contents"
+        ]["value"]
+    )
+
+    contents = "NumPy\n=====\n\nProvides\n"
+    assert (
+        contents
+        in pylsp_hover(config=doc._config, document=doc, position=numpy_hov_position_3)[
+            "contents"
+        ]["value"]
     )
 
     # https://github.com/davidhalter/jedi/issues/1746
@@ -65,9 +76,9 @@ def test_numpy_hover(workspace) -> None:
         contents = "Trigonometric sine, element-wise.\n\n"
         assert (
             contents
-            in pylsp_hover(config=doc._config, document=doc, position=numpy_sin_hov_position)["contents"][
-                "value"
-            ]
+            in pylsp_hover(
+                config=doc._config, document=doc, position=numpy_sin_hov_position
+            )["contents"]["value"]
         )
 
 
@@ -81,9 +92,13 @@ def test_hover(workspace) -> None:
 
     contents = {"kind": "markdown", "value": "```python\nmain()\n```\n\n\nhello world"}
 
-    assert {"contents": contents} == pylsp_hover(config=doc._config, document=doc, position=hov_position)
+    assert {"contents": contents} == pylsp_hover(
+        config=doc._config, document=doc, position=hov_position
+    )
 
-    assert {"contents": ""} == pylsp_hover(config=doc._config, document=doc, position=no_hov_position)
+    assert {"contents": ""} == pylsp_hover(
+        config=doc._config, document=doc, position=no_hov_position
+    )
 
 
 def test_document_path_hover(workspace_other_root_path, tmpdir) -> None:
@@ -106,6 +121,8 @@ foo"""
     doc = Document(uri=doc_uri, workspace=workspace_other_root_path, source=doc_content)
 
     cursor_pos = {"line": 1, "character": 3}
-    contents = pylsp_hover(config=doc._config, document=doc, position=cursor_pos)["contents"]
+    contents = pylsp_hover(config=doc._config, document=doc, position=cursor_pos)[
+        "contents"
+    ]
 
     assert "A docstring for foo." in contents["value"]

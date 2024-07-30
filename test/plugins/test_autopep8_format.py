@@ -41,7 +41,9 @@ bar = {'foo': foo
 
 def test_format(config, workspace) -> None:
     doc = Document(uri=DOC_URI, workspace=workspace, source=DOC)
-    res = pylsp_format_document(config=config, workspace=workspace, document=doc, options=None)
+    res = pylsp_format_document(
+        config=config, workspace=workspace, document=doc, options=None
+    )
     assert len(res) == 1
     assert res[0]["newText"] == "a = 123\n\n\ndef func():\n    pass\n"
 
@@ -53,7 +55,9 @@ def test_range_format(config, workspace) -> None:
         "start": {"line": 0, "character": 0},
         "end": {"line": 2, "character": 0},
     }
-    res = pylsp_format_range(config=config, workspace=workspace, document=doc, range=def_range, options=None)
+    res = pylsp_format_range(
+        config=config, workspace=workspace, document=doc, range=def_range, options=None
+    )
 
     assert len(res) == 1
 
@@ -64,12 +68,16 @@ def test_range_format(config, workspace) -> None:
 def test_no_change(config, workspace) -> None:
     doc = Document(uri=DOC_URI, workspace=workspace, source=GOOD_DOC)
 
-    assert not pylsp_format_document(config=config, workspace=workspace, document=doc, options=None)
+    assert not pylsp_format_document(
+        config=config, workspace=workspace, document=doc, options=None
+    )
 
 
 def test_hanging_indentation(config, workspace) -> None:
     doc = Document(uri=DOC_URI, workspace=workspace, source=INDENTED_DOC)
-    res = pylsp_format_document(config=config, workspace=workspace, document=doc, options=None)
+    res = pylsp_format_document(
+        config=config, workspace=workspace, document=doc, options=None
+    )
 
     assert len(res) == 1
     assert res[0]["newText"] == CORRECT_INDENTED_DOC
@@ -77,8 +85,14 @@ def test_hanging_indentation(config, workspace) -> None:
 
 @pytest.mark.parametrize("newline", ["\r\n", "\r"])
 def test_line_endings(config, workspace, newline) -> None:
-    doc = Document(uri=DOC_URI, workspace=workspace, source=f"import os;import sys{2 * newline}dict(a=1)")
-    res = pylsp_format_document(config=config, workspace=workspace, document=doc, options=None)
+    doc = Document(
+        uri=DOC_URI,
+        workspace=workspace,
+        source=f"import os;import sys{2 * newline}dict(a=1)",
+    )
+    res = pylsp_format_document(
+        config=config, workspace=workspace, document=doc, options=None
+    )
 
     assert (
         res[0]["newText"]

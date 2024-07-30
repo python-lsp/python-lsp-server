@@ -223,7 +223,9 @@ def pylsp_lint(config, workspace, document, is_saved):
         if settings.get("executable") and sys.version_info[0] >= 3:
             flags = build_args_stdio(settings)
             pylint_executable = settings.get("executable", "pylint")
-            return pylint_lint_stdin(pylint_executable=pylint_executable, document=document, flags=flags)
+            return pylint_lint_stdin(
+                pylint_executable=pylint_executable, document=document, flags=flags
+            )
         flags = _build_pylint_flags(settings)
         return PylintLinter.lint(document, is_saved, flags=flags)
 
@@ -260,7 +262,9 @@ def pylint_lint_stdin(pylint_executable, document, flags):
     :return: linting diagnostics
     :rtype: list
     """
-    pylint_result = _run_pylint_stdio(pylint_executable=pylint_executable, document=document, flags=flags)
+    pylint_result = _run_pylint_stdio(
+        pylint_executable=pylint_executable, document=document, flags=flags
+    )
     return _parse_pylint_stdio_result(document=document, stdout=pylint_result)
 
 

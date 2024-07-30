@@ -193,7 +193,10 @@ def _process_statements(
         edit_range = {"start": start, "end": start}
         edit = {"range": edit_range, "newText": suggestion.import_statement + "\n"}
         score = _get_score(
-            source=suggestion.source, full_statement=suggestion.import_statement, suggested_name=suggestion.name, desired_name=word
+            source=suggestion.source,
+            full_statement=suggestion.import_statement,
+            suggested_name=suggestion.name,
+            desired_name=word,
         )
         if score > _score_max:
             continue
@@ -258,7 +261,12 @@ def pylsp_completions(
     suggestions = list(autoimport.search_full(word, ignored_names=ignored_names))
     results = sorted(
         _process_statements(
-            suggestions=suggestions, doc_uri=document.uri, word=word, autoimport=autoimport, document=document, feature="completions"
+            suggestions=suggestions,
+            doc_uri=document.uri,
+            word=word,
+            autoimport=autoimport,
+            document=document,
+            feature="completions",
         ),
         key=lambda statement: statement["sortText"],
     )

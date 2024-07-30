@@ -47,7 +47,9 @@ def test_references(tmp_workspace) -> None:
     assert len(refs) == 3
 
     # Briefly check excluding the definitions (also excludes imports, only counts uses)
-    no_def_refs = pylsp_references(document=doc1, position=position, exclude_declaration=True)
+    no_def_refs = pylsp_references(
+        document=doc1, position=position, exclude_declaration=True
+    )
     assert len(no_def_refs) == 1
 
     # Make sure our definition is correctly located

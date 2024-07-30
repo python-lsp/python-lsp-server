@@ -93,7 +93,9 @@ def test_flake8_respecting_configuration(workspace) -> None:
         workspace.put_document(made[rel]["uri"], contents)
         made[rel]["document"] = workspace._docs[made[rel]["uri"]]
 
-    diags = flake8_lint.pylsp_lint(workspace=workspace, document=made["src/a.py"]["document"])
+    diags = flake8_lint.pylsp_lint(
+        workspace=workspace, document=made["src/a.py"]["document"]
+    )
     assert diags == [
         {
             "source": "flake8",
@@ -108,7 +110,9 @@ def test_flake8_respecting_configuration(workspace) -> None:
         },
     ]
 
-    diags = flake8_lint.pylsp_lint(workspace=workspace, document=made["src/b.py"]["document"])
+    diags = flake8_lint.pylsp_lint(
+        workspace=workspace, document=made["src/b.py"]["document"]
+    )
     assert diags == [
         {
             "source": "flake8",
@@ -182,7 +186,9 @@ exclude =
     doc_uri = uris.from_fs_path(os.path.join(workspace.root_path, "blah/__init__.py"))
     workspace.put_document(doc_uri, doc_str)
 
-    flake8_settings = get_flake8_cfg_settings(workspace=workspace, config_str=config_str)
+    flake8_settings = get_flake8_cfg_settings(
+        workspace=workspace, config_str=config_str
+    )
 
     assert "exclude" in flake8_settings
     assert len(flake8_settings["exclude"]) == 2
@@ -224,7 +230,9 @@ exclude =
     doc_uri = uris.from_fs_path(os.path.join(workspace.root_path, "blah/__init__.py"))
     workspace.put_document(doc_uri, doc_str)
 
-    flake8_settings = get_flake8_cfg_settings(workspace=workspace, config_str=config_str)
+    flake8_settings = get_flake8_cfg_settings(
+        workspace=workspace, config_str=config_str
+    )
 
     assert "perFileIgnores" in flake8_settings
     assert len(flake8_settings["perFileIgnores"]) == 2
@@ -248,7 +256,9 @@ per-file-ignores = **/__init__.py:F401,E402
     doc_uri = uris.from_fs_path(os.path.join(workspace.root_path, "blah/__init__.py"))
     workspace.put_document(doc_uri, doc_str)
 
-    flake8_settings = get_flake8_cfg_settings(workspace=workspace, config_str=config_str)
+    flake8_settings = get_flake8_cfg_settings(
+        workspace=workspace, config_str=config_str
+    )
 
     assert "perFileIgnores" in flake8_settings
     assert len(flake8_settings["perFileIgnores"]) == 2

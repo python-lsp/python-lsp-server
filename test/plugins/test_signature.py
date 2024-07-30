@@ -47,7 +47,9 @@ def test_no_signature(workspace) -> None:
     sig_position = {"line": 9, "character": 0}
     doc = Document(uri=DOC_URI, workspace=workspace, source=DOC)
 
-    sigs = signature.pylsp_signature_help(config=doc._config, document=doc, position=sig_position)["signatures"]
+    sigs = signature.pylsp_signature_help(
+        config=doc._config, document=doc, position=sig_position
+    )["signatures"]
     assert not sigs
 
 
@@ -56,7 +58,9 @@ def test_signature(workspace) -> None:
     sig_position = {"line": 10, "character": 5}
     doc = Document(uri=DOC_URI, workspace=workspace, source=DOC)
 
-    sig_info = signature.pylsp_signature_help(config=doc._config, document=doc, position=sig_position)
+    sig_info = signature.pylsp_signature_help(
+        config=doc._config, document=doc, position=sig_position
+    )
 
     sigs = sig_info["signatures"]
     assert len(sigs) == 1
@@ -75,7 +79,9 @@ def test_multi_line_signature(workspace) -> None:
     sig_position = {"line": 17, "character": 5}
     doc = Document(uri=DOC_URI, workspace=workspace, source=MULTI_LINE_DOC)
 
-    sig_info = signature.pylsp_signature_help(config=doc._config, document=doc, position=sig_position)
+    sig_info = signature.pylsp_signature_help(
+        config=doc._config, document=doc, position=sig_position
+    )
 
     sigs = sig_info["signatures"]
     assert len(sigs) == 1
