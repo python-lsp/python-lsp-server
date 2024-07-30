@@ -53,6 +53,14 @@
       },
       "description": "List of errors and warnings to append to ignore list."
     },
+    "pylsp.plugins.flake8.extendSelect": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "description": "List of errors and warnings to append to select list."
+    },
     "pylsp.plugins.flake8.executable": {
       "type": "string",
       "default": "flake8",

@@ -112,7 +112,7 @@ def endpoint(consumer):
 
 
 @pytest.fixture
-def workspace(tmpdir, endpoint):
+def workspace(tmpdir, endpoint) -> None:
     """Return a workspace."""
     ws = Workspace(root_uri=uris.from_fs_path(str(tmpdir)), endpoint=endpoint)
     ws._config = Config(root_uri=ws.root_uri, init_opts={}, process_id=0, capabilities={})
@@ -166,7 +166,7 @@ def temp_workspace_factory(workspace):
 
 
 @pytest.fixture
-def client_server_pair():
+def client_server_pair() -> None:
     """A fixture that sets up a client/server pair and shuts down the server"""
     client_server_pair_obj = ClientServerPair()
 

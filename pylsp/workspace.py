@@ -41,8 +41,9 @@ class Workspace:
     M_INITIALIZE_PROGRESS = "window/workDoneProgress/create"
     M_APPLY_EDIT = "workspace/applyEdit"
     M_SHOW_MESSAGE = "window/showMessage"
+    M_LOG_MESSAGE = "window/logMessage"
 
-    def __init__(self, root_uri, endpoint, config=None):
+    def __init__(self, root_uri, endpoint, config=None) -> None:
         self._config = config
         self._root_uri = root_uri
         self._endpoint = endpoint
@@ -118,20 +119,20 @@ class Workspace:
     def get_maybe_document(self, doc_uri):
         return self._docs.get(doc_uri)
 
-    def put_document(self, doc_uri, source, version=None):
+    def put_document(self, doc_uri, source, version=None) -> None:
         self._docs[doc_uri] = self._create_document(
             doc_uri, source=source, version=version
         )
 
     def put_notebook_document(
         self, doc_uri, notebook_type, cells, version=None, metadata=None
-    ):
+    ) -> None:
         self._docs[doc_uri] = self._create_notebook_document(
             doc_uri, notebook_type, cells, version, metadata
         )
 
     @contextmanager
-    def temp_document(self, source, path=None):
+    def temp_document(self, source, path=None) -> None:
         if path is None:
             path = self.root_path
         uri = uris.from_fs_path(os.path.join(path, str(uuid.uuid4())))
@@ -141,26 +142,26 @@ class Workspace:
         finally:
             self.rm_document(uri)
 
-    def add_notebook_cells(self, doc_uri, cells, start):
+    def add_notebook_cells(self, doc_uri, cells, start) -> None:
         self._docs[doc_uri].add_cells(cells, start)
 
-    def remove_notebook_cells(self, doc_uri, start, delete_count):
+    def remove_notebook_cells(self, doc_uri, start, delete_count) -> None:
         self._docs[doc_uri].remove_cells(start, delete_count)
 
-    def update_notebook_metadata(self, doc_uri, metadata):
+    def update_notebook_metadata(self, doc_uri, metadata) -> None:
         self._docs[doc_uri].metadata = metadata
 
     def put_cell_document(
         self, doc_uri, notebook_uri, language_id, source, version=None
-    ):
+    ) -> None:
         self._docs[doc_uri] = self._create_cell_document(
             doc_uri, notebook_uri, language_id, source, version
         )
 
-    def rm_document(self, doc_uri):
+    def rm_document(self, doc_uri) -> None:
         self._docs.pop(doc_uri)
 
-    def update_document(self, doc_uri, change, version=None):
+    def update_document(self, doc_uri, change, version=None) -> None:
         self._docs[doc_uri].apply_change(change)
         self._docs[doc_uri].version = version
 
@@ -176,10 +177,18 @@ class Workspace:
     def apply_edit(self, edit):
         return self._endpoint.request(self.M_APPLY_EDIT, {"edit": edit})
 
-    def publish_diagnostics(self, doc_uri, diagnostics):
+    def publish_diagnostics(self, doc_uri, diagnostics, doc_version=None) -> None:
+        params = {
+            "uri": doc_uri,
+            "diagnostics": diagnostics,
+        }
+
+        if doc_version:
+            params["version"] = doc_version
+
         self._endpoint.notify(
             self.M_PUBLISH_DIAGNOSTICS,
-            params={"uri": doc_uri, "diagnostics": diagnostics},
+            params=params,
         )
 
     @contextmanager
@@ -316,7 +325,12 @@ class Workspace:
             },
         )
 
-    def show_message(self, message, msg_type=lsp.MessageType.Info):
+    def log_message(self, message, msg_type=lsp.MessageType.Info):
+        self._endpoint.notify(
+            self.M_LOG_MESSAGE, params={"type": msg_type, "message": message}
+        )
+
+    def show_message(self, message, msg_type=lsp.MessageType.Info) -> None:
         self._endpoint.notify(
             self.M_SHOW_MESSAGE, params={"type": msg_type, "message": message}
         )
@@ -372,7 +386,7 @@ class Workspace:
             rope_project_builder=self._rope_project_builder,
         )
 
-    def close(self):
+    def close(self) -> None:
         if self.__rope_autoimport:
             self.__rope_autoimport.close()
 
@@ -387,7 +401,7 @@ class Document:
         local=True,
         extra_sys_path=None,
         rope_project_builder=None,
-    ):
+    ) -> None:
         self.uri = uri
         self.version = version
         self.path = uris.to_fs_path(uri)
@@ -426,7 +440,7 @@ class Document:
                 return f.read()
         return self._source
 
-    def update_config(self, settings):
+    def update_config(self, settings) -> None:
         self._config.update((settings or {}).get("pylsp", {}))
 
     @lock
@@ -586,7 +600,7 @@ class Notebook:
 
     def __init__(
         self, uri, notebook_type, workspace, cells=None, version=None, metadata=None
-    ):
+    ) -> None:
         self.uri = uri
         self.notebook_type = notebook_type
         self.workspace = workspace
@@ -671,7 +685,7 @@ class Cell(Document):
         local=True,
         extra_sys_path=None,
         rope_project_builder=None,
-    ):
+    ) -> None:
         super().__init__(
             uri, workspace, source, version, local, extra_sys_path, rope_project_builder
         )
