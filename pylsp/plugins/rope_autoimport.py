@@ -120,8 +120,8 @@ def _should_insert(expr: tree.BaseNode, word_node: tree.Leaf) -> bool:
     if isinstance(first_child, (tree.PythonErrorNode, tree.PythonNode)):
         # The tree will often include error nodes like this to indicate errors
         # we want to ignore errors since the code is being written
-        return _should_insert(first_child, word_node)
-    return _handle_first_child(first_child, expr, word_node)
+        return _should_insert(expr=first_child, word_node=word_node)
+    return _handle_first_child(first_child=first_child, expr=expr, word_node=word_node)
 
 
 def _handle_first_child(
@@ -136,9 +136,9 @@ def _handle_first_child(
             return False
     if isinstance(first_child, tree.Keyword):
         if first_child.value == "def":
-            return _should_import_function(word_node, expr)
+            return _should_import_function(word_node=word_node, expr=expr)
         if first_child.value == "class":
-            return _should_import_class(word_node, expr)
+            return _should_import_class(word_node=word_node, expr=expr)
     return True
 
 
@@ -157,7 +157,7 @@ def _should_import_class(word_node: tree.Leaf, expr: tree.BaseNode) -> bool:
 def _should_import_function(word_node: tree.Leaf, expr: tree.BaseNode) -> bool:
     prev_node = None
     for node in expr.children:
-        if _handle_argument(node, word_node):
+        if _handle_argument(node=node, word_node=word_node):
             return True
         if isinstance(prev_node, tree.Operator):
             if prev_node.value == "->":
@@ -174,7 +174,7 @@ def _handle_argument(node: NodeOrLeaf, word_node: tree.Leaf):
                 return True
         if node.type == "parameters":
             for parameter in node.children:
-                if _handle_argument(parameter, word_node):
+                if _handle_argument(node=parameter, word_node=word_node):
                     return True
     return False
 
@@ -193,7 +193,10 @@ def _process_statements(
         edit_range = {"start": start, "end": start}
         edit = {"range": edit_range, "newText": suggestion.import_statement + "\n"}
         score = _get_score(
-            suggestion.source, suggestion.import_statement, suggestion.name, word
+            source=suggestion.source,
+            full_statement=suggestion.import_statement,
+            suggested_name=suggestion.name,
+            desired_name=word,
         )
         if score > _score_max:
             continue
@@ -246,7 +249,7 @@ def pylsp_completions(
     line = document.lines[position["line"]]
     expr = parso.parse(line)
     word_node = expr.get_leaf_for_position((1, position["character"]))
-    if not _should_insert(expr, word_node):
+    if not _should_insert(expr=expr, word_node=word_node):
         return []
     word = word_node.value
     log.debug(f"autoimport: searching for word: {word}")
@@ -258,7 +261,12 @@ def pylsp_completions(
     suggestions = list(autoimport.search_full(word, ignored_names=ignored_names))
     results = sorted(
         _process_statements(
-            suggestions, document.uri, word, autoimport, document, "completions"
+            suggestions=suggestions,
+            doc_uri=document.uri,
+            word=word,
+            autoimport=autoimport,
+            document=document,
+            feature="completions",
         ),
         key=lambda statement: statement["sortText"],
     )
@@ -339,7 +347,7 @@ def pylsp_code_actions(
         if "undefined name" not in diagnostic.get("message", "").lower():
             continue
 
-        word = get_name_or_module(document, diagnostic)
+        word = get_name_or_module(document=document, diagnostic=diagnostic)
         log.debug(f"autoimport: searching for word: {word}")
         rope_config = config.settings(document_path=document.path).get("rope", {})
         autoimport = workspace._rope_autoimport(rope_config)
@@ -347,12 +355,12 @@ def pylsp_code_actions(
         log.debug("autoimport: suggestions: %s", suggestions)
         results = sorted(
             _process_statements(
-                suggestions,
-                document.uri,
-                word,
-                autoimport,
-                document,
-                "code_actions",
+                suggestions=suggestions,
+                doc_uri=document.uri,
+                word=word,
+                autoimport=autoimport,
+                document=document,
+                feature="code_actions",
             ),
             key=lambda statement: statement["data"]["sortText"],
         )

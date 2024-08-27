@@ -49,9 +49,9 @@ def helper_check_symbols_all_scope(symbols):
 
 
 def test_symbols(config, workspace):
-    doc = Document(DOC_URI, workspace, DOC)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=DOC)
     config.update({"plugins": {"jedi_symbols": {"all_scopes": False}}})
-    symbols = pylsp_document_symbols(config, doc)
+    symbols = pylsp_document_symbols(config=config, document=doc)
 
     # All four symbols (import sys, a, B, main)
     # y is not in the root scope, it shouldn't be returned
@@ -74,8 +74,9 @@ def test_symbols(config, workspace):
 
 
 def test_symbols_all_scopes(config, workspace) -> None:
-    doc = Document(DOC_URI, workspace, DOC)
-    symbols = pylsp_document_symbols(config, doc)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=DOC)
+    symbols = pylsp_document_symbols(config=config, document=doc)
+
     helper_check_symbols_all_scope(symbols)
 
 
@@ -84,8 +85,8 @@ def test_symbols_non_existing_file(config, workspace, tmpdir) -> None:
     # Check pre-condition: file must not exist
     assert not path.check(exists=1)
 
-    doc = Document(uris.from_fs_path(str(path)), workspace, DOC)
-    symbols = pylsp_document_symbols(config, doc)
+    doc = Document(uri=uris.from_fs_path(str(path)), workspace=workspace, source=DOC)
+    symbols = pylsp_document_symbols(config=config, document=doc)
     helper_check_symbols_all_scope(symbols)
 
 
@@ -93,11 +94,11 @@ def test_symbols_non_existing_file(config, workspace, tmpdir) -> None:
     PY2 or not LINUX or not CI, reason="tested on linux and python 3 only"
 )
 def test_symbols_all_scopes_with_jedi_environment(workspace) -> None:
-    doc = Document(DOC_URI, workspace, DOC)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=DOC)
 
     # Update config extra environment
     env_path = "/tmp/pyenv/bin/python"
     settings = {"pylsp": {"plugins": {"jedi": {"environment": env_path}}}}
     doc.update_config(settings)
-    symbols = pylsp_document_symbols(doc._config, doc)
+    symbols = pylsp_document_symbols(config=doc._config, document=doc)
     helper_check_symbols_all_scope(symbols)

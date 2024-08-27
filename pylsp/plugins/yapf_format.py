@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 def pylsp_format_document(workspace, document, options):
     log.info("Formatting document %s with yapf", document)
     with workspace.report_progress("format: yapf"):
-        return _format(document, options=options)
+        return _format(document=document, options=options)
 
 
 @hookimpl
@@ -37,7 +37,7 @@ def pylsp_format_range(document, range, options):
 
     # Add 1 for 1-indexing vs LSP's 0-indexing
     lines = [(range["start"]["line"] + 1, range["end"]["line"] + 1)]
-    return _format(document, lines=lines, options=options)
+    return _format(document=document, lines=lines, options=options)
 
 
 def get_style_config(document_path, options=None):

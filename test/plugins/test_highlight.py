@@ -15,8 +15,8 @@ def test_highlight(workspace) -> None:
     # Over 'a' in a.startswith
     cursor_pos = {"line": 1, "character": 0}
 
-    doc = Document(DOC_URI, workspace, DOC)
-    assert pylsp_document_highlight(doc, cursor_pos) == [
+    doc = Document(uri=DOC_URI, workspace=workspace, source=DOC)
+    assert pylsp_document_highlight(document=doc, position=cursor_pos) == [
         {
             "range": {
                 "start": {"line": 0, "character": 0},
@@ -44,8 +44,8 @@ print sys.path
 def test_sys_highlight(workspace) -> None:
     cursor_pos = {"line": 0, "character": 8}
 
-    doc = Document(DOC_URI, workspace, SYS_DOC)
-    assert pylsp_document_highlight(doc, cursor_pos) == [
+    doc = Document(uri=DOC_URI, workspace=workspace, source=SYS_DOC)
+    assert pylsp_document_highlight(document=doc, position=cursor_pos) == [
         {
             "range": {
                 "start": {"line": 0, "character": 7},

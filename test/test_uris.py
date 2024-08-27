@@ -69,4 +69,4 @@ def test_win_from_fs_path(path, uri) -> None:
     ],
 )
 def test_uri_with(uri, kwargs, new_uri) -> None:
-    assert uris.uri_with(uri, **kwargs) == new_uri
+    assert uris.uri_with(uri=uri, **kwargs) == new_uri

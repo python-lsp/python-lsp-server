@@ -46,7 +46,9 @@ def pylsp_definitions(
     config: Config, document: Document, position: Dict[str, int]
 ) -> List[Dict[str, Any]]:
     settings = config.plugin_settings("jedi_definition")
-    code_position = _utils.position_to_jedi_linecolumn(document, position)
+    code_position = _utils.position_to_jedi_linecolumn(
+        document=document, position=position
+    )
     script = document.jedi_script(use_document_path=True)
     auto_import_modules = jedi.settings.auto_import_modules
 
@@ -57,14 +59,17 @@ def pylsp_definitions(
             follow_builtin_imports=settings.get("follow_builtin_imports", True),
             **code_position,
         )
-        definitions = [_resolve_definition(d, script, settings) for d in definitions]
+        definitions = [
+            _resolve_definition(maybe_defn=d, script=script, settings=settings)
+            for d in definitions
+        ]
     finally:
         jedi.settings.auto_import_modules = auto_import_modules
 
     follow_builtin_defns = settings.get("follow_builtin_definitions", True)
     return [
         {
-            "uri": uris.uri_with(document.uri, path=str(d.module_path)),
+            "uri": uris.uri_with(uri=document.uri, path=str(d.module_path)),
             "range": {
                 "start": {"line": d.line - 1, "character": d.column},
                 "end": {"line": d.line - 1, "character": d.column + len(d.name)},

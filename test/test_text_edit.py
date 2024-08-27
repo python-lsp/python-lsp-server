@@ -13,8 +13,8 @@ def test_apply_text_edits_insert(pylsp) -> None:
 
     assert (
         apply_text_edits(
-            test_doc,
-            [
+            doc=test_doc,
+            text_edits=[
                 {
                     "range": {
                         "start": {"line": 0, "character": 0},
@@ -28,8 +28,8 @@ def test_apply_text_edits_insert(pylsp) -> None:
     )
     assert (
         apply_text_edits(
-            test_doc,
-            [
+            doc=test_doc,
+            text_edits=[
                 {
                     "range": {
                         "start": {"line": 0, "character": 1},
@@ -43,8 +43,8 @@ def test_apply_text_edits_insert(pylsp) -> None:
     )
     assert (
         apply_text_edits(
-            test_doc,
-            [
+            doc=test_doc,
+            text_edits=[
                 {
                     "range": {
                         "start": {"line": 0, "character": 1},
@@ -65,8 +65,8 @@ def test_apply_text_edits_insert(pylsp) -> None:
     )
     assert (
         apply_text_edits(
-            test_doc,
-            [
+            doc=test_doc,
+            text_edits=[
                 {
                     "range": {
                         "start": {"line": 0, "character": 2},
@@ -114,8 +114,8 @@ def test_apply_text_edits_replace(pylsp) -> None:
 
     assert (
         apply_text_edits(
-            test_doc,
-            [
+            doc=test_doc,
+            text_edits=[
                 {
                     "range": {
                         "start": {"line": 0, "character": 3},
@@ -129,8 +129,8 @@ def test_apply_text_edits_replace(pylsp) -> None:
     )
     assert (
         apply_text_edits(
-            test_doc,
-            [
+            doc=test_doc,
+            text_edits=[
                 {
                     "range": {
                         "start": {"line": 0, "character": 3},
@@ -151,8 +151,8 @@ def test_apply_text_edits_replace(pylsp) -> None:
     )
     assert (
         apply_text_edits(
-            test_doc,
-            [
+            doc=test_doc,
+            text_edits=[
                 {
                     "range": {
                         "start": {"line": 0, "character": 3},
@@ -173,8 +173,8 @@ def test_apply_text_edits_replace(pylsp) -> None:
     )
     assert (
         apply_text_edits(
-            test_doc,
-            [
+            doc=test_doc,
+            text_edits=[
                 {
                     "range": {
                         "start": {"line": 0, "character": 6},
@@ -195,8 +195,8 @@ def test_apply_text_edits_replace(pylsp) -> None:
     )
     assert (
         apply_text_edits(
-            test_doc,
-            [
+            doc=test_doc,
+            text_edits=[
                 {
                     "range": {
                         "start": {"line": 0, "character": 3},
@@ -224,8 +224,8 @@ def test_apply_text_edits_overlap(pylsp) -> None:
     did_throw = False
     try:
         apply_text_edits(
-            test_doc,
-            [
+            doc=test_doc,
+            text_edits=[
                 {
                     "range": {
                         "start": {"line": 0, "character": 3},
@@ -251,8 +251,8 @@ def test_apply_text_edits_overlap(pylsp) -> None:
 
     try:
         apply_text_edits(
-            test_doc,
-            [
+            doc=test_doc,
+            text_edits=[
                 {
                     "range": {
                         "start": {"line": 0, "character": 3},
@@ -281,8 +281,8 @@ def test_apply_text_edits_multiline(pylsp) -> None:
 
     assert (
         apply_text_edits(
-            test_doc,
-            [
+            doc=test_doc,
+            text_edits=[
                 {
                     "range": {
                         "start": {"line": 2, "character": 0},

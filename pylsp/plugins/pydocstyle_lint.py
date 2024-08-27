@@ -86,7 +86,7 @@ def pylsp_lint(config, workspace, document):
                 for error in errors:
                     if error.code not in checked_codes:
                         continue
-                    diags.append(_parse_diagnostic(document, error))
+                    diags.append(_parse_diagnostic(document=document, error=error))
             except pydocstyle.parser.ParseError:
                 # In the case we cannot parse the Python file, just continue
                 pass

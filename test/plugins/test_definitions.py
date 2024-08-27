@@ -51,9 +51,9 @@ def test_definitions(config, workspace) -> None:
         "end": {"line": 0, "character": 5},
     }
 
-    doc = Document(DOC_URI, workspace, DOC)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=DOC)
     assert [{"uri": DOC_URI, "range": def_range}] == pylsp_definitions(
-        config, doc, cursor_pos
+        config=config, document=doc, position=cursor_pos
     )
 
 
@@ -68,9 +68,9 @@ def test_indirect_definitions(config, workspace) -> None:
         "end": {"line": 14, "character": len("subscripted_before_reference")},
     }
 
-    doc = Document(DOC_URI, workspace, DOC)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=DOC)
     assert [{"uri": DOC_URI, "range": def_range}] == pylsp_definitions(
-        config, doc, cursor_pos
+        config=config, document=doc, position=cursor_pos
     )
 
 
@@ -85,9 +85,9 @@ def test_definition_with_multihop_inference_goto(config, workspace) -> None:
         "end": {"line": 24, "character": len("inception")},
     }
 
-    doc = Document(DOC_URI, workspace, DOC)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=DOC)
     assert [{"uri": DOC_URI, "range": def_range}] == pylsp_definitions(
-        config, doc, cursor_pos
+        config=config, document=doc, position=cursor_pos
     )
 
 
@@ -95,8 +95,8 @@ def test_numpy_definition(config, workspace) -> None:
     # Over numpy.ones
     cursor_pos = {"line": 29, "character": 8}
 
-    doc = Document(DOC_URI, workspace, DOC)
-    defns = pylsp_definitions(config, doc, cursor_pos)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=DOC)
+    defns = pylsp_definitions(config=config, document=doc, position=cursor_pos)
     assert len(defns) > 0, defns
 
 
@@ -104,21 +104,21 @@ def test_builtin_definition(config, workspace) -> None:
     # Over 'i' in dict
     cursor_pos = {"line": 8, "character": 24}
 
-    doc = Document(DOC_URI, workspace, DOC)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=DOC)
     orig_settings = config.settings()
 
     # Check definition for `dict` goes to `builtins.pyi::dict`
     follow_defns_setting = {"follow_builtin_definitions": True}
     settings = {"plugins": {"jedi_definition": follow_defns_setting}}
     config.update(settings)
-    defns = pylsp_definitions(config, doc, cursor_pos)
+    defns = pylsp_definitions(config=config, document=doc, position=cursor_pos)
     assert len(defns) == 1
     assert defns[0]["uri"].endswith("builtins.pyi")
 
     # Check no definitions for `dict`
     follow_defns_setting["follow_builtin_definitions"] = False
     config.update(settings)
-    defns = pylsp_definitions(config, doc, cursor_pos)
+    defns = pylsp_definitions(config=config, document=doc, position=cursor_pos)
     assert not defns
 
     config.update(orig_settings)
@@ -134,9 +134,9 @@ def test_assignment(config, workspace) -> None:
         "end": {"line": 8, "character": 20},
     }
 
-    doc = Document(DOC_URI, workspace, DOC)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=DOC)
     assert [{"uri": DOC_URI, "range": def_range}] == pylsp_definitions(
-        config, doc, cursor_pos
+        config=config, document=doc, position=cursor_pos
     )
 
 
@@ -155,7 +155,7 @@ def foo():
     doc_content = """from mymodule import foo"""
     doc_path = str(tmpdir) + os.path.sep + "myfile.py"
     doc_uri = uris.from_fs_path(doc_path)
-    doc = Document(doc_uri, workspace_other_root_path, doc_content)
+    doc = Document(uri=doc_uri, workspace=workspace_other_root_path, source=doc_content)
 
     # The range where is defined in mymodule.py
     def_range = {
@@ -171,5 +171,5 @@ def foo():
     module_uri = uris.from_fs_path(module_path)
 
     assert [{"uri": module_uri, "range": def_range}] == pylsp_definitions(
-        config, doc, cursor_pos
+        config=config, document=doc, position=cursor_pos
     )

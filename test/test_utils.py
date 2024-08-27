@@ -153,7 +153,7 @@ def test_debounce_keyed_by() -> None:
     interval = 0.1
     obj = mock.Mock()
 
-    @_utils.debounce(0.1, keyed_by="key")
+    @_utils.debounce(interval_s=0.1, keyed_by="key")
     def call_m(key):
         obj(key)
 
@@ -192,28 +192,28 @@ def test_find_parents(tmpdir) -> None:
     path = subsubdir.ensure("path.py")
     test_cfg = tmpdir.ensure("test.cfg")
 
-    assert _utils.find_parents(tmpdir.strpath, path.strpath, ["test.cfg"]) == [
-        test_cfg.strpath
-    ]
+    assert _utils.find_parents(
+        root=tmpdir.strpath, path=path.strpath, names=["test.cfg"]
+    ) == [test_cfg.strpath]
 
 
 def test_merge_dicts() -> None:
     assert _utils.merge_dicts(
-        {"a": True, "b": {"x": 123, "y": {"hello": "world"}}},
-        {"a": False, "b": {"y": [], "z": 987}},
+        dict_a={"a": True, "b": {"x": 123, "y": {"hello": "world"}}},
+        dict_b={"a": False, "b": {"y": [], "z": 987}},
     ) == {"a": False, "b": {"x": 123, "y": [], "z": 987}}
 
 
 def test_clip_column() -> None:
-    assert _utils.clip_column(0, [], 0) == 0
-    assert _utils.clip_column(2, ["123"], 0) == 2
-    assert _utils.clip_column(3, ["123"], 0) == 3
-    assert _utils.clip_column(5, ["123"], 0) == 3
-    assert _utils.clip_column(0, ["\n", "123"], 0) == 0
-    assert _utils.clip_column(1, ["\n", "123"], 0) == 0
-    assert _utils.clip_column(2, ["123\n", "123"], 0) == 2
-    assert _utils.clip_column(3, ["123\n", "123"], 0) == 3
-    assert _utils.clip_column(4, ["123\n", "123"], 1) == 3
+    assert _utils.clip_column(column=0, lines=[], line_number=0) == 0
+    assert _utils.clip_column(column=2, lines=["123"], line_number=0) == 2
+    assert _utils.clip_column(column=3, lines=["123"], line_number=0) == 3
+    assert _utils.clip_column(column=5, lines=["123"], line_number=0) == 3
+    assert _utils.clip_column(column=0, lines=["\n", "123"], line_number=0) == 0
+    assert _utils.clip_column(column=1, lines=["\n", "123"], line_number=0) == 0
+    assert _utils.clip_column(column=2, lines=["123\n", "123"], line_number=0) == 2
+    assert _utils.clip_column(column=3, lines=["123\n", "123"], line_number=0) == 3
+    assert _utils.clip_column(column=4, lines=["123\n", "123"], line_number=1) == 3
 
 
 @mock.patch("docstring_to_markdown.convert")
@@ -235,9 +235,9 @@ def test_format_docstring_valid_rst_signature(mock_convert) -> None:
     """
 
     markdown = _utils.format_docstring(
-        docstring,
-        "markdown",
-        ["something(a: str) -> str"],
+        contents=docstring,
+        markup_kind="markdown",
+        signatures=["something(a: str) -> str"],
     )["value"]
 
     assert markdown.startswith(
@@ -256,9 +256,9 @@ def test_format_docstring_invalid_rst_signature(_) -> None:
     """
 
     markdown = _utils.format_docstring(
-        docstring,
-        "markdown",
-        ["something(a: str) -> str"],
+        contents=docstring,
+        markup_kind="markdown",
+        signatures=["something(a: str) -> str"],
     )["value"]
 
     assert markdown.startswith(

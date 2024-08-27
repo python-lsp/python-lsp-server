@@ -18,8 +18,8 @@ def test_mccabe(config, workspace) -> None:
     old_settings = config.settings
     try:
         config.update({"plugins": {"mccabe": {"threshold": 1}}})
-        doc = Document(DOC_URI, workspace, DOC)
-        diags = mccabe_lint.pylsp_lint(config, workspace, doc)
+        doc = Document(uri=DOC_URI, workspace=workspace, source=DOC)
+        diags = mccabe_lint.pylsp_lint(config=config, workspace=workspace, document=doc)
 
         assert all(d["source"] == "mccabe" for d in diags)
 
@@ -35,5 +35,7 @@ def test_mccabe(config, workspace) -> None:
 
 
 def test_mccabe_syntax_error(config, workspace) -> None:
-    doc = Document(DOC_URI, workspace, DOC_SYNTAX_ERR)
-    assert mccabe_lint.pylsp_lint(config, workspace, doc) is None
+    doc = Document(uri=DOC_URI, workspace=workspace, source=DOC_SYNTAX_ERR)
+    assert (
+        mccabe_lint.pylsp_lint(config=config, workspace=workspace, document=doc) is None
+    )

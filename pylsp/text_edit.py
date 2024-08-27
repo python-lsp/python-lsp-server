@@ -45,7 +45,7 @@ def merge_sort_text_edits(text_edits):
     right_idx = 0
     i = 0
     while left_idx < len(left) and right_idx < len(right):
-        ret = compare_text_edits(left[left_idx], right[right_idx])
+        ret = compare_text_edits(a=left[left_idx], b=right[right_idx])
         if ret <= 0:
             #  smaller_equal -> take left to preserve order
             text_edits[i] = left[left_idx]

@@ -40,7 +40,9 @@ def pylsp_completions(config, document, position):
     """Get formatted completions for current code position"""
     settings = config.plugin_settings("jedi_completion", document_path=document.path)
     resolve_eagerly = settings.get("eager", False)
-    code_position = _utils.position_to_jedi_linecolumn(document, position)
+    code_position = _utils.position_to_jedi_linecolumn(
+        document=document, position=position
+    )
 
     code_position["fuzzy"] = settings.get("fuzzy", False)
     completions = document.jedi_script(use_document_path=True).complete(**code_position)
@@ -67,22 +69,24 @@ def pylsp_completions(config, document, position):
         SNIPPET_RESOLVER.cached_modules = modules_to_cache_for
 
     include_params = (
-        snippet_support and should_include_params and use_snippets(document, position)
+        snippet_support
+        and should_include_params
+        and use_snippets(document=document, position=position)
     )
     include_class_objects = (
         snippet_support
         and should_include_class_objects
-        and use_snippets(document, position)
+        and use_snippets(document=document, position=position)
     )
     include_function_objects = (
         snippet_support
         and should_include_function_objects
-        and use_snippets(document, position)
+        and use_snippets(document=document, position=position)
     )
 
     ready_completions = [
         _format_completion(
-            c,
+            d=c,
             markup_kind=preferred_markup_kind,
             include_params=include_params if c.type in ["class", "function"] else False,
             resolve=resolve_eagerly,
@@ -97,7 +101,7 @@ def pylsp_completions(config, document, position):
         for i, c in enumerate(completions):
             if c.type == "class":
                 completion_dict = _format_completion(
-                    c,
+                    d=c,
                     markup_kind=preferred_markup_kind,
                     include_params=False,
                     resolve=resolve_eagerly,
@@ -112,7 +116,7 @@ def pylsp_completions(config, document, position):
         for i, c in enumerate(completions):
             if c.type == "function":
                 completion_dict = _format_completion(
-                    c,
+                    d=c,
                     markup_kind=preferred_markup_kind,
                     include_params=False,
                     resolve=resolve_eagerly,
@@ -152,7 +156,9 @@ def pylsp_completion_item_resolve(config, completion_item, document):
 
     if shared_data:
         completion, data = shared_data
-        return _resolve_completion(completion, data, markup_kind=preferred_markup_kind)
+        return _resolve_completion(
+            completion=completion, d=data, markup_kind=preferred_markup_kind
+        )
     return completion_item
 
 
@@ -211,7 +217,7 @@ def _resolve_completion(completion, d, markup_kind: str):
     completion["detail"] = _detail(d)
     try:
         docs = _utils.format_docstring(
-            d.docstring(raw=True),
+            contents=d.docstring(raw=True),
             signatures=[signature.to_string() for signature in d.get_signatures()],
             markup_kind=markup_kind,
         )
@@ -230,14 +236,16 @@ def _format_completion(
     snippet_support=False,
 ):
     completion = {
-        "label": _label(d, resolve_label_or_snippet),
+        "label": _label(definition=d, resolve=resolve_label_or_snippet),
         "kind": _TYPE_MAP.get(d.type),
         "sortText": _sort_text(d),
         "insertText": d.name,
     }
 
     if resolve:
-        completion = _resolve_completion(completion, d, markup_kind)
+        completion = _resolve_completion(
+            completion=completion, d=d, markup_kind=markup_kind
+        )
 
     # Adjustments for file completions
     if d.type == "path":
@@ -260,7 +268,7 @@ def _format_completion(
         completion["insertText"] = path
 
     if include_params and not is_exception_class(d.name):
-        snippet = _snippet(d, resolve_label_or_snippet)
+        snippet = _snippet(definition=d, resolve=resolve_label_or_snippet)
         completion.update(snippet)
 
     return completion

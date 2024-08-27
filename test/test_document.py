@@ -16,8 +16,9 @@ def test_document_lines(doc) -> None:
 
 
 def test_document_source_unicode(workspace) -> None:
-    document_mem = Document(DOC_URI, workspace, "my source")
-    document_disk = Document(DOC_URI, workspace)
+    document_mem = Document(uri=DOC_URI, workspace=workspace, source="my source")
+    document_disk = Document(uri=DOC_URI, workspace=workspace)
+
     assert isinstance(document_mem.source, type(document_disk.source))
 
 
@@ -44,7 +45,7 @@ def test_word_at_position(doc) -> None:
 
 
 def test_document_empty_edit(workspace) -> None:
-    doc = Document("file:///uri", workspace, "")
+    doc = Document(uri="file:///uri", workspace=workspace, source="")
     doc.apply_change(
         {
             "range": {
@@ -58,7 +59,7 @@ def test_document_empty_edit(workspace) -> None:
 
 
 def test_document_line_edit(workspace) -> None:
-    doc = Document("file:///uri", workspace, "itshelloworld")
+    doc = Document(uri="file:///uri", workspace=workspace, source="itshelloworld")
     doc.apply_change(
         {
             "text": "goodbye",
@@ -73,7 +74,7 @@ def test_document_line_edit(workspace) -> None:
 
 def test_document_multiline_edit(workspace) -> None:
     old = ["def hello(a, b):\n", "    print a\n", "    print b\n"]
-    doc = Document("file:///uri", workspace, "".join(old))
+    doc = Document(uri="file:///uri", workspace=workspace, source="".join(old))
     doc.apply_change(
         {
             "text": "print a, b",
@@ -88,7 +89,7 @@ def test_document_multiline_edit(workspace) -> None:
 
 def test_document_end_of_file_edit(workspace) -> None:
     old = ["print 'a'\n", "print 'b'\n"]
-    doc = Document("file:///uri", workspace, "".join(old))
+    doc = Document(uri="file:///uri", workspace=workspace, source="".join(old))
     doc.apply_change(
         {
             "text": "o",

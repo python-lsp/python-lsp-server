@@ -71,7 +71,9 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     add_arguments(parser)
     args = parser.parse_args()
-    _configure_logger(args.verbose, args.log_config, args.log_file)
+    _configure_logger(
+        verbose=args.verbose, log_config=args.log_config, log_file=args.log_file
+    )
 
     if args.tcp:
         start_tcp_lang_server(

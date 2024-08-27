@@ -25,14 +25,15 @@ def temp_document(doc_text, workspace):
     with tempfile.NamedTemporaryFile(mode="w", delete=False) as temp_file:
         name = temp_file.name
         temp_file.write(doc_text)
-    doc = Document(uris.from_fs_path(name), workspace)
+    doc = Document(uri=uris.from_fs_path(name), workspace=workspace)
 
     return name, doc
 
 
 def test_flake8_unsaved(workspace) -> None:
-    doc = Document("", workspace, DOC)
-    diags = flake8_lint.pylsp_lint(workspace, doc)
+    doc = Document(uri="", workspace=workspace, source=DOC)
+    diags = flake8_lint.pylsp_lint(workspace=workspace, document=doc)
+
     msg = "F841 local variable 'a' is assigned to but never used"
     unused_var = [d for d in diags if d["message"] == msg][0]
 
@@ -45,9 +46,10 @@ def test_flake8_unsaved(workspace) -> None:
 
 
 def test_flake8_lint(workspace) -> None:
-    name, doc = temp_document(DOC, workspace)
+    name, doc = temp_document(doc_text=DOC, workspace=workspace)
+
     try:
-        diags = flake8_lint.pylsp_lint(workspace, doc)
+        diags = flake8_lint.pylsp_lint(workspace=workspace, document=doc)
         msg = "F841 local variable 'a' is assigned to but never used"
         unused_var = [d for d in diags if d["message"] == msg][0]
 
@@ -91,7 +93,9 @@ def test_flake8_respecting_configuration(workspace) -> None:
         workspace.put_document(made[rel]["uri"], contents)
         made[rel]["document"] = workspace._docs[made[rel]["uri"]]
 
-    diags = flake8_lint.pylsp_lint(workspace, made["src/a.py"]["document"])
+    diags = flake8_lint.pylsp_lint(
+        workspace=workspace, document=made["src/a.py"]["document"]
+    )
     assert diags == [
         {
             "source": "flake8",
@@ -106,7 +110,9 @@ def test_flake8_respecting_configuration(workspace) -> None:
         },
     ]
 
-    diags = flake8_lint.pylsp_lint(workspace, made["src/b.py"]["document"])
+    diags = flake8_lint.pylsp_lint(
+        workspace=workspace, document=made["src/b.py"]["document"]
+    )
     assert diags == [
         {
             "source": "flake8",
@@ -128,8 +134,8 @@ def test_flake8_config_param(workspace) -> None:
         mock_instance.communicate.return_value = [bytes(), bytes()]
         flake8_conf = "/tmp/some.cfg"
         workspace._config.update({"plugins": {"flake8": {"config": flake8_conf}}})
-        _name, doc = temp_document(DOC, workspace)
-        flake8_lint.pylsp_lint(workspace, doc)
+        _name, doc = temp_document(doc_text=DOC, workspace=workspace)
+        flake8_lint.pylsp_lint(workspace=workspace, document=doc)
         (call_args,) = popen_mock.call_args[0]
         assert "flake8" in call_args
         assert "--config={}".format(flake8_conf) in call_args
@@ -145,8 +151,8 @@ def test_flake8_executable_param(workspace) -> None:
             {"plugins": {"flake8": {"executable": flake8_executable}}}
         )
 
-        _name, doc = temp_document(DOC, workspace)
-        flake8_lint.pylsp_lint(workspace, doc)
+        _name, doc = temp_document(doc_text=DOC, workspace=workspace)
+        flake8_lint.pylsp_lint(workspace=workspace, document=doc)
 
         (call_args,) = popen_mock.call_args[0]
         assert flake8_executable in call_args
@@ -180,7 +186,9 @@ exclude =
     doc_uri = uris.from_fs_path(os.path.join(workspace.root_path, "blah/__init__.py"))
     workspace.put_document(doc_uri, doc_str)
 
-    flake8_settings = get_flake8_cfg_settings(workspace, config_str)
+    flake8_settings = get_flake8_cfg_settings(
+        workspace=workspace, config_str=config_str
+    )
 
     assert "exclude" in flake8_settings
     assert len(flake8_settings["exclude"]) == 2
@@ -190,7 +198,7 @@ exclude =
         mock_instance.communicate.return_value = [bytes(), bytes()]
 
         doc = workspace.get_document(doc_uri)
-        flake8_lint.pylsp_lint(workspace, doc)
+        flake8_lint.pylsp_lint(workspace=workspace, document=doc)
 
     call_args = popen_mock.call_args[0][0]
 
@@ -222,7 +230,9 @@ exclude =
     doc_uri = uris.from_fs_path(os.path.join(workspace.root_path, "blah/__init__.py"))
     workspace.put_document(doc_uri, doc_str)
 
-    flake8_settings = get_flake8_cfg_settings(workspace, config_str)
+    flake8_settings = get_flake8_cfg_settings(
+        workspace=workspace, config_str=config_str
+    )
 
     assert "perFileIgnores" in flake8_settings
     assert len(flake8_settings["perFileIgnores"]) == 2
@@ -230,7 +240,7 @@ exclude =
     assert len(flake8_settings["exclude"]) == 2
 
     doc = workspace.get_document(doc_uri)
-    res = flake8_lint.pylsp_lint(workspace, doc)
+    res = flake8_lint.pylsp_lint(workspace=workspace, document=doc)
     assert not res
 
     os.unlink(os.path.join(workspace.root_path, "setup.cfg"))
@@ -246,13 +256,15 @@ per-file-ignores = **/__init__.py:F401,E402
     doc_uri = uris.from_fs_path(os.path.join(workspace.root_path, "blah/__init__.py"))
     workspace.put_document(doc_uri, doc_str)
 
-    flake8_settings = get_flake8_cfg_settings(workspace, config_str)
+    flake8_settings = get_flake8_cfg_settings(
+        workspace=workspace, config_str=config_str
+    )
 
     assert "perFileIgnores" in flake8_settings
     assert len(flake8_settings["perFileIgnores"]) == 2
 
     doc = workspace.get_document(doc_uri)
-    res = flake8_lint.pylsp_lint(workspace, doc)
+    res = flake8_lint.pylsp_lint(workspace=workspace, document=doc)
     assert not res
 
     os.unlink(os.path.join(workspace.root_path, "setup.cfg"))

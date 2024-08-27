@@ -17,7 +17,7 @@ log = logging.getLogger(__name__)
 def pylsp_format_document(config, workspace, document, options):
     with workspace.report_progress("format: autopep8"):
         log.info("Formatting document %s with autopep8", document)
-        return _format(config, document)
+        return _format(config=config, document=document)
 
 
 @hookimpl(tryfirst=True)  # Prefer autopep8 over YAPF
@@ -31,11 +31,11 @@ def pylsp_format_range(config, workspace, document, range, options):
 
     # Add 1 for 1-indexing vs LSP's 0-indexing
     line_range = (range["start"]["line"] + 1, range["end"]["line"])
-    return _format(config, document, line_range=line_range)
+    return _format(config=config, document=document, line_range=line_range)
 
 
 def _format(config, document, line_range=None):
-    options = _autopep8_config(config, document)
+    options = _autopep8_config(config=config, document=document)
     if line_range:
         options["line_range"] = list(line_range)
 

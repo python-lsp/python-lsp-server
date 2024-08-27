@@ -25,8 +25,8 @@ import json
 
 
 def test_pycodestyle(workspace) -> None:
-    doc = Document(DOC_URI, workspace, DOC)
-    diags = pycodestyle_lint.pylsp_lint(workspace, doc)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=DOC)
+    diags = pycodestyle_lint.pylsp_lint(workspace=workspace, document=doc)
 
     assert all(d["source"] == "pycodestyle" for d in diags)
 
@@ -84,7 +84,7 @@ def test_pycodestyle_config(workspace) -> None:
     doc = workspace.get_document(doc_uri)
 
     # Make sure we get a warning for 'indentation contains tabs'
-    diags = pycodestyle_lint.pylsp_lint(workspace, doc)
+    diags = pycodestyle_lint.pylsp_lint(workspace=workspace, document=doc)
     assert [d for d in diags if d["code"] == "W191"]
 
     content = {
@@ -101,7 +101,7 @@ def test_pycodestyle_config(workspace) -> None:
         workspace._config.settings.cache_clear()
 
         # And make sure we don't get any warnings
-        diags = pycodestyle_lint.pylsp_lint(workspace, doc)
+        diags = pycodestyle_lint.pylsp_lint(workspace=workspace, document=doc)
         assert len([d for d in diags if d["code"] == "W191"]) == (0 if working else 1)
         assert len([d for d in diags if d["code"] == "E201"]) == (0 if working else 1)
         assert [d for d in diags if d["code"] == "W391"]
@@ -111,7 +111,7 @@ def test_pycodestyle_config(workspace) -> None:
     # Make sure we can ignore via the PYLS config as well
     workspace._config.update({"plugins": {"pycodestyle": {"ignore": ["W191", "E201"]}}})
     # And make sure we only get one warning
-    diags = pycodestyle_lint.pylsp_lint(workspace, doc)
+    diags = pycodestyle_lint.pylsp_lint(workspace=workspace, document=doc)
     assert not [d for d in diags if d["code"] == "W191"]
     assert not [d for d in diags if d["code"] == "E201"]
     assert [d for d in diags if d["code"] == "W391"]
@@ -127,10 +127,10 @@ def test_line_endings(workspace, newline) -> None:
     source = f"try:{newline}    1/0{newline}except Exception:{newline}    pass{newline}"
 
     # Create document
-    doc = Document(DOC_URI, workspace, source)
+    doc = Document(uri=DOC_URI, workspace=workspace, source=source)
 
     # Get diagnostics
-    diags = pycodestyle_lint.pylsp_lint(workspace, doc)
+    diags = pycodestyle_lint.pylsp_lint(workspace=workspace, document=doc)
 
     # Assert no diagnostics were given
     assert len(diags) == 0

@@ -17,7 +17,7 @@ def pylsp_folding_range(document):
     program = document.source + "\n"
     lines = program.splitlines()
     tree = parso.parse(program)
-    ranges = __compute_folding_ranges(tree, lines)
+    ranges = __compute_folding_ranges(tree=tree, lines=lines)
 
     results = []
     for start_line, end_line in ranges:
@@ -88,18 +88,28 @@ def __compute_folding_ranges_identation(text):
                 current_level = level
             elif level < current_level:
                 identation_stack, folding_ranges = __match_identation_stack(
-                    identation_stack, level, level_limits, folding_ranges, current_line
+                    identation_stack=identation_stack,
+                    level=level,
+                    level_limits=level_limits,
+                    folding_ranges=folding_ranges,
+                    current_line=current_line,
                 )
                 current_level = level
         else:
             folding_ranges = __empty_identation_stack(
-                identation_stack, level_limits, current_line, folding_ranges
+                identation_stack=identation_stack,
+                level_limits=level_limits,
+                current_line=current_line,
+                folding_ranges=folding_ranges,
             )
             current_level = 0
         if line.strip() != "":
             current_line = i
     folding_ranges = __empty_identation_stack(
-        identation_stack, level_limits, current_line, folding_ranges
+        identation_stack=identation_stack,
+        level_limits=level_limits,
+        current_line=current_line,
+        folding_ranges=folding_ranges,
     )
     return dict(folding_ranges)
 
@@ -136,17 +146,17 @@ def __handle_flow_nodes(node, end_line, stack):
     if isinstance(node, tree_nodes.Keyword):
         from_keyword = True
         if node.value in {"if", "elif", "with", "while"}:
-            node, end_line = __handle_skip(stack, 2)
+            node, end_line = __handle_skip(stack=stack, skip=2)
         elif node.value in {"except"}:
             first_node = stack[0]
             if isinstance(first_node, tree_nodes.Operator):
-                node, end_line = __handle_skip(stack, 1)
+                node, end_line = __handle_skip(stack=stack, skip=1)
             else:
-                node, end_line = __handle_skip(stack, 2)
+                node, end_line = __handle_skip(stack=stack, skip=2)
         elif node.value in {"for"}:
-            node, end_line = __handle_skip(stack, 4)
+            node, end_line = __handle_skip(stack=stack, skip=4)
         elif node.value in {"else"}:
-            node, end_line = __handle_skip(stack, 1)
+            node, end_line = __handle_skip(stack=stack, skip=1)
     return end_line, from_keyword, node, stack
 
 
@@ -154,7 +164,9 @@ def __compute_start_end_lines(node, stack):
     start_line, _ = node.start_pos
     end_line, _ = node.end_pos
     modified = False
-    end_line, from_keyword, node, stack = __handle_flow_nodes(node, end_line, stack)
+    end_line, from_keyword, node, stack = __handle_flow_nodes(
+        node=node, end_line=end_line, stack=stack
+    )
 
     last_leaf = node.get_last_leaf()
     last_newline = isinstance(last_leaf, tree_nodes.Newline)
@@ -194,12 +206,16 @@ def __compute_folding_ranges(tree, lines):
             padding = [""] * start_line
             text = "\n".join(padding + lines[start_line:]) + "\n"
             identation_ranges = __compute_folding_ranges_identation(text)
-            folding_ranges = __merge_folding_ranges(folding_ranges, identation_ranges)
+            folding_ranges = __merge_folding_ranges(
+                left=folding_ranges, right=identation_ranges
+            )
             break
         if not isinstance(node, SKIP_NODES):
             valid = __check_if_node_is_valid(node)
             if valid:
-                start_line, end_line, stack = __compute_start_end_lines(node, stack)
+                start_line, end_line, stack = __compute_start_end_lines(
+                    node=node, stack=stack
+                )
                 if end_line > start_line:
                     current_end = folding_ranges.get(start_line, -1)
                     folding_ranges[start_line] = max(current_end, end_line)

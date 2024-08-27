@@ -10,7 +10,9 @@ log = logging.getLogger(__name__)
 
 @hookimpl
 def pylsp_document_highlight(document, position):
-    code_position = _utils.position_to_jedi_linecolumn(document, position)
+    code_position = _utils.position_to_jedi_linecolumn(
+        document=document, position=position
+    )
     usages = document.jedi_script().get_references(**code_position)
 
     def is_valid(definition):
