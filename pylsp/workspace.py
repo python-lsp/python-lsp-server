@@ -599,9 +599,9 @@ class Document:
         )
         path.extend(environment.get_sys_path())
         if prioritize_extra_paths:
-            path += extra_paths + path
+            path = extra_paths + path
         else:
-            path += path + extra_paths
+            path = path + extra_paths
 
         return path
 
