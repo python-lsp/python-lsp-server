@@ -80,6 +80,8 @@ def pylsp_completions(config, document, position):
         and use_snippets(document, position)
     )
 
+    escape_path_sep = settings.get("escape_path_sep", snippet_support)
+
     ready_completions = [
         _format_completion(
             c,
@@ -87,7 +89,7 @@ def pylsp_completions(config, document, position):
             include_params=include_params if c.type in ["class", "function"] else False,
             resolve=resolve_eagerly,
             resolve_label_or_snippet=(i < max_to_resolve),
-            snippet_support=snippet_support,
+            escape_path_sep=escape_path_sep,
         )
         for i, c in enumerate(completions)
     ]
@@ -102,7 +104,7 @@ def pylsp_completions(config, document, position):
                     include_params=False,
                     resolve=resolve_eagerly,
                     resolve_label_or_snippet=(i < max_to_resolve),
-                    snippet_support=snippet_support,
+                    escape_path_sep=escape_path_sep,
                 )
                 completion_dict["kind"] = lsp.CompletionItemKind.TypeParameter
                 completion_dict["label"] += " object"
@@ -117,7 +119,7 @@ def pylsp_completions(config, document, position):
                     include_params=False,
                     resolve=resolve_eagerly,
                     resolve_label_or_snippet=(i < max_to_resolve),
-                    snippet_support=snippet_support,
+                    escape_path_sep=escape_path_sep,
                 )
                 completion_dict["kind"] = lsp.CompletionItemKind.TypeParameter
                 completion_dict["label"] += " object"
@@ -227,7 +229,7 @@ def _format_completion(
     include_params=True,
     resolve=False,
     resolve_label_or_snippet=False,
-    snippet_support=False,
+    escape_path_sep=False,
 ):
     completion = {
         "label": _label(d, resolve_label_or_snippet),
@@ -253,7 +255,7 @@ def _format_completion(
 
         # Escape to prevent conflicts with the code snippets grammer
         # See also https://github.com/python-lsp/python-lsp-server/issues/373
-        if snippet_support:
+        if escape_path_sep:
             path = path.replace("\\", "\\\\")
             path = path.replace("/", "\\/")
 

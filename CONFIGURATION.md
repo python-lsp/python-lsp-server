@@ -25,6 +25,7 @@ This server can be configured using the `workspace/didChangeConfiguration` metho
 | `pylsp.plugins.jedi.env_vars` | `object` | Define environment variables for jedi.Script and Jedi.names. | `null` |
 | `pylsp.plugins.jedi.environment` | `string` | Define environment for jedi.Script and Jedi.names. | `null` |
 | `pylsp.plugins.jedi_completion.enabled` | `boolean` | Enable or disable the plugin. | `true` |
+| `pylsp.plugins.jedi_completion.escape_path_sep` | `boolean` | Force path separators to be escaped in file path completions. | `true` |
 | `pylsp.plugins.jedi_completion.include_params` | `boolean` | Auto-completes methods and classes with tabstops for each parameter. | `true` |
 | `pylsp.plugins.jedi_completion.include_class_objects` | `boolean` | Adds class objects as a separate completion item. | `false` |
 | `pylsp.plugins.jedi_completion.include_function_objects` | `boolean` | Adds function objects as a separate completion item. | `false` |
