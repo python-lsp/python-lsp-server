@@ -65,6 +65,7 @@ class TypeCase(NamedTuple):
     expected: lsp.CompletionItemKind
 
 
+# fmt: off
 TYPE_CASES: Dict[str, TypeCase] = {
     "variable": TypeCase(
         document="test = 1\ntes",
@@ -115,6 +116,7 @@ TYPE_CASES: Dict[str, TypeCase] = {
         expected=lsp.CompletionItemKind.Property,
     ),
 }
+# fmt: on
 
 
 @pytest.mark.parametrize("case", list(TYPE_CASES.values()), ids=list(TYPE_CASES.keys()))
