@@ -1,5 +1,15 @@
 # History of changes
 
+## Version 1.12.2 (2025/02/07)
+
+### Pull Requests Merged
+
+* [PR 608](https://github.com/python-lsp/python-lsp-server/pull/608) - Fix putting `extra_paths` in front of `sys.path`, by [@cmashinho](https://github.com/cmashinho)
+
+In this release 1 pull request was closed.
+
+----
+
 ## Version 1.12.1 (2025/02/06)
 
 ### Issues Closed
