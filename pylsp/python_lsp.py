@@ -399,14 +399,21 @@ class PythonLSPServer(MethodDispatcher):
             notebook_document = workspace.get_maybe_document(document.notebook_uri)
             ignored_names = notebook_document.jedi_names(doc_uri)
         completions = self._hook(
-            "pylsp_completions", doc_uri, position=position, ignored_names=ignored_names
+            "pylsp_completions",
+            doc_uri,
+            position=position,
+            ignored_names=ignored_names,
+            signatures_to_markdown=self._signatures_to_markdown,
         )
         return {"isIncomplete": False, "items": flatten(completions)}
 
     def completion_item_resolve(self, completion_item):
         doc_uri = completion_item.get("data", {}).get("doc_uri", None)
         return self._hook(
-            "pylsp_completion_item_resolve", doc_uri, completion_item=completion_item
+            "pylsp_completion_item_resolve",
+            doc_uri,
+            completion_item=completion_item,
+            signatures_to_markdown=self._signatures_to_markdown,
         )
 
     def definitions(self, doc_uri, position):
@@ -434,7 +441,12 @@ class PythonLSPServer(MethodDispatcher):
         )
 
     def hover(self, doc_uri, position):
-        return self._hook("pylsp_hover", doc_uri, position=position) or {"contents": ""}
+        return self._hook(
+            "pylsp_hover",
+            doc_uri,
+            position=position,
+            signatures_to_markdown=self._signatures_to_markdown,
+        ) or {"contents": ""}
 
     @_utils.debounce(LINT_DEBOUNCE_S, keyed_by="doc_uri")
     def lint(self, doc_uri, is_saved) -> None:
@@ -887,6 +899,14 @@ class PythonLSPServer(MethodDispatcher):
 
     def m_workspace__execute_command(self, command=None, arguments=None):
         return self.execute_command(command, arguments)
+
+    @property
+    def _signatures_to_markdown(self):
+        if not hasattr(self, "_signatures_to_markdown_hook"):
+            self._signatures_to_markdown_hook = self._hook(
+                "pylsp_signatures_to_markdown"
+            )
+        return self._signatures_to_markdown_hook
 
 
 def flatten(list_of_lists):

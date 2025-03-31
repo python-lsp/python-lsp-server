@@ -9,7 +9,7 @@ import pathlib
 import re
 import threading
 import time
-from typing import List, Optional
+from typing import Callable, List, Optional
 
 import docstring_to_markdown
 import jedi
@@ -210,7 +210,10 @@ def choose_markup_kind(client_supported_markup_kinds: List[str]):
 
 
 def format_docstring(
-    contents: str, markup_kind: str, signatures: Optional[List[str]] = None
+    contents: str,
+    markup_kind: str,
+    signatures: Optional[List[str]] = None,
+    signatures_to_markdown: Optional[Callable[[List[str]], str]] = None,
 ):
     """Transform the provided docstring into a MarkupContent object.
 
@@ -232,7 +235,12 @@ def format_docstring(
             value = escape_markdown(contents)
 
         if signatures:
-            value = wrap_signature("\n".join(signatures)) + "\n\n" + value
+            if signatures_to_markdown is None:
+                wrapped_signatures = wrap_signature("\n".join(signatures))
+            else:
+                wrapped_signatures = signatures_to_markdown(signatures)
+
+            value = wrapped_signatures + "\n\n" + value
 
         return {"kind": "markdown", "value": value}
     value = contents

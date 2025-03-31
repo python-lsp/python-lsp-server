@@ -3,6 +3,7 @@
 
 import logging
 import os
+from typing import Callable, List, Optional
 
 import parso
 
@@ -36,7 +37,7 @@ _ERRORS = ("error_node",)
 
 
 @hookimpl
-def pylsp_completions(config, document, position):
+def pylsp_completions(config, document, position, signatures_to_markdown=None):
     """Get formatted completions for current code position"""
     settings = config.plugin_settings("jedi_completion", document_path=document.path)
     resolve_eagerly = settings.get("eager", False)
@@ -88,6 +89,7 @@ def pylsp_completions(config, document, position):
             resolve=resolve_eagerly,
             resolve_label_or_snippet=(i < max_to_resolve),
             snippet_support=snippet_support,
+            signatures_to_markdown=signatures_to_markdown,
         )
         for i, c in enumerate(completions)
     ]
@@ -103,6 +105,7 @@ def pylsp_completions(config, document, position):
                     resolve=resolve_eagerly,
                     resolve_label_or_snippet=(i < max_to_resolve),
                     snippet_support=snippet_support,
+                    signatures_to_markdown=signatures_to_markdown,
                 )
                 completion_dict["kind"] = lsp.CompletionItemKind.TypeParameter
                 completion_dict["label"] += " object"
@@ -118,6 +121,7 @@ def pylsp_completions(config, document, position):
                     resolve=resolve_eagerly,
                     resolve_label_or_snippet=(i < max_to_resolve),
                     snippet_support=snippet_support,
+                    signatures_to_markdown=signatures_to_markdown,
                 )
                 completion_dict["kind"] = lsp.CompletionItemKind.TypeParameter
                 completion_dict["label"] += " object"
@@ -137,7 +141,9 @@ def pylsp_completions(config, document, position):
 
 
 @hookimpl
-def pylsp_completion_item_resolve(config, completion_item, document):
+def pylsp_completion_item_resolve(
+    config, completion_item, document, signatures_to_markdown=None
+):
     """Resolve formatted completion for given non-resolved completion"""
     shared_data = document.shared_data["LAST_JEDI_COMPLETIONS"].get(
         completion_item["label"]
@@ -152,7 +158,12 @@ def pylsp_completion_item_resolve(config, completion_item, document):
 
     if shared_data:
         completion, data = shared_data
-        return _resolve_completion(completion, data, markup_kind=preferred_markup_kind)
+        return _resolve_completion(
+            completion,
+            data,
+            markup_kind=preferred_markup_kind,
+            signatures_to_markdown=signatures_to_markdown,
+        )
     return completion_item
 
 
@@ -207,13 +218,19 @@ def use_snippets(document, position):
     return expr_type not in _IMPORTS and not (expr_type in _ERRORS and "import" in code)
 
 
-def _resolve_completion(completion, d, markup_kind: str):
+def _resolve_completion(
+    completion,
+    d,
+    markup_kind: str,
+    signatures_to_markdown: Optional[Callable[[List[str]], str]] = None,
+):
     completion["detail"] = _detail(d)
     try:
         docs = _utils.format_docstring(
             d.docstring(raw=True),
             signatures=[signature.to_string() for signature in d.get_signatures()],
             markup_kind=markup_kind,
+            signatures_to_markdown=signatures_to_markdown,
         )
     except Exception:
         docs = ""
@@ -228,6 +245,7 @@ def _format_completion(
     resolve=False,
     resolve_label_or_snippet=False,
     snippet_support=False,
+    signatures_to_markdown=None,
 ):
     completion = {
         "label": _label(d, resolve_label_or_snippet),
@@ -237,7 +255,9 @@ def _format_completion(
     }
 
     if resolve:
-        completion = _resolve_completion(completion, d, markup_kind)
+        completion = _resolve_completion(
+            completion, d, markup_kind, signatures_to_markdown
+        )
 
     # Adjustments for file completions
     if d.type == "path":
