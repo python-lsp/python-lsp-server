@@ -10,7 +10,7 @@ from pylsp.workspace import Document
 DOC_URI = uris.from_fs_path(__file__)
 DOC = """
 
-def main():
+def main(a: float, b: float):
     \"\"\"hello world\"\"\"
     pass
 """
@@ -79,11 +79,34 @@ def test_hover(workspace) -> None:
 
     doc = Document(DOC_URI, workspace, DOC)
 
-    contents = {"kind": "markdown", "value": "```python\nmain()\n```\n\n\nhello world"}
+    contents = {
+        "kind": "markdown",
+        "value": "```python\nmain(a: float, b: float)\n```\n\n\nhello world",
+    }
 
     assert {"contents": contents} == pylsp_hover(doc._config, doc, hov_position)
 
     assert {"contents": ""} == pylsp_hover(doc._config, doc, no_hov_position)
+
+
+def test_hover_custom_signature(workspace) -> None:
+    # Over 'main' in def main():
+    hov_position = {"line": 2, "character": 6}
+
+    doc = Document(DOC_URI, workspace, DOC)
+
+    contents = {
+        "kind": "markdown",
+        "value": "```python\nmain(\n    a: float,\n    b: float\n)\n```\n\n\nhello world",
+    }
+
+    def signatures_to_markdown(signatures: list):
+        # dummy implementation for tests
+        return "```python\nmain(\n    a: float,\n    b: float\n)\n```\n"
+
+    assert {"contents": contents} == pylsp_hover(
+        doc._config, doc, hov_position, signatures_to_markdown=signatures_to_markdown
+    )
 
 
 def test_document_path_hover(workspace_other_root_path, tmpdir) -> None:
