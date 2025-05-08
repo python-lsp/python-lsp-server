@@ -117,7 +117,6 @@ def start_ws_lang_server(port, check_parent_process, handler_class) -> None:
         ) from e
 
     with ThreadPoolExecutor(max_workers=10) as tpool:
-
         send_queue = asyncio.Queue()
 
         async def pylsp_ws(websocket):
