@@ -900,13 +900,10 @@ class PythonLSPServer(MethodDispatcher):
     def m_workspace__execute_command(self, command=None, arguments=None):
         return self.execute_command(command, arguments)
 
-    @property
-    def _signatures_to_markdown(self):
-        if not hasattr(self, "_signatures_to_markdown_hook"):
-            self._signatures_to_markdown_hook = self._hook(
-                "pylsp_signatures_to_markdown"
-            )
-        return self._signatures_to_markdown_hook
+    def _signatures_to_markdown(self, signatures):
+        return self._hook(
+            "pylsp_signatures_to_markdown", signatures=signatures
+        ) or _utils.convert_signatures_to_markdown(signatures=signatures)
 
 
 def flatten(list_of_lists):

@@ -37,7 +37,7 @@ _ERRORS = ("error_node",)
 
 
 @hookimpl
-def pylsp_completions(config, document, position, signatures_to_markdown=None):
+def pylsp_completions(config, document, position, signatures_to_markdown):
     """Get formatted completions for current code position"""
     settings = config.plugin_settings("jedi_completion", document_path=document.path)
     resolve_eagerly = settings.get("eager", False)
@@ -142,7 +142,7 @@ def pylsp_completions(config, document, position, signatures_to_markdown=None):
 
 @hookimpl
 def pylsp_completion_item_resolve(
-    config, completion_item, document, signatures_to_markdown=None
+    config, completion_item, document, signatures_to_markdown
 ):
     """Resolve formatted completion for given non-resolved completion"""
     shared_data = document.shared_data["LAST_JEDI_COMPLETIONS"].get(

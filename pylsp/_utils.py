@@ -209,6 +209,10 @@ def choose_markup_kind(client_supported_markup_kinds: List[str]):
     return "markdown"
 
 
+def convert_signatures_to_markdown(signatures: List[str]) -> str:
+    return wrap_signature("\n".join(signatures))
+
+
 def format_docstring(
     contents: str,
     markup_kind: str,
@@ -235,11 +239,11 @@ def format_docstring(
             value = escape_markdown(contents)
 
         if signatures:
-            if signatures_to_markdown is None:
-                wrapped_signatures = wrap_signature("\n".join(signatures))
-            else:
-                wrapped_signatures = signatures_to_markdown(signatures)
-
+            wrapped_signatures = (
+                signatures_to_markdown(signatures)
+                if signatures_to_markdown
+                else convert_signatures_to_markdown(signatures)
+            )
             value = wrapped_signatures + "\n\n" + value
 
         return {"kind": "markdown", "value": value}
