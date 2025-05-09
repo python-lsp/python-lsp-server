@@ -541,7 +541,9 @@ def test_jedi_completion_environment(workspace) -> None:
     completions = pylsp_jedi_completions(doc._config, doc, com_position)
     assert completions[0]["label"] == "loghub"
 
-    resolved = pylsp_jedi_completion_item_resolve(doc._config, completions[0], doc)
+    resolved = pylsp_jedi_completion_item_resolve(
+        doc._config, completions[0], doc, signatures_to_markdown=None
+    )
     assert "changelog generator" in resolved["documentation"]["value"].lower()
 
 
