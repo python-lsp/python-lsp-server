@@ -4,6 +4,7 @@
 import math
 import os
 import sys
+from functools import partial
 from pathlib import Path
 from typing import Dict, NamedTuple
 
@@ -17,6 +18,8 @@ from pylsp.plugins.jedi_completion import (
 from pylsp.plugins.jedi_completion import pylsp_completions as pylsp_jedi_completions
 from pylsp.plugins.rope_completion import pylsp_completions as pylsp_rope_completions
 from pylsp.workspace import Document
+
+pylsp_jedi_completions = partial(pylsp_jedi_completions, signatures_to_markdown=None)
 
 PY2 = sys.version[0] == "2"
 LINUX = sys.platform.startswith("linux")
@@ -162,7 +165,10 @@ def test_jedi_completion_item_resolve(config, workspace) -> None:
     assert "detail" not in documented_hello_item
 
     resolved_documented_hello = pylsp_jedi_completion_item_resolve(
-        doc._config, completion_item=documented_hello_item, document=doc
+        doc._config,
+        completion_item=documented_hello_item,
+        document=doc,
+        signatures_to_markdown=None,
     )
     expected_doc = {
         "kind": "markdown",

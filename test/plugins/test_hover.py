@@ -2,6 +2,7 @@
 # Copyright 2021- Python Language Server Contributors.
 
 import os
+from functools import partial
 
 from pylsp import uris
 from pylsp.plugins.hover import pylsp_hover
@@ -21,6 +22,8 @@ import numpy as np
 np.sin
 
 """
+
+pylsp_hover = partial(pylsp_hover, signatures_to_markdown=None)
 
 
 def test_numpy_hover(workspace) -> None:
