@@ -487,6 +487,11 @@
       "default": false,
       "description": "Resolve documentation and detail eagerly."
     },
+    "pylsp.plugins.rope_implementation.enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Enable or disable the plugin."
+    },
     "pylsp.plugins.yapf.enabled": {
       "type": "boolean",
       "default": true,

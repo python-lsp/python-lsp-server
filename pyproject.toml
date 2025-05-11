@@ -80,6 +80,7 @@ pyflakes = "pylsp.plugins.pyflakes_lint"
 pylint = "pylsp.plugins.pylint_lint"
 rope_completion = "pylsp.plugins.rope_completion"
 rope_autoimport = "pylsp.plugins.rope_autoimport"
+rope_implementation = "pylsp.plugins.rope_implementation"
 yapf = "pylsp.plugins.yapf_format"
 
 [project.scripts]

@@ -94,6 +94,11 @@ def pylsp_hover(config, workspace, document, position) -> None:
 
 
 @hookspec
+def pylsp_implementations(config, workspace, document, position) -> None:
+    pass
+
+
+@hookspec
 def pylsp_initialize(config, workspace) -> None:
     pass
 
