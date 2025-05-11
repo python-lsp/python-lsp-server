@@ -47,8 +47,8 @@ def test_implementations(config, workspace, doc_uri) -> None:
 
     # The implementation of 'Bird.fly'
     def_range = {
-        "start": {"line": 21, "character": 0},
-        "end": {"line": 21, "character": 999},
+        "start": {"line": 21, "character": 8},
+        "end": {"line": 21, "character": 11},
     }
 
     doc = workspace.get_document(doc_uri)
@@ -63,8 +63,8 @@ def test_implementations_skipping_one_class(config, workspace, doc_uri) -> None:
 
     # The implementation of 'breathe', skipping intermediate classes
     def_range = {
-        "start": {"line": 18, "character": 0},
-        "end": {"line": 18, "character": 999},
+        "start": {"line": 18, "character": 8},
+        "end": {"line": 18, "character": 15},
     }
 
     doc = workspace.get_document(doc_uri)
@@ -82,8 +82,8 @@ def test_property_implementations(config, workspace, doc_uri) -> None:
 
     # The property implementation 'Bird.size'
     def_range = {
-        "start": {"line": 25, "character": 0},
-        "end": {"line": 25, "character": 999},
+        "start": {"line": 25, "character": 8},
+        "end": {"line": 25, "character": 12},
     }
 
     doc = workspace.get_document(doc_uri)

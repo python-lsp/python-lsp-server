@@ -2,8 +2,11 @@
 # Copyright 2021- Python Language Server Contributors.
 import logging
 import os
+from typing import Any
 
-from rope.contrib.findit import find_implementations
+from rope.base.project import Project
+from rope.base.resources import Resource
+from rope.contrib.findit import Location, find_implementations
 
 from pylsp import hookimpl, uris
 
@@ -31,13 +34,37 @@ def pylsp_implementations(config, workspace, document, position):
                 document.uri,
                 path=os.path.join(workspace.root_path, impl.resource.path),
             ),
-            "range": {
-                # TODO: `impl.region` seems to be from the start of the file
-                # and offsets from the start of the line difficult to obtain,
-                # so we just return the whole line for now:
-                "start": {"line": impl.lineno - 1, "character": 0},
-                "end": {"line": impl.lineno - 1, "character": 999},
-            },
+            "range": _rope_location_to_range(impl, rope_project),
         }
         for impl in impls
     ]
+
+
+def _rope_location_to_range(
+    location: Location, rope_project: Project
+) -> dict[str, Any]:
+    # NOTE: This assumes the result is confined to a single line, which should
+    # always be the case here because Python doesn't allow splitting up
+    # identifiers across more than one line.
+    start_column, end_column = _rope_region_to_columns(
+        location.region, location.lineno, location.resource, rope_project
+    )
+    return {
+        "start": {"line": location.lineno - 1, "character": start_column},
+        "end": {"line": location.lineno - 1, "character": end_column},
+    }
+
+
+def _rope_region_to_columns(
+    offsets: tuple[int, int], line: int, rope_resource: Resource, rope_project: Project
+) -> tuple[int, int]:
+    """
+    Convert pair of offsets from start of file to columns within line.
+
+    Assumes both offsets reside within the same line and will return nonsense
+    for the end offset if this isn't the case.
+    """
+    line_start_offset = rope_project.get_pymodule(rope_resource).lines.get_line_start(
+        line
+    )
+    return offsets[0] - line_start_offset, offsets[1] - line_start_offset
