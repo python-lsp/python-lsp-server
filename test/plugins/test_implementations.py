@@ -1,11 +1,11 @@
 # Copyright 2017-2020 Palantir Technologies, Inc.
 # Copyright 2021- Python Language Server Contributors.
 
-import test
 from pathlib import Path
 
 import pytest
 
+import test
 from pylsp import uris
 from pylsp.config.config import Config
 from pylsp.plugins.rope_implementation import pylsp_implementations
@@ -42,12 +42,12 @@ def workspace(examples_dir_path: Path, endpoint) -> None:
 
 def test_implementations(config, workspace, doc_uri) -> None:
     # Over 'fly' in WingedAnimal.fly
-    cursor_pos = {"line": 14, "character": 8}
+    cursor_pos = {"line": 15, "character": 8}
 
     # The implementation of 'Bird.fly'
     def_range = {
-        "start": {"line": 21, "character": 8},
-        "end": {"line": 21, "character": 11},
+        "start": {"line": 22, "character": 8},
+        "end": {"line": 22, "character": 11},
     }
 
     doc = workspace.get_document(doc_uri)
@@ -58,12 +58,12 @@ def test_implementations(config, workspace, doc_uri) -> None:
 
 def test_implementations_skipping_one_class(config, workspace, doc_uri) -> None:
     # Over 'Animal.breathe'
-    cursor_pos = {"line": 4, "character": 8}
+    cursor_pos = {"line": 5, "character": 8}
 
     # The implementation of 'breathe', skipping intermediate classes
     def_range = {
-        "start": {"line": 18, "character": 8},
-        "end": {"line": 18, "character": 15},
+        "start": {"line": 19, "character": 8},
+        "end": {"line": 19, "character": 15},
     }
 
     doc = workspace.get_document(doc_uri)
@@ -77,12 +77,12 @@ def test_implementations_skipping_one_class(config, workspace, doc_uri) -> None:
 )
 def test_property_implementations(config, workspace, doc_uri) -> None:
     # Over 'Animal.size'
-    cursor_pos = {"line": 9, "character": 9}
+    cursor_pos = {"line": 10, "character": 9}
 
     # The property implementation 'Bird.size'
     def_range = {
-        "start": {"line": 25, "character": 8},
-        "end": {"line": 25, "character": 12},
+        "start": {"line": 26, "character": 8},
+        "end": {"line": 26, "character": 12},
     }
 
     doc = workspace.get_document(doc_uri)
@@ -93,7 +93,7 @@ def test_property_implementations(config, workspace, doc_uri) -> None:
 
 def test_implementations_not_a_method(config, workspace, doc_uri) -> None:
     # Over 'print(...)' call
-    cursor_pos = {"line": 28, "character": 0}
+    cursor_pos = {"line": 29, "character": 0}
 
     doc = workspace.get_document(doc_uri)
 

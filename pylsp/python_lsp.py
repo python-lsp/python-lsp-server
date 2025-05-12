@@ -768,8 +768,6 @@ class PythonLSPServer(MethodDispatcher):
 
     def m_text_document__implementation(self, textDocument=None, position=None, **_kwargs):
         # textDocument here is just a dict with a uri
-        workspace = self._match_uri_to_workspace(textDocument["uri"])
-        document = workspace.get_document(textDocument["uri"])
         return self.implementations(textDocument["uri"], position)
 
     def m_text_document__document_highlight(
