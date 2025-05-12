@@ -2,7 +2,7 @@
 # Copyright 2021- Python Language Server Contributors.
 import logging
 import os
-from typing import Any
+from typing import Any, Dict, Tuple
 
 from rope.base.project import Project
 from rope.base.resources import Resource
@@ -42,7 +42,7 @@ def pylsp_implementations(config, workspace, document, position):
 
 def _rope_location_to_range(
     location: Location, rope_project: Project
-) -> dict[str, Any]:
+) -> Dict[str, Any]:
     # NOTE: This assumes the result is confined to a single line, which should
     # always be the case here because Python doesn't allow splitting up
     # identifiers across more than one line.
@@ -56,8 +56,8 @@ def _rope_location_to_range(
 
 
 def _rope_region_to_columns(
-    offsets: tuple[int, int], line: int, rope_resource: Resource, rope_project: Project
-) -> tuple[int, int]:
+    offsets: Tuple[int, int], line: int, rope_resource: Resource, rope_project: Project
+) -> Tuple[int, int]:
     """
     Convert pair of offsets from start of file to columns within line.
 

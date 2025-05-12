@@ -1,8 +1,7 @@
 # Copyright 2017-2020 Palantir Technologies, Inc.
 # Copyright 2021- Python Language Server Contributors.
 
-from collections.abc import Iterable
-from importlib.resources import as_file, files
+import test
 from pathlib import Path
 
 import pytest
@@ -21,9 +20,10 @@ from pylsp.workspace import Workspace
 # An alternative to using real files would be `unittest.mock.patch`, but that
 # ends up being more trouble than it's worth...
 @pytest.fixture
-def examples_dir_path() -> Iterable[Path]:
-    with as_file(files("test.data.implementations_examples")) as path:
-        yield path
+def examples_dir_path() -> Path:
+    # In Python 3.12+, this should be obtained using `importlib.resources`,
+    # but as we need to support older versions, we do it the hacky way:
+    return Path(test.__file__).parent / "data/implementations_examples"
 
 
 @pytest.fixture
