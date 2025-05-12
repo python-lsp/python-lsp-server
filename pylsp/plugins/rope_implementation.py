@@ -26,7 +26,11 @@ def pylsp_implementations(config, workspace, document, position):
     rope_project = workspace._rope_project_builder(rope_config)
     rope_resource = document._rope_resource(rope_config)
 
-    impls = find_implementations(rope_project, rope_resource, offset)
+    try:
+        impls = find_implementations(rope_project, rope_resource, offset)
+    except Exception as e:
+         log.debug("Failed to run Rope implementations finder: %s", e)
+         return []
 
     return [
         {

@@ -5,7 +5,6 @@ import test
 from pathlib import Path
 
 import pytest
-from rope.base.exceptions import BadIdentifierError
 
 from pylsp import uris
 from pylsp.config.config import Config
@@ -74,7 +73,7 @@ def test_implementations_skipping_one_class(config, workspace, doc_uri) -> None:
 
 
 @pytest.mark.xfail(
-    reason="not implemented upstream (Rope)", strict=True, raises=BadIdentifierError
+    reason="not implemented upstream (Rope)", strict=True, raises=AssertionError
 )
 def test_property_implementations(config, workspace, doc_uri) -> None:
     # Over 'Animal.size'
@@ -93,12 +92,11 @@ def test_property_implementations(config, workspace, doc_uri) -> None:
 
 
 def test_implementations_not_a_method(config, workspace, doc_uri) -> None:
-    # Over 'print(...)' call => Rope error because not a method.
+    # Over 'print(...)' call
     cursor_pos = {"line": 28, "character": 0}
 
     doc = workspace.get_document(doc_uri)
 
-    # This exception is turned into an empty result set automatically in upper
-    # layers, so we just check that it is raised to document this behavior:
-    with pytest.raises(BadIdentifierError):
-        pylsp_implementations(config, workspace, doc, cursor_pos)
+    # Rope produces an error because we're not over a method, which we then
+    # turn into an empty result list:
+    assert [] == pylsp_implementations(config, workspace, doc, cursor_pos)
