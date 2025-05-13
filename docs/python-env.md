@@ -62,7 +62,7 @@ This is better than the approach above, but won't help with plugins that need to
 
 This is the first option that should work fine for all plugins.
 
-A potential drawbacks is that it is sometimes recommended to only install packages in your project's virtualenv that are specified by your project's `pyproject.toml` (or equivalent configs). Many Python dev tools come with functionality to ensure this (e.g. `poetry install --sync`, `uv sync` unless run with `--inexact`, ...). To use these together with this option, you have to add `python-lsp-server` and any plugins you want to use to your `pyproject.toml`'s dev dependencies section. This is OK but may be annoying for users who don't want to use LSP features or have their own setup.
+A potential drawback is that it is sometimes recommended to only install packages in your project's virtualenv that are specified by your project's `pyproject.toml` (or equivalent configs). Many Python dev tools come with functionality to ensure this (e.g. `poetry install --sync`, `uv sync` unless run with `--inexact`, ...). To use these together with this option, you have to add `python-lsp-server` and any plugins you want to use to your `pyproject.toml`'s dev dependencies section. This is OK but may be annoying for users who don't want to use LSP features or have their own setup.
 
 ### Option 4 (best? but complicated): In a venv layered "on top" of the project environment
 
@@ -70,7 +70,8 @@ It is possible to "overlay" a virtualenv on top of another [using `.pth` hacks](
 
 So you could have all your project's normal and dev dependencies installed in one venv, but then have an "overlay" venv in which you install `python-lsp-server` and the plugins you want to use, ideally at versions compatible with your project's main dependencies.
 
-One tool that can do all of this automatically is [uv](https://github.com/astral-sh/uv): Running
+One tool that can do _most_ of this automatically is [uv](https://github.com/astral-sh/uv)'s [`uv run --with`](https://docs.astral.sh/uv/reference/cli/#uv-run--with) functionality (the only thing it won't do is make sure the dependency versions in the overlay venv are compatible with the main ones).
+Running
 
 ```bash
 uv run --with python-lsp-server,pylsp-mypy pylsp
