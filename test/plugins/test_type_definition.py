@@ -1,7 +1,4 @@
-# Copyright 2017-2020 Palantir Technologies, Inc.
 # Copyright 2021- Python Language Server Contributors.
-
-import os
 
 from pylsp import uris
 from pylsp.plugins.type_definition import pylsp_type_definition
@@ -45,7 +42,6 @@ def test_builtin_definition(config, workspace) -> None:
     cursor_pos = {"line": 8, "character": 9}
 
     doc = Document(DOC_URI, workspace, DOC)
-    orig_settings = config.settings()
 
     defns = pylsp_type_definition(config, doc, cursor_pos)
     assert len(defns) == 1
@@ -94,9 +90,6 @@ def main() -> None:
 
     # The position where IntPair is called in main.py
     cursor_pos = {"line": 5, "character": 14}
-
-    print("!URI", module_uri)
-    print("!URI", doc_uri)
 
     assert [{"uri": module_uri, "range": def_range}] == pylsp_type_definition(
         config, doc, cursor_pos

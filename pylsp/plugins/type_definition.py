@@ -1,10 +1,8 @@
-# Copyright 2017-2020 Palantir Technologies, Inc.
 # Copyright 2021- Python Language Server Contributors.
 
 import logging
 
 from pylsp import _utils, hookimpl
-
 
 log = logging.getLogger(__name__)
 

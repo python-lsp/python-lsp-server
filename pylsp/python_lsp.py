@@ -766,7 +766,9 @@ class PythonLSPServer(MethodDispatcher):
             return self._cell_document__definition(document, position, **_kwargs)
         return self.definitions(textDocument["uri"], position)
 
-    def m_text_document__type_definition(self, textDocument=None, position=None, **_kwargs):
+    def m_text_document__type_definition(
+        self, textDocument=None, position=None, **_kwargs
+    ):
         return self.type_definition(textDocument["uri"], position)
 
     def m_text_document__document_highlight(
