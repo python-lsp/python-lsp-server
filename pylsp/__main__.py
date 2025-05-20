@@ -2,15 +2,11 @@
 # Copyright 2021- Python Language Server Contributors.
 
 import argparse
+import json
 import logging
 import logging.config
 import sys
 import time
-
-try:
-    import ujson as json
-except Exception:
-    import json
 
 from ._version import __version__
 from .python_lsp import (

@@ -10,8 +10,8 @@ from functools import partial
 from typing import Any, Dict, List
 
 try:
-    import ujson as json
-except Exception:
+    import orjson as json
+except ImportError:
     import json
 
 from pylsp_jsonrpc.dispatchers import MethodDispatcher
