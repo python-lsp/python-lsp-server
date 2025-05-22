@@ -32,7 +32,7 @@ def pylsp_document_symbols(config, document):
         if not add_import_symbols:
             # Skip if there's an import in the code the symbol is defined.
             code = d.get_line_code()
-            
+
             if pattern_import.match(code):
                 continue
 
