@@ -19,6 +19,7 @@ dependencies = [
     "pluggy>=1.0.0",
     "python-lsp-jsonrpc>=1.1.0,<2.0.0",
     "ujson>=3.0.0",
+    "black"
 ]
 dynamic = ["version"]
 
