@@ -521,16 +521,14 @@
         "black",
         "ruff",
         null
-      ]
+      ],
       "default": "black",
       "description": "Formatter to use for reformatting signatures in docstrings."
     },
     "pylsp.signature.line_length": {
-      "type": [
-        "number",
-      ],
+      "type": "number",
       "default": 88,
       "description": "Maximum line length in signatures."
-    },
+    }
   }
 }
