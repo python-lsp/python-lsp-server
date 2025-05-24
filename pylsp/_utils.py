@@ -11,7 +11,7 @@ import subprocess
 import sys
 import threading
 import time
-from typing import Callable, List, Optional
+from typing import List, Optional
 
 import docstring_to_markdown
 import jedi

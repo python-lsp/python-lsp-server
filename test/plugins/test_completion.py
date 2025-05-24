@@ -4,7 +4,6 @@
 import math
 import os
 import sys
-from functools import partial
 from pathlib import Path
 from typing import Dict, NamedTuple
 

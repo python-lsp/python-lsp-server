@@ -2,7 +2,6 @@
 # Copyright 2021- Python Language Server Contributors.
 
 import os
-from functools import partial
 
 from pylsp import uris
 from pylsp.plugins.hover import pylsp_hover
@@ -119,6 +118,7 @@ def test_hover_signature_formatting_opt_out(workspace) -> None:
     }
 
     assert {"contents": contents} == pylsp_hover(doc._config, doc, hov_position)
+
 
 def test_document_path_hover(workspace_other_root_path, tmpdir) -> None:
     # Create a dummy module out of the workspace's root_path and try to get
