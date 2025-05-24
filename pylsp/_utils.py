@@ -285,7 +285,7 @@ def format_signature(signature: str, config: dict, signature_formatter: str) -> 
 
 
 def convert_signatures_to_markdown(signatures: List[str], config: dict) -> str:
-    signature_formatter = config.get("format", "black")
+    signature_formatter = config.get("formatter", "black")
     if signature_formatter:
         signatures = [
             format_signature(

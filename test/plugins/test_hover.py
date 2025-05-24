@@ -106,6 +106,20 @@ def test_hover_signature_formatting(workspace) -> None:
     assert {"contents": contents} == pylsp_hover(doc._config, doc, hov_position)
 
 
+def test_hover_signature_formatting_opt_out(workspace) -> None:
+    # Over 'main' in def main():
+    hov_position = {"line": 2, "character": 6}
+
+    doc = Document(DOC_URI, workspace, DOC)
+    doc._config.update({"signature": {"line_length": 10, "formatter": None}})
+
+    contents = {
+        "kind": "markdown",
+        "value": "```python\nmain(a: float, b: float)\n```\n\n\nhello world",
+    }
+
+    assert {"contents": contents} == pylsp_hover(doc._config, doc, hov_position)
+
 def test_document_path_hover(workspace_other_root_path, tmpdir) -> None:
     # Create a dummy module out of the workspace's root_path and try to get
     # a definition on it in another file placed next to it.
