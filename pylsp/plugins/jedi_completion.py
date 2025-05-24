@@ -41,7 +41,7 @@ def pylsp_completions(config, document, position):
     """Get formatted completions for current code position"""
     settings = config.plugin_settings("jedi_completion", document_path=document.path)
     resolve_eagerly = settings.get("eager", False)
-    signature_config = config.settings.get("signatures", {})
+    signature_config = config.settings().get("signature", {})
 
     code_position = _utils.position_to_jedi_linecolumn(document, position)
     code_position["fuzzy"] = settings.get("fuzzy", False)
@@ -165,7 +165,7 @@ def pylsp_completion_item_resolve(
             completion,
             data,
             markup_kind=preferred_markup_kind,
-            signature_config=config.settings.get("signatures", {}),
+            signature_config=config.settings().get("signature", {}),
         )
     return completion_item
 

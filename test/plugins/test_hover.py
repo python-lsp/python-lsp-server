@@ -23,8 +23,6 @@ np.sin
 
 """
 
-pylsp_hover = partial(pylsp_hover, signatures_to_markdown=None)
-
 
 def test_numpy_hover(workspace) -> None:
     # Over the blank line
@@ -92,15 +90,17 @@ def test_hover(workspace) -> None:
     assert {"contents": ""} == pylsp_hover(doc._config, doc, no_hov_position)
 
 
-def test_hover_custom_signature(workspace) -> None:
+def test_hover_signature_formatting(workspace) -> None:
     # Over 'main' in def main():
     hov_position = {"line": 2, "character": 6}
 
     doc = Document(DOC_URI, workspace, DOC)
+    # setting low line length should trigger reflow to multiple lines
+    doc._config.update({"signature": {"line_length": 10}})
 
     contents = {
         "kind": "markdown",
-        "value": "```python\nmain(\n    a: float,\n    b: float\n)\n```\n\n\nhello world",
+        "value": "```python\nmain(\n    a: float,\n    b: float,\n)\n```\n\n\nhello world",
     }
 
     assert {"contents": contents} == pylsp_hover(doc._config, doc, hov_position)

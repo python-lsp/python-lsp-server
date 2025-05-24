@@ -7,6 +7,8 @@ import logging
 import os
 import pathlib
 import re
+import subprocess
+import sys
 import threading
 import time
 from typing import Callable, List, Optional
@@ -245,22 +247,22 @@ class Formatter:
                 ],
             )
             return True
-        except CalledProcessError:
+        except subprocess.CalledProcessError:
             return False
 
 
-class RuffFormatter:
+class RuffFormatter(Formatter):
     command = ["ruff", "format"]
 
 
-class BlackFormatter:
+class BlackFormatter(Formatter):
     command = ["black"]
 
 
 formatters = {"ruff": RuffFormatter(), "black": BlackFormatter()}
 
 
-def format_signature(signature: str, signature_formatter: str) -> str:
+def format_signature(signature: str, config: dict, signature_formatter: str) -> str:
     """Formats signature using ruff or black if either is available."""
     as_func = f"def {signature.strip()}:\n    pass"
     line_length = config.get("line_length", 88)
@@ -286,7 +288,10 @@ def convert_signatures_to_markdown(signatures: List[str], config: dict) -> str:
     signature_formatter = config.get("format", "black")
     if signature_formatter:
         signatures = [
-            format_signature(signature, config=config) for signature in signatures
+            format_signature(
+                signature, signature_formatter=signature_formatter, config=config
+            )
+            for signature in signatures
         ]
     return wrap_signature("\n".join(signatures))
 
