@@ -24,16 +24,12 @@ def pylsp_commands(config, workspace) -> None:
 
 
 @hookspec
-def pylsp_completions(
-    config, workspace, document, position, ignored_names, signatures_to_markdown
-) -> None:
+def pylsp_completions(config, workspace, document, position, ignored_names) -> None:
     pass
 
 
 @hookspec(firstresult=True)
-def pylsp_completion_item_resolve(
-    config, workspace, document, completion_item, signatures_to_markdown
-) -> None:
+def pylsp_completion_item_resolve(config, workspace, document, completion_item) -> None:
     pass
 
 
@@ -93,12 +89,7 @@ def pylsp_format_range(config, workspace, document, range, options) -> None:
 
 
 @hookspec(firstresult=True)
-def pylsp_hover(config, workspace, document, position, signatures_to_markdown) -> None:
-    pass
-
-
-@hookspec(firstresult=True)
-def pylsp_signatures_to_markdown(signatures) -> None:
+def pylsp_hover(config, workspace, document, position) -> None:
     pass
 
 

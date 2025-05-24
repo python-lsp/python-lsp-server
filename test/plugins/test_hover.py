@@ -103,13 +103,7 @@ def test_hover_custom_signature(workspace) -> None:
         "value": "```python\nmain(\n    a: float,\n    b: float\n)\n```\n\n\nhello world",
     }
 
-    def signatures_to_markdown(signatures: list):
-        # dummy implementation for tests
-        return "```python\nmain(\n    a: float,\n    b: float\n)\n```\n"
-
-    assert {"contents": contents} == pylsp_hover(
-        doc._config, doc, hov_position, signatures_to_markdown=signatures_to_markdown
-    )
+    assert {"contents": contents} == pylsp_hover(doc._config, doc, hov_position)
 
 
 def test_document_path_hover(workspace_other_root_path, tmpdir) -> None:

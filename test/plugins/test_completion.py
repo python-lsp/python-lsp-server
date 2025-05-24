@@ -19,8 +19,6 @@ from pylsp.plugins.jedi_completion import pylsp_completions as pylsp_jedi_comple
 from pylsp.plugins.rope_completion import pylsp_completions as pylsp_rope_completions
 from pylsp.workspace import Document
 
-pylsp_jedi_completions = partial(pylsp_jedi_completions, signatures_to_markdown=None)
-
 PY2 = sys.version[0] == "2"
 LINUX = sys.platform.startswith("linux")
 CI = os.environ.get("CI")
@@ -165,10 +163,7 @@ def test_jedi_completion_item_resolve(config, workspace) -> None:
     assert "detail" not in documented_hello_item
 
     resolved_documented_hello = pylsp_jedi_completion_item_resolve(
-        doc._config,
-        completion_item=documented_hello_item,
-        document=doc,
-        signatures_to_markdown=None,
+        doc._config, completion_item=documented_hello_item, document=doc
     )
     expected_doc = {
         "kind": "markdown",
@@ -541,9 +536,7 @@ def test_jedi_completion_environment(workspace) -> None:
     completions = pylsp_jedi_completions(doc._config, doc, com_position)
     assert completions[0]["label"] == "loghub"
 
-    resolved = pylsp_jedi_completion_item_resolve(
-        doc._config, completions[0], doc, signatures_to_markdown=None
-    )
+    resolved = pylsp_jedi_completion_item_resolve(doc._config, completions[0], doc)
     assert "changelog generator" in resolved["documentation"]["value"].lower()
 
 

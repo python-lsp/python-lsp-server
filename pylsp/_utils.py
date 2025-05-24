@@ -57,7 +57,7 @@ def debounce(interval_s, keyed_by=None):
 
 
 def throttle(seconds=1):
-    """Throttles calls to a function evey `seconds` seconds."""
+    """Throttles calls to a function every `seconds` seconds."""
 
     def decorator(func):
         @functools.wraps(func)
@@ -209,7 +209,85 @@ def choose_markup_kind(client_supported_markup_kinds: List[str]):
     return "markdown"
 
 
-def convert_signatures_to_markdown(signatures: List[str]) -> str:
+class Formatter:
+    command: List[str]
+
+    @property
+    def is_installed(self) -> bool:
+        """Returns whether formatter is available"""
+        if not hasattr(self, "_is_installed"):
+            self._is_installed = self._is_available_via_cli()
+        return self._is_installed
+
+    def format(self, code: str, line_length: int) -> str:
+        """Formats code"""
+        return subprocess.check_output(
+            [
+                sys.executable,
+                "-m",
+                *self.command,
+                "--line-length",
+                str(line_length),
+                "-",
+            ],
+            input=code,
+            text=True,
+        ).strip()
+
+    def _is_available_via_cli(self) -> bool:
+        try:
+            subprocess.check_output(
+                [
+                    sys.executable,
+                    "-m",
+                    *self.command,
+                    "--help",
+                ],
+            )
+            return True
+        except CalledProcessError:
+            return False
+
+
+class RuffFormatter:
+    command = ["ruff", "format"]
+
+
+class BlackFormatter:
+    command = ["black"]
+
+
+formatters = {"ruff": RuffFormatter(), "black": BlackFormatter()}
+
+
+def format_signature(signature: str, signature_formatter: str) -> str:
+    """Formats signature using ruff or black if either is available."""
+    as_func = f"def {signature.strip()}:\n    pass"
+    line_length = config.get("line_length", 88)
+    formatter = formatters[signature_formatter]
+    if formatter.is_installed:
+        try:
+            return (
+                formatter.format(as_func, line_length=line_length)
+                .removeprefix("def ")
+                .removesuffix(":\n    pass")
+            )
+        except subprocess.CalledProcessError as e:
+            log.warning("Signature formatter failed %s", e)
+    else:
+        log.warning(
+            "Formatter %s was requested but it does not appear to be installed",
+            signature_formatter,
+        )
+    return signature
+
+
+def convert_signatures_to_markdown(signatures: List[str], config: dict) -> str:
+    signature_formatter = config.get("format", "black")
+    if signature_formatter:
+        signatures = [
+            format_signature(signature, config=config) for signature in signatures
+        ]
     return wrap_signature("\n".join(signatures))
 
 
@@ -217,7 +295,7 @@ def format_docstring(
     contents: str,
     markup_kind: str,
     signatures: Optional[List[str]] = None,
-    signatures_to_markdown: Optional[Callable[[List[str]], str]] = None,
+    signature_config: Optional[dict] = None,
 ):
     """Transform the provided docstring into a MarkupContent object.
 
@@ -239,10 +317,8 @@ def format_docstring(
             value = escape_markdown(contents)
 
         if signatures:
-            wrapped_signatures = (
-                signatures_to_markdown(signatures)
-                if signatures_to_markdown
-                else convert_signatures_to_markdown(signatures)
+            wrapped_signatures = convert_signatures_to_markdown(
+                signatures, config=signature_config or {}
             )
             value = wrapped_signatures + "\n\n" + value
 

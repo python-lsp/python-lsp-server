@@ -9,7 +9,8 @@ log = logging.getLogger(__name__)
 
 
 @hookimpl
-def pylsp_hover(config, document, position, signatures_to_markdown):
+def pylsp_hover(config, document, position):
+    signature_config = config.settings.get("signatures", {})
     code_position = _utils.position_to_jedi_linecolumn(document, position)
     definitions = document.jedi_script(use_document_path=True).infer(**code_position)
     word = document.word_at_position(position)
@@ -46,6 +47,6 @@ def pylsp_hover(config, document, position, signatures_to_markdown):
             definition.docstring(raw=True),
             preferred_markup_kind,
             signatures=[signature] if signature else None,
-            signatures_to_markdown=signatures_to_markdown,
+            signature_config=signature_config,
         )
     }
