@@ -33,7 +33,6 @@ This server can be configured using the `workspace/didChangeConfiguration` metho
 | `pylsp.plugins.jedi_completion.resolve_at_most` | `integer` | How many labels and snippets (at most) should be resolved? | `25` |
 | `pylsp.plugins.jedi_completion.cache_for` | `array` of `string` items | Modules for which labels and snippets should be cached. | `["pandas", "numpy", "tensorflow", "matplotlib"]` |
 | `pylsp.plugins.jedi_definition.enabled` | `boolean` | Enable or disable the plugin. | `true` |
-| `pylsp.plugins.jedi_type_definition.enabled` | `boolean` | Enable or disable the plugin. | `true` |
 | `pylsp.plugins.jedi_definition.follow_imports` | `boolean` | The goto call will follow imports. | `true` |
 | `pylsp.plugins.jedi_definition.follow_builtin_imports` | `boolean` | If follow_imports is True will decide if it follow builtin imports. | `true` |
 | `pylsp.plugins.jedi_definition.follow_builtin_definitions` | `boolean` | Follow builtin and extension definitions to stubs. | `true` |
@@ -43,6 +42,7 @@ This server can be configured using the `workspace/didChangeConfiguration` metho
 | `pylsp.plugins.jedi_symbols.enabled` | `boolean` | Enable or disable the plugin. | `true` |
 | `pylsp.plugins.jedi_symbols.all_scopes` | `boolean` | If True lists the names of all scopes instead of only the module namespace. | `true` |
 | `pylsp.plugins.jedi_symbols.include_import_symbols` | `boolean` | If True includes symbols imported from other libraries. | `true` |
+| `pylsp.plugins.jedi_type_definition.enabled` | `boolean` | Enable or disable the plugin. | `true` |
 | `pylsp.plugins.mccabe.enabled` | `boolean` | Enable or disable the plugin. | `true` |
 | `pylsp.plugins.mccabe.threshold` | `integer` | The minimum threshold that triggers warnings about cyclomatic complexity. | `15` |
 | `pylsp.plugins.preload.enabled` | `boolean` | Enable or disable the plugin. | `true` |
