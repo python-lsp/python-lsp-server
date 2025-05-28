@@ -2,8 +2,8 @@
 
 import logging
 import threading
-from typing import Any, Optional, Union
 from collections.abc import Generator
+from typing import Any, Optional, Union
 
 import parso
 from jedi import Script

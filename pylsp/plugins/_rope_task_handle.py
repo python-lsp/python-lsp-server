@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import logging
-from typing import Callable, ContextManager
 from collections.abc import Sequence
+from typing import Callable, ContextManager
 
 from rope.base.taskhandle import BaseJobSet, BaseTaskHandle
 

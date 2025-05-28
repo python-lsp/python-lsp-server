@@ -3,9 +3,9 @@
 
 import logging
 import sys
-from functools import lru_cache
-from typing import List, Union
 from collections.abc import Mapping, Sequence
+from functools import lru_cache
+from typing import Union
 
 import pluggy
 from pluggy._hooks import HookImpl

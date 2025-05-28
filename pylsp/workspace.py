@@ -7,10 +7,10 @@ import logging
 import os
 import re
 import uuid
+from collections.abc import Generator
 from contextlib import contextmanager
 from threading import RLock
 from typing import Callable, Optional
-from collections.abc import Generator
 
 import jedi
 
