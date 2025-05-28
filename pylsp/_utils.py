@@ -11,7 +11,7 @@ import subprocess
 import sys
 import threading
 import time
-from typing import List, Optional
+from typing import Optional
 
 import docstring_to_markdown
 import jedi
@@ -80,7 +80,7 @@ def find_parents(root, path, names):
 
     Args:
         path (str): The file path to start searching up from.
-        names (List[str]): The file/directory names to look for.
+        names (list[str]): The file/directory names to look for.
         root (str): The directory at which to stop recursing upwards.
 
     Note:
@@ -200,7 +200,7 @@ def wrap_signature(signature):
 SERVER_SUPPORTED_MARKUP_KINDS = {"markdown", "plaintext"}
 
 
-def choose_markup_kind(client_supported_markup_kinds: List[str]):
+def choose_markup_kind(client_supported_markup_kinds: list[str]):
     """Choose a markup kind supported by both client and the server.
 
     This gives priority to the markup kinds provided earlier on the client preference list.
@@ -212,7 +212,7 @@ def choose_markup_kind(client_supported_markup_kinds: List[str]):
 
 
 class Formatter:
-    command: List[str]
+    command: list[str]
 
     @property
     def is_installed(self) -> bool:
@@ -301,7 +301,7 @@ def format_signature(signature: str, config: dict, signature_formatter: str) -> 
     return signature
 
 
-def convert_signatures_to_markdown(signatures: List[str], config: dict) -> str:
+def convert_signatures_to_markdown(signatures: list[str], config: dict) -> str:
     signature_formatter = config.get("formatter", "black")
     if signature_formatter:
         signatures = [
@@ -316,7 +316,7 @@ def convert_signatures_to_markdown(signatures: List[str], config: dict) -> str:
 def format_docstring(
     contents: str,
     markup_kind: str,
-    signatures: Optional[List[str]] = None,
+    signatures: Optional[list[str]] = None,
     signature_config: Optional[dict] = None,
 ):
     """Transform the provided docstring into a MarkupContent object.
