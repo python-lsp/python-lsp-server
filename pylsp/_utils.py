@@ -262,18 +262,6 @@ class BlackFormatter(Formatter):
 formatters = {"ruff": RuffFormatter(), "black": BlackFormatter()}
 
 
-def removeprefix(text: str, prefix: str) -> str:
-    if text.startswith(prefix):
-        return text[len(prefix) :]
-    return text
-
-
-def removesuffix(text: str, suffix: str) -> str:
-    if suffix and text.endswith(suffix):
-        return text[: -len(suffix)]
-    return text
-
-
 def format_signature(signature: str, config: dict, signature_formatter: str) -> str:
     """Formats signature using ruff or black if either is available."""
     as_func = f"def {signature.strip()}:\n    pass"
@@ -282,14 +270,9 @@ def format_signature(signature: str, config: dict, signature_formatter: str) -> 
     if formatter.is_installed:
         try:
             return (
-                # TODO: replace with str.removeprefix and str.removesuffix
-                # once Python 3.8 support is no longer required
-                removesuffix(
-                    removeprefix(
-                        formatter.format(as_func, line_length=line_length), "def "
-                    ),
-                    ":\n    pass",
-                )
+                formatter.format(as_func, line_length=line_length)
+                .removeprefix("def ")
+                .removesuffix(":\n    pass")
             )
         except subprocess.CalledProcessError as e:
             log.warning("Signature formatter failed %s", e)
