@@ -20,10 +20,9 @@ def pylsp_document_symbols(config, document):
     symbols = []
     exclude = set({})
     redefinitions = {}
-    pattern_import = (
-        re.compile
-        (r'^\s*(?!#)\s*(from\s+[.\w]+(\.[\w]+)*\s+import\s+[\w\s,()*]+|import\s+[\w\s,.*]+)')
-        )
+    pattern_import = re.compile(
+        r"^\s*(?!#)\s*(from\s+[.\w]+(\.[\w]+)*\s+import\s+[\w\s,()*]+|import\s+[\w\s,.*]+)"
+    )
 
     while definitions != []:
         d = definitions.pop(0)

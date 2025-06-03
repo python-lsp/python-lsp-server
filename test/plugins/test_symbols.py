@@ -97,7 +97,9 @@ def test_symbols_complex_imports(config, workspace):
     assert "something" in names
     assert "a" in names or "b" in names
 
-    assert any(s["name"] == "main" and s["kind"] == SymbolKind.Function for s in symbols)
+    assert any(
+        s["name"] == "main" and s["kind"] == SymbolKind.Function for s in symbols
+    )
 
 
 def test_symbols_all_scopes(config, workspace) -> None:
