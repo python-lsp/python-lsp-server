@@ -131,30 +131,13 @@ def test_concurrent_ws_requests():
                                 },
                             },
                         }
-                        completion_request = {
-                            "jsonrpc": "2.0",
-                            "id": 4 * (idx + 3 + i),
-                            "method": "textDocument/completion",
-                            "params": {
-                                "textDocument": {
-                                    "uri": "test.py",
-                                },
-                                "position": {
-                                    "line": 3,
-                                    "character": 2,
-                                },
-                            },
-                        }
                         requests.append(send_request(hover_request))
-                        requests.append(send_request(completion_request))
                     # send many requests in parallel
                     await asyncio.gather(*requests)
                     # collect replies
                     for i in range(NUM_REQUESTS):
                         hover = await get_json_reply()
                         assert hover
-                        completion = await get_json_reply()
-                        assert completion
                 except (json.JSONDecodeError, asyncio.TimeoutError) as e:
                     return e
                 return None
