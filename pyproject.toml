@@ -58,6 +58,7 @@ test = [
     "matplotlib",
     "pyqt5",
     "flaky",
+    "websockets>=10.3",
 ]
 
 [project.entry-points.pylsp]
