@@ -175,4 +175,4 @@ def test_concurrent_ws_requests():
         t.join(timeout=50)
         assert not t.is_alive(), f"Worker thread {t} hung!"
 
-    assert not any(filter(errors))
+    assert not any(filter(bool, errors))
