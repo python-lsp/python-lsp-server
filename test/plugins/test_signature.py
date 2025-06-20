@@ -42,6 +42,17 @@ main(
 """
 
 
+@pytest.fixture
+def workspace_with_signature_docstring_disabled(workspace) -> None:
+    workspace._config._settings["plugins"] = {
+        "jedi_signature_help": {
+            "include_docstring": False,
+        },
+    }
+
+    yield workspace
+
+
 def test_no_signature(workspace) -> None:
     # Over blank line
     sig_position = {"line": 9, "character": 0}
@@ -104,3 +115,17 @@ def test_docstring_params(regex, doc) -> None:
     m = regex.match(doc)
     assert m.group("param") == "test"
     assert m.group("doc") == "parameter docstring"
+
+
+def test_signature_without_docstring(
+    workspace_with_signature_docstring_disabled,
+) -> None:
+    # Over '( ' in main(
+    sig_position = {"line": 10, "character": 5}
+    doc = Document(DOC_URI, workspace_with_signature_docstring_disabled, DOC)
+
+    sig_info = signature.pylsp_signature_help(doc._config, doc, sig_position)
+
+    sigs = sig_info["signatures"]
+    assert len(sigs) == 1
+    assert sigs[0]["documentation"] == {"kind": "markdown", "value": ""}

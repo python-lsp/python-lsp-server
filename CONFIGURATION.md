@@ -37,8 +37,10 @@ This server can be configured using the `workspace/didChangeConfiguration` metho
 | `pylsp.plugins.jedi_definition.follow_builtin_imports` | `boolean` | If follow_imports is True will decide if it follow builtin imports. | `true` |
 | `pylsp.plugins.jedi_definition.follow_builtin_definitions` | `boolean` | Follow builtin and extension definitions to stubs. | `true` |
 | `pylsp.plugins.jedi_hover.enabled` | `boolean` | Enable or disable the plugin. | `true` |
+| `pylsp.plugins.jedi_hover.include_docstring` | `boolean` | Include signature docstring in the output. | `true` |
 | `pylsp.plugins.jedi_references.enabled` | `boolean` | Enable or disable the plugin. | `true` |
 | `pylsp.plugins.jedi_signature_help.enabled` | `boolean` | Enable or disable the plugin. | `true` |
+| `pylsp.plugins.jedi_signature_help.include_docstring` | `boolean` | Include signature docstring in the output. | `true` |
 | `pylsp.plugins.jedi_symbols.enabled` | `boolean` | Enable or disable the plugin. | `true` |
 | `pylsp.plugins.jedi_symbols.all_scopes` | `boolean` | If True lists the names of all scopes instead of only the module namespace. | `true` |
 | `pylsp.plugins.jedi_symbols.include_import_symbols` | `boolean` | If True includes symbols imported from other libraries. | `true` |

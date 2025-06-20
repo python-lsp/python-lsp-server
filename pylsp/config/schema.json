@@ -245,6 +245,11 @@
       "default": true,
       "description": "Enable or disable the plugin."
     },
+    "pylsp.plugins.jedi_hover.include_docstring": {
+      "type": "boolean",
+      "default": true,
+      "description": "Include signature docstring in the output."
+    },
     "pylsp.plugins.jedi_references.enabled": {
       "type": "boolean",
       "default": true,
@@ -254,6 +259,11 @@
       "type": "boolean",
       "default": true,
       "description": "Enable or disable the plugin."
+    },
+    "pylsp.plugins.jedi_signature_help.include_docstring": {
+      "type": "boolean",
+      "default": true,
+      "description": "Include signature docstring in the output."
     },
     "pylsp.plugins.jedi_symbols.enabled": {
       "type": "boolean",
