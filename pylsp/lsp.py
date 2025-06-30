@@ -6,6 +6,9 @@
 https://github.com/Microsoft/language-server-protocol/blob/master/protocol.md
 """
 
+from enum import Enum
+from typing import NamedTuple
+
 
 class CompletionItemKind:
     Text = 1
@@ -84,6 +87,52 @@ class SymbolKind:
     Number = 16
     Boolean = 17
     Array = 18
+
+
+class SemanticToken(NamedTuple):
+    value: int
+    name: str
+
+
+class SemanticTokenType(Enum):
+    Namespace = SemanticToken(0, "namespace")
+    # represents a generic type. acts as a fallback for types which
+    # can't be mapped to a specific type like class or enum.
+    Type = SemanticToken(1, "type")
+    Class = SemanticToken(2, "class")
+    Enum = SemanticToken(3, "enum")
+    Interface = SemanticToken(4, "interface")
+    Struct = SemanticToken(5, "struct")
+    TypeParameter = SemanticToken(6, "typeParameter")
+    Parameter = SemanticToken(7, "parameter")
+    Variable = SemanticToken(8, "variable")
+    Property = SemanticToken(9, "property")
+    EnumMember = SemanticToken(10, "enumMember")
+    Event = SemanticToken(11, "event")
+    Function = SemanticToken(12, "function")
+    Method = SemanticToken(13, "method")
+    Macro = SemanticToken(14, "macro")
+    Keyword = SemanticToken(15, "keyword")
+    Modifier = SemanticToken(16, "modifier")
+    Comment = SemanticToken(17, "comment")
+    String = SemanticToken(18, "string")
+    Number = SemanticToken(19, "number")
+    Regexp = SemanticToken(20, "regexp")
+    Operator = SemanticToken(21, "operator")
+    Decorator = SemanticToken(22, "decorator")  # @since 3.17.0
+
+
+class SemanticTokenModifier(Enum):
+    Declaration = SemanticToken(0, "declaration")
+    Definition = SemanticToken(1, "definition")
+    Readonly = SemanticToken(2, "readonly")
+    Static = SemanticToken(3, "static")
+    Deprecated = SemanticToken(4, "deprecated")
+    Abstract = SemanticToken(5, "abstract")
+    Async = SemanticToken(6, "async")
+    Modification = SemanticToken(7, "modification")
+    Documentation = SemanticToken(8, "documentation")
+    DefaultLibrary = SemanticToken(9, "defaultLibrary")
 
 
 class TextDocumentSyncKind:
