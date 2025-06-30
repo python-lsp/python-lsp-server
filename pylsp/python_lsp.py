@@ -7,7 +7,7 @@ import socketserver
 import threading
 import uuid
 from functools import partial
-from typing import Any, Dict, List
+from typing import Any
 
 try:
     import ujson as json
@@ -117,6 +117,8 @@ def start_ws_lang_server(port, check_parent_process, handler_class) -> None:
         ) from e
 
     with ThreadPoolExecutor(max_workers=10) as tpool:
+        send_queue = None
+        loop = None
 
         async def pylsp_ws(websocket):
             log.debug("Creating LSP object")
@@ -146,14 +148,20 @@ def start_ws_lang_server(port, check_parent_process, handler_class) -> None:
             """Handler to send responses of  processed requests to respective web socket clients"""
             try:
                 payload = json.dumps(message, ensure_ascii=False)
-                asyncio.run(websocket.send(payload))
+                loop.call_soon_threadsafe(send_queue.put_nowait, (payload, websocket))
             except Exception as e:
                 log.exception("Failed to write message %s, %s", message, str(e))
 
         async def run_server():
+            nonlocal send_queue, loop
+            send_queue = asyncio.Queue()
+            loop = asyncio.get_running_loop()
+
             async with websockets.serve(pylsp_ws, port=port):
-                # runs forever
-                await asyncio.Future()
+                while 1:
+                    # Wait until payload is available for sending
+                    payload, websocket = await send_queue.get()
+                    await websocket.send(payload)
 
         asyncio.run(run_server())
 
@@ -383,7 +391,7 @@ class PythonLSPServer(MethodDispatcher):
     def m_initialized(self, **_kwargs) -> None:
         self._hook("pylsp_initialized")
 
-    def code_actions(self, doc_uri: str, range: Dict, context: Dict):
+    def code_actions(self, doc_uri: str, range: dict, context: dict):
         return flatten(
             self._hook("pylsp_code_actions", doc_uri, range=range, context=context)
         )
@@ -475,7 +483,7 @@ class PythonLSPServer(MethodDispatcher):
         random_uri = str(uuid.uuid4())
 
         # cell_list helps us map the diagnostics back to the correct cell later.
-        cell_list: List[Dict[str, Any]] = []
+        cell_list: list[dict[str, Any]] = []
 
         offset = 0
         total_source = ""
