@@ -288,6 +288,7 @@ class PythonLSPServer(MethodDispatcher):
                 "commands": flatten(self._hook("pylsp_commands"))
             },
             "hoverProvider": True,
+            "implementationProvider": True,  # only when Rope is installed
             "referencesProvider": True,
             "renameProvider": True,
             "foldingRangeProvider": True,
@@ -443,6 +444,9 @@ class PythonLSPServer(MethodDispatcher):
 
     def hover(self, doc_uri, position):
         return self._hook("pylsp_hover", doc_uri, position=position) or {"contents": ""}
+
+    def implementations(self, doc_uri, position):
+        return flatten(self._hook("pylsp_implementations", doc_uri, position=position))
 
     @_utils.debounce(LINT_DEBOUNCE_S, keyed_by="doc_uri")
     def lint(self, doc_uri, is_saved) -> None:
@@ -769,6 +773,10 @@ class PythonLSPServer(MethodDispatcher):
         if isinstance(document, Cell):
             return self._cell_document__definition(document, position, **_kwargs)
         return self.definitions(textDocument["uri"], position)
+
+    def m_text_document__implementation(self, textDocument=None, position=None, **_kwargs):
+        # textDocument here is just a dict with a uri
+        return self.implementations(textDocument["uri"], position)
 
     def m_text_document__document_highlight(
         self, textDocument=None, position=None, **_kwargs

@@ -72,6 +72,7 @@ This server can be configured using the `workspace/didChangeConfiguration` metho
 | `pylsp.plugins.rope_autoimport.memory` | `boolean` | Make the autoimport database memory only. Drastically increases startup time. | `false` |
 | `pylsp.plugins.rope_completion.enabled` | `boolean` | Enable or disable the plugin. | `false` |
 | `pylsp.plugins.rope_completion.eager` | `boolean` | Resolve documentation and detail eagerly. | `false` |
+| `pylsp.plugins.rope_implementation.enabled` | `boolean` | Enable or disable the plugin. | `true` |
 | `pylsp.plugins.yapf.enabled` | `boolean` | Enable or disable the plugin. | `true` |
 | `pylsp.rope.extensionModules` | `string` | Builtin and c-extension modules that are allowed to be imported and inspected by rope. | `null` |
 | `pylsp.rope.ropeFolder` | `array` of unique `string` items | The name of the folder in which rope stores project configurations and data.  Pass `null` for not using such a folder at all. | `null` |

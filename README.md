@@ -15,7 +15,7 @@ pip install python-lsp-server
 This will expose the command `pylsp` on your PATH. Confirm that installation succeeded by running `pylsp --help`.
 
 If the respective dependencies are found, the following optional providers will be enabled:
-- [Rope](https://github.com/python-rope/rope) for Completions and renaming
+- [Rope](https://github.com/python-rope/rope) for Completions, Goto Implementation, and renaming
 - [Pyflakes](https://github.com/PyCQA/pyflakes) linter to detect various errors
 - [McCabe](https://github.com/PyCQA/mccabe) linter for complexity checking
 - [pycodestyle](https://github.com/PyCQA/pycodestyle) linter for style checking
@@ -151,7 +151,7 @@ pip install 'python-lsp-server[websockets]'
 * Code Linting
 * Code actions
 * Signature Help
-* Go to definition
+* Go to definition or implementation
 * Hover
 * Find References
 * Document Symbols
