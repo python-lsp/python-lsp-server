@@ -2,6 +2,13 @@
 
 ## Version 1.13.0 (2025/07/07)
 
+### New features
+* Format signatures in docstrings.
+* Add support for type definition.
+* Send websocket payload using a queue.
+* Fix getting symbols with inline comments that include the `import` word.
+* Drop support for Python 3.8
+
 ### Issues Closed
 
 * [Issue 640](https://github.com/python-lsp/python-lsp-server/issues/640) - Should we add `py.typed` marker? ([PR 641](https://github.com/python-lsp/python-lsp-server/pull/641) by [@krassowski](https://github.com/krassowski))
