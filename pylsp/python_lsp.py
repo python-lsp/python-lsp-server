@@ -722,6 +722,10 @@ class PythonLSPServer(MethodDispatcher):
                 if item.get("data", {}).get("doc_uri") == temp_uri:
                     item["data"]["doc_uri"] = cellDocument.uri
 
+            # Copy LAST_JEDI_COMPLETIONS to cell document so that completionItem/resolve will work
+            tempDocument = workspace.get_document(temp_uri)
+            cellDocument.shared_data["LAST_JEDI_COMPLETIONS"] = tempDocument.shared_data.get("LAST_JEDI_COMPLETIONS", None)
+
             return completions
 
     def m_text_document__completion(self, textDocument=None, position=None, **_kwargs):
