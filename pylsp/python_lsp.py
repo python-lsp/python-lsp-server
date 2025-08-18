@@ -237,6 +237,7 @@ class PythonLSPServer(MethodDispatcher):
     def m_shutdown(self, **_kwargs) -> None:
         for workspace in self.workspaces.values():
             workspace.close()
+        self._hook("pylsp_shutdown")
         self._shutdown = True
 
     def m_invalid_request_after_shutdown(self, **_kwargs):
