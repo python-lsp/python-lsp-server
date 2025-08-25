@@ -57,7 +57,7 @@ test = [
     "numpy",
     "pandas",
     "matplotlib",
-    "pyqt5",
+    "pyqt6",
     "flaky",
     "websockets>=10.3",
 ]
