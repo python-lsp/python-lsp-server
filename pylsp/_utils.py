@@ -167,6 +167,8 @@ def merge_dicts(dict_a, dict_b):
                     yield (key, a[key])
             elif key in a:
                 yield (key, a[key])
+            elif key in b and key not in a:
+                yield (key, b[key])
             elif b[key] is not None:
                 yield (key, b[key])
 

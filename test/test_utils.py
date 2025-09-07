@@ -202,6 +202,22 @@ def test_merge_dicts() -> None:
         {"a": True, "b": {"x": 123, "y": {"hello": "world"}}},
         {"a": False, "b": {"y": [], "z": 987}},
     ) == {"a": False, "b": {"x": 123, "y": [], "z": 987}}
+    assert _utils.merge_dicts(
+        {"a": True, "b": "foo"},
+        {"c": None}
+    ) == {"a": True, "b": "foo", "c": None}, "None value for key that is only in second object should be preserved"
+    assert _utils.merge_dicts(
+        {"a": None, "b": "foo"},
+        {"b": "bar"}
+    ) == {"a": None, "b": "bar"}, "None value for key that is only in first object should be preserved"
+    assert _utils.merge_dicts(
+        {"a": True, "b": "foo"},
+        {"b": None, }
+    ) == {"a": True, "b": "foo"}, "None value for key in second object should not override the value in first object"
+    assert _utils.merge_dicts(
+        {"a": True, "b": {"bar": "baz"}},
+        {"b": {"bar": "baz", "foo": None}, }
+    ) == {"a": True, "b": {"bar": "baz", "foo": None}}, "Nested None value for key that is only in second object should be preserved"
 
 
 def test_clip_column() -> None:
