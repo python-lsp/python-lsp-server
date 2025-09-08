@@ -4,7 +4,6 @@
 import argparse
 import logging
 import logging.config
-import sys
 import time
 
 try:
@@ -12,13 +11,8 @@ try:
 except Exception:
     import json
 
-from ._version import __version__
-from .python_lsp import (
-    PythonLSPServer,
-    start_io_lang_server,
-    start_tcp_lang_server,
-    start_ws_lang_server,
-)
+from pylsp import __version__
+from pylsp.server import LSP_SERVER
 
 LOG_FORMAT = "%(asctime)s {} - %(levelname)s - %(name)s - %(message)s".format(
     time.localtime().tm_zone
@@ -73,25 +67,19 @@ def main() -> None:
     args = parser.parse_args()
     _configure_logger(args.verbose, args.log_config, args.log_file)
 
+    if args.check_parent_process:
+        LSP_SERVER.check_parent_process()
+
     if args.tcp:
-        start_tcp_lang_server(
-            args.host, args.port, args.check_parent_process, PythonLSPServer
+        LSP_SERVER.start_tcp(
+            args.host, args.port
         )
     elif args.ws:
-        start_ws_lang_server(args.port, args.check_parent_process, PythonLSPServer)
+        LSP_SERVER.start_ws(
+            args.host, args.port,
+        )
     else:
-        stdin, stdout = _binary_stdio()
-        start_io_lang_server(stdin, stdout, args.check_parent_process, PythonLSPServer)
-
-
-def _binary_stdio():
-    """Construct binary stdio streams (not text mode).
-
-    This seems to be different for Window/Unix Python2/3, so going by:
-        https://stackoverflow.com/questions/2850893/reading-binary-data-from-stdin
-    """
-    stdin, stdout = sys.stdin.buffer, sys.stdout.buffer
-    return stdin, stdout
+        LSP_SERVER.start_io()
 
 
 def _configure_logger(verbose=0, log_config=None, log_file=None) -> None:
