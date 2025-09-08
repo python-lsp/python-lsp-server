@@ -416,3 +416,9 @@ def get_eol_chars(text):
     if match:
         return match.group(0)
     return None
+
+def flatten(lst: Iterable[Iterable[Any]]) -> List[Any] | None:
+    """Flatten a iterable of iterables into a single list."""
+    if not lst:
+        return None
+    return [i for sublst in lst for i in sublst]
