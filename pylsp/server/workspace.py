@@ -39,7 +39,8 @@ class Workspace(workspace.Workspace):
             doc_uri (str): The document URI.
 
         Returns:
-            WorkspaceFolder | None: The workspace folder containing the document, or None if not found.
+            WorkspaceFolder | None: The workspace folder containing the document, or
+            None if not found.
         """
         best_match_len = float("inf")
         best_match = None

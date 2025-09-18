@@ -111,7 +111,8 @@ class LangageServerProtocol(protocol.LanguageServerProtocol):
         Args:
             hook_name (str): The name of the hook to call.
             doc_uri (str | None): The document URI to pass to the hook.
-            work_done_token (ProgressToken | None): The progress token to use for reporting progress.
+            work_done_token (ProgressToken | None): The progress token to use for
+            reporting progress.
             **kwargs: Additional keyword arguments to pass to the hook.
         """
         if doc_uri:
