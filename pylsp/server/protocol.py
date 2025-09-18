@@ -22,6 +22,7 @@ from pylsp.server.workspace import Workspace
 
 logger = logging.getLogger(__name__)
 
+
 class LangageServerProtocol(protocol.LanguageServerProtocol):
     """Custom features implementation for the Python Language Server."""
 
@@ -98,7 +99,13 @@ class LangageServerProtocol(protocol.LanguageServerProtocol):
             server_info=self.server_info,
         )
 
-    async def call_hook(self, hook_name: str, doc_uri: str | None = None, work_done_token: typlsp.ProgressToken | None = None, **kwargs):
+    async def call_hook(
+        self,
+        hook_name: str,
+        doc_uri: str | None = None,
+        work_done_token: typlsp.ProgressToken | None = None,
+        **kwargs,
+    ):
         """Calls hook_name and returns a list of results from all registered handlers.
 
         Args:
@@ -112,9 +119,13 @@ class LangageServerProtocol(protocol.LanguageServerProtocol):
         else:
             doc = None
 
-        workspace_folder = self.workspace.get_document_folder(doc_uri) if doc_uri else None
+        workspace_folder = (
+            self.workspace.get_document_folder(doc_uri) if doc_uri else None
+        )
 
-        folder_uri = workspace_folder.uri if workspace_folder else self.workspace._root_uri
+        folder_uri = (
+            workspace_folder.uri if workspace_folder else self.workspace._root_uri
+        )
 
         hook_handlers_caller = self.plugin_manager.subset_hook_caller(
             hook_name, self.workspace.config.disabled_plugins
@@ -125,5 +136,11 @@ class LangageServerProtocol(protocol.LanguageServerProtocol):
 
         return await self._server.loop.run_in_executor(
             self._server.thread_pool_executor,
-            partial(hook_handlers_caller, lsp=self, workspace=folder_uri, document=doc, **kwargs),
+            partial(
+                hook_handlers_caller,
+                lsp=self,
+                workspace=folder_uri,
+                document=doc,
+                **kwargs,
+            ),
         )

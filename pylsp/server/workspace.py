@@ -16,6 +16,7 @@ if typ.TYPE_CHECKING:
 
 class Workspace(workspace.Workspace):
     """Custom Workspace class for pylsp."""
+
     def __init__(self, server: LanguageServer, *args, **kwargs):
         self._server = server
         super().__init__(*args, **kwargs)
@@ -23,7 +24,7 @@ class Workspace(workspace.Workspace):
             self._root_uri,
             self._server.lsp.initialization_options,
             self._server.process_id,
-            self._server.server_capabilities
+            self._server.server_capabilities,
         )
 
     @property
@@ -41,12 +42,15 @@ class Workspace(workspace.Workspace):
         Returns:
             WorkspaceFolder | None: The workspace folder containing the document, or None if not found.
         """
-        best_match_len = float('inf')
+        best_match_len = float("inf")
         best_match = None
-        document_path = Path(uris.to_fs_path(doc_uri) or '')
+        document_path = Path(uris.to_fs_path(doc_uri) or "")
         for folder_uri, folder in self._folders.items():
-            folder_path = Path(uris.to_fs_path(folder_uri) or '')
-            if match_len := len(document_path.relative_to(folder_path).parts) < best_match_len:
+            folder_path = Path(uris.to_fs_path(folder_uri) or "")
+            if (
+                match_len := len(document_path.relative_to(folder_path).parts)
+                < best_match_len
+            ):
                 best_match_len = match_len
                 best_match = folder
 

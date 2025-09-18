@@ -71,12 +71,11 @@ def main() -> None:
         LSP_SERVER.check_parent_process()
 
     if args.tcp:
-        LSP_SERVER.start_tcp(
-            args.host, args.port
-        )
+        LSP_SERVER.start_tcp(args.host, args.port)
     elif args.ws:
         LSP_SERVER.start_ws(
-            args.host, args.port,
+            args.host,
+            args.port,
         )
     else:
         LSP_SERVER.start_io()
