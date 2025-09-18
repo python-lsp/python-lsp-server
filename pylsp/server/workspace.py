@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import typing as typ
-from contextlib import suppress
 from pathlib import Path
 
 from lsprotocol.types import WorkspaceFolder
