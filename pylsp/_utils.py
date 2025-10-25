@@ -16,6 +16,8 @@ from typing import Optional
 import docstring_to_markdown
 import jedi
 
+from pylsp import IS_WIN
+
 JEDI_VERSION = jedi.__version__
 
 # Eol chars accepted by the LSP protocol
@@ -134,9 +136,23 @@ def match_uri_to_workspace(uri, workspaces):
         if len(workspace_parts) > len(path):
             continue
         match_len = 0
+        is_parent = True
         for workspace_part, path_part in zip(workspace_parts, path):
+            # filename match is case insensitive on windows
+            # also, uris._normalize_win_path() lowercases the drive letter
+            if IS_WIN:
+                workspace_part = workspace_part.lower()
+                path_part = path_part.lower()
             if workspace_part == path_part:
                 match_len += 1
+            else:
+                # give up, any subsequent match is no longer relevant
+                is_parent = False
+                break
+        # prefer a match that is actually a parent of uri
+        # otherwise fall back to longest matching non-parent
+        if is_parent and match_len > 0:
+            match_len += 1000
         if match_len > 0:
             if match_len > max_len:
                 max_len = match_len
