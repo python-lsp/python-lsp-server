@@ -3,13 +3,14 @@
 
 import logging
 
-from pylsp import _utils, hookimpl, lsp
+from pylsp import _utils, hookimpl
+from lsprotocol import types as lsp
 
 log = logging.getLogger(__name__)
 
 
 @hookimpl
-def pylsp_document_highlight(document, position):
+def pylsp_document_highlight(config, workspace, document, position):
     code_position = _utils.position_to_jedi_linecolumn(document, position)
     usages = document.jedi_script().get_references(**code_position)
 

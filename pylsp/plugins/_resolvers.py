@@ -7,7 +7,7 @@ from time import time
 
 from jedi.api.classes import Completion
 
-from pylsp import lsp
+from lsprotocol import types as lsp
 
 log = logging.getLogger(__name__)
 

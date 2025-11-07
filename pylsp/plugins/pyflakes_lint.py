@@ -4,7 +4,8 @@
 from pyflakes import api as pyflakes_api
 from pyflakes import messages
 
-from pylsp import hookimpl, lsp
+from pylsp import hookimpl
+from lsprotocol import types as lsp
 
 # Pyflakes messages that should be reported as Errors instead of Warns
 PYFLAKES_ERROR_MESSAGES = (
@@ -22,7 +23,7 @@ PYFLAKES_ERROR_MESSAGES = (
 
 
 @hookimpl
-def pylsp_lint(workspace, document):
+def pylsp_lint(config, workspace, document, is_saved):  # noqa: ARG001 (is_saved unused)
     with workspace.report_progress("lint: pyflakes"):
         reporter = PyflakesDiagnosticReport(document.lines)
         pyflakes_api.check(
@@ -36,7 +37,7 @@ class PyflakesDiagnosticReport:
         self.lines = lines
         self.diagnostics = []
 
-    def unexpectedError(self, _filename, msg) -> None:  # pragma: no cover
+    def unexpectedError(self, _filename, msg) -> None:
         err_range = {
             "start": {"line": 0, "character": 0},
             "end": {"line": 0, "character": 0},

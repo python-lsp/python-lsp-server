@@ -5,7 +5,8 @@ import logging
 
 from rope.contrib.codeassist import code_assist, sorted_proposals
 
-from pylsp import _utils, hookimpl, lsp
+from pylsp import _utils, hookimpl
+from lsprotocol import types as lsp
 
 log = logging.getLogger(__name__)
 
@@ -28,7 +29,7 @@ def _resolve_completion(completion, data, markup_kind):
 
 
 @hookimpl
-def pylsp_completions(config, workspace, document, position):
+def pylsp_completions(config, workspace, document, position, ignored_names=None):
     settings = config.plugin_settings("rope_completion", document_path=document.path)
     resolve_eagerly = settings.get("eager", False)
 
@@ -90,7 +91,7 @@ def pylsp_completions(config, workspace, document, position):
 
 
 @hookimpl
-def pylsp_completion_item_resolve(config, completion_item, document):
+def pylsp_completion_item_resolve(config, workspace, document, completion_item):
     """Resolve formatted completion for given non-resolved completion"""
     shared_data = document.shared_data["LAST_ROPE_COMPLETIONS"].get(
         completion_item["label"]

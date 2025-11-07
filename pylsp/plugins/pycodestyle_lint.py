@@ -5,7 +5,8 @@ import logging
 
 import pycodestyle
 
-from pylsp import hookimpl, lsp
+from pylsp import hookimpl
+from lsprotocol import types as lsp
 from pylsp._utils import get_eol_chars
 
 try:
@@ -24,7 +25,7 @@ log = logging.getLogger(__name__)
 
 
 @hookimpl
-def pylsp_lint(workspace, document):
+def pylsp_lint(config, workspace, document, is_saved):  # noqa: ARG001 (is_saved unused)
     with workspace.report_progress("lint: pycodestyle"):
         config = workspace._config
         settings = config.plugin_settings("pycodestyle", document_path=document.path)

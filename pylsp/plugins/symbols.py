@@ -6,7 +6,7 @@ import re
 from pathlib import Path
 
 from pylsp import hookimpl
-from pylsp.lsp import SymbolKind
+from lsprotocol.types import SymbolKind
 
 log = logging.getLogger(__name__)
 
