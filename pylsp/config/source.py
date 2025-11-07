@@ -1,10 +1,14 @@
 # Copyright 2017-2020 Palantir Technologies, Inc.
 # Copyright 2021- Python Language Server Contributors.
-
 import configparser
 import logging
 import os
 import sys
+from collections.abc import Mapping, MutableMapping
+from functools import cached_property
+from copy import deepcopy
+
+from pylsp._utils import find_parents
 
 log = logging.getLogger(__name__)
 
@@ -12,20 +16,36 @@ log = logging.getLogger(__name__)
 class ConfigSource:
     """Base class for implementing a config source."""
 
+    XDG_CONFIG_HOME = os.environ.get(
+        "XDG_CONFIG_HOME", os.path.expanduser("~/.config")
+    )
+
+    USER_CONFIGS = []
+    """list: User config files to search for."""
+
+    PROJECT_CONFIGS = []
+    """list: Project config files to search for."""
+
+    OPTIONS = []
+    """list: Options to parse from the config files."""
+
+    CONFIG_KEY = ""
+    """str: The config section key to look for when parsing."""
+
     def __init__(self, root_path) -> None:
         self.root_path = root_path
-        self.is_windows = sys.platform == "win32"
-        self.xdg_home = os.environ.get(
-            "XDG_CONFIG_HOME", os.path.expanduser("~/.config")
-        )
 
-    def user_config(self) -> None:
+    @cached_property
+    def user_config(self):
         """Return user-level (i.e. home directory) configuration."""
-        raise NotImplementedError()
+        return self.read_config_from_files(self.USER_CONFIGS)
 
-    def project_config(self, document_path) -> None:
-        """Return project-level (i.e. workspace directory) configuration."""
-        raise NotImplementedError()
+    def project_config(self, document_path):
+        """Return project-level (i.e. workspace directory) configuration.
+        """
+        return self.read_config_from_files(
+            find_parents(self.root_path, document_path, self.PROJECT_CONFIGS)
+        )
 
     @classmethod
     def read_config_from_files(cls, files):
@@ -34,7 +54,7 @@ class ConfigSource:
             if os.path.exists(filename) and not os.path.isdir(filename):
                 config.read(filename)
 
-        return config
+        return cls.parse_config(config, cls.CONFIG_KEY, cls.OPTIONS)
 
     @classmethod
     def parse_config(cls, config, key, options):

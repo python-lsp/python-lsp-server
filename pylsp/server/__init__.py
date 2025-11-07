@@ -81,30 +81,56 @@ async def initialized(ls: LanguageServer, params: lsptyp.InitializedParams):
     """Handle the initialized notification."""
     # Call the initialized hook
     await ls.lsp.call_hook("pylsp_initialized")
+    # Dynamically register file watchers for plugin-declared configs
+    try:
+        watch_globs = ls.lsp.workspace.config.watcher_globs()
+        if watch_globs:
+            watchers = [
+                lsptyp.FileSystemWatcher(glob_pattern=glob)
+                for glob in watch_globs
+            ]
+            reg = lsptyp.Registration(
+                id="pylsp-watched-files",
+                method=lsptyp.WORKSPACE_DID_CHANGE_WATCHED_FILES,
+                register_options=lsptyp.DidChangeWatchedFilesRegistrationOptions(watchers=watchers),
+            )
+            await ls.lsp.register_capability_async(lsptyp.RegistrationParams(registrations=[reg]))
+    except Exception:
+        logger.debug("Failed to register watched files", exc_info=True)
 
 
 @LSP_SERVER.feature(lsptyp.WORKSPACE_DID_CHANGE_CONFIGURATION)
 async def workspace_did_change_configuration(
-    ls: LanguageServer, params: lsptyp.WorkspaceConfigurationParams
+    ls: LanguageServer, params: lsptyp.DidChangeConfigurationParams
 ):
-    """Handle the workspace did change configuration notification."""
-    for config_item in params.items:
-        ls.workspace.config.update({config_item.scope_uri: config_item.section})
-    # TODO: Check configuration update is valid and supports this type of update
+    """Handle workspace configuration changes: update settings and notify plugins."""
+    # Update global/workspace config from client settings
+    ls.lsp.workspace.config.update_workspace_settings(params.settings)
     await ls.lsp.call_hook("pylsp_workspace_configuration_changed")
+    # Trigger re-lint on open documents
+    try:
+        for uri in list(ls.lsp.workspace._docs.keys()):
+            await ls.lsp.lint_text_document(uri)
+    except Exception:
+        logger.debug("Failed to re-lint after config change", exc_info=True)
 
 
 @LSP_SERVER.feature(lsptyp.WORKSPACE_DID_CHANGE_WATCHED_FILES)
 def workspace_did_change_watched_files(
     ls: LanguageServer, params: lsptyp.DidChangeWatchedFilesParams
 ):
-    """Handle the workspace did change watched files notification."""
-    for change in params.changes:
-        if change.uri.endswith(CONFIG_FILES):
-            ls.workspace.config.settings.cache_clear()
-            break
-
-    # TODO: check if necessary to link files not handled by textDocument/Open
+    """On watched config file changes, refresh settings and re-lint."""
+    try:
+        # A simple strategy: if any watched file changed, clear caches by updating settings
+        if params.changes:
+            ls.lsp.workspace.config.update_workspace_settings({})
+            # Notify plugins
+            ls.lsp._server.loop.create_task(ls.lsp.call_hook("pylsp_workspace_configuration_changed"))
+            # Re-lint open docs
+            for uri in list(ls.lsp.workspace._docs.keys()):
+                ls.lsp._server.loop.create_task(ls.lsp.lint_text_document(uri))
+    except Exception:
+        logger.debug("Failed to process watched files change", exc_info=True)
 
 
 @LSP_SERVER.feature(lsptyp.WORKSPACE_EXECUTE_COMMAND)
@@ -151,7 +177,7 @@ async def notebook_document_did_close(
     ls: LanguageServer, params: lsptyp.DidCloseNotebookDocumentParams
 ):
     """Handle the notebook document did close notification."""
-    await ls.lsp.cancel_tasks(params.notebook_document.uri)
+    # No background tasks to cancel in current implementation
 
 
 @LSP_SERVER.feature(lsptyp.TEXT_DOCUMENT_DID_OPEN)
@@ -159,7 +185,8 @@ async def text_document_did_open(
     ls: LanguageServer, params: lsptyp.DidOpenTextDocumentParams
 ):
     """Handle the text document did open notification."""
-    await ls.lsp.lint_text_document(params.text_document.uri)
+    await ls.lsp.call_hook("pylsp_document_did_open", doc_uri=params.text_document.uri)
+    await ls.lsp.call_hook("pylsp_lint", doc_uri=params.text_document.uri, is_saved=True)
 
 
 @LSP_SERVER.feature(lsptyp.TEXT_DOCUMENT_DID_CHANGE)
@@ -175,7 +202,7 @@ async def text_document_did_save(
     ls: LanguageServer, params: lsptyp.DidSaveTextDocumentParams
 ):
     """Handle the text document did save notification."""
-    await ls.lsp.lint_text_document(params.text_document.uri)
+    await ls.lsp.call_hook("pylsp_lint", doc_uri=params.text_document.uri, is_saved=True)
     await ls.workspace.save(params.text_document.uri)
 
 
@@ -184,7 +211,7 @@ async def text_document_did_close(
     ls: LanguageServer, params: lsptyp.DidCloseTextDocumentParams
 ):
     """Handle the text document did close notification."""
-    await ls.lsp.cancel_tasks(params.text_document.uri)
+    # No background tasks to cancel in current implementation
 
 
 @LSP_SERVER.feature(lsptyp.TEXT_DOCUMENT_CODE_ACTION)
@@ -194,7 +221,7 @@ async def text_document_code_action(
     """Handle the text document code action request."""
     actions: typ.List[lsptyp.Command | lsptyp.CodeAction] | None = flatten(
         await ls.lsp.call_hook(
-            "pylsp_code_action",
+            "pylsp_code_actions",
             params.text_document.uri,
             range=params.range,
             context=params.context,
@@ -226,10 +253,10 @@ async def text_document_completion(
     """Handle the text document completion request."""
     completions: typ.List[lsptyp.CompletionItem] | None = flatten(
         await ls.lsp.call_hook(
-            "pylsp_completion",
+            "pylsp_completions",
             params.text_document.uri,
             position=params.position,
-            context=params.context,
+            ignored_names=None,
             work_done_token=params.work_done_token,
         )
     )

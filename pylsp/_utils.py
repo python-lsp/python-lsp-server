@@ -11,6 +11,7 @@ import subprocess
 import sys
 import threading
 import time
+from glob import glob
 from typing import Any, Iterable, List, Optional
 
 import docstring_to_markdown
@@ -96,7 +97,9 @@ def find_parents(root, path, names):
     # Split the relative by directory, generate all the parent directories, then check each of them.
     # This avoids running a loop that has different base-cases for unix/windows
     # e.g. /a/b and /a/b/c/d/e.py -> ['/a/b', 'c', 'd']
-    dirs = [root] + os.path.relpath(os.path.dirname(path), root).split(os.path.sep)
+    if os.path.isfile(path):
+        path = os.path.dirname(path)
+    dirs = [root] + os.path.relpath(path, root).split(os.path.sep)
 
     # Search each of /a/b/c, /a/b, /a
     while dirs:
