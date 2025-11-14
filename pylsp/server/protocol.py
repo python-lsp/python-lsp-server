@@ -17,8 +17,10 @@ from pygls.capabilities import ServerCapabilitiesBuilder
 from pygls.uris import from_fs_path
 
 from pylsp import PYLSP, hookspecs
-from pylsp.config.config import PluginManager
+from pylsp.config.plugin import PluginManager
+from pylsp.config.source import ConfigSource
 from pylsp.server.workspace import Workspace
+from pylsp.server.settings import ServerConfig
 
 logger = logging.getLogger(__name__)
 
@@ -27,12 +29,13 @@ class LangageServerProtocol(protocol.LanguageServerProtocol):
     """Custom features implementation for the Python Language Server."""
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
         self._pm = PluginManager(PYLSP)
         if logger.level <= logging.DEBUG:
             self._pm.trace.root.setwriter(logger.debug)
             self._pm.enable_tracing()
         self._pm.add_hookspecs(hookspecs)
+        self._config: ServerConfig | None = None
+        super().__init__(*args, **kwargs)
 
     @property
     def plugin_manager(self) -> PluginManager:
@@ -82,7 +85,7 @@ class LangageServerProtocol(protocol.LanguageServerProtocol):
         if root_path is not None and root_uri is None:
             root_uri = from_fs_path(root_path)
 
-        # Initialize the workspace
+        # Initialize the workspace and server configuration
         workspace_folders = params.workspace_folders or []
         self._workspace = Workspace(
             self._server,
@@ -92,7 +95,36 @@ class LangageServerProtocol(protocol.LanguageServerProtocol):
             self.server_capabilities.position_encoding,
         )
 
+        # Create configuration manager (global + per-workspace)
+        self._config = ServerConfig(
+            protocol=self,
+            root_uri=root_uri,
+            init_options=self.initialization_options,
+        )
+        # Attach to workspace for plugin access
+        self.workspace.attach_config(self._config)
+
         self.trace = TraceValues.Off
+
+        # Collect config sources from pylsp_settings hook (list of ConfigSource classes)
+        try:
+            plugin_settings = self.call_hook_sync("pylsp_settings") or []
+            instances: list[ConfigSource] = []
+            for setting in plugin_settings:
+                if isinstance(setting, dict):
+                    # Direct settings dict provided by a hook implementation.
+                    self._config.update_workspace_settings(setting)
+                else:
+                    # Assume a ConfigSource class; instantiate with root URI.
+                    try:
+                        instances.append(setting(self.workspace.root_uri or ""))  # type: ignore[arg-type]
+                    except Exception:
+                        logger.debug(
+                            "Failed instantiating config source %s", setting, exc_info=True
+                        )
+            self._config.set_config_sources(instances)
+        except Exception:
+            logger.debug("Failed collecting pylsp_settings", exc_info=True)
 
         return InitializeResult(
             capabilities=self.server_capabilities,
@@ -120,28 +152,78 @@ class LangageServerProtocol(protocol.LanguageServerProtocol):
         else:
             doc = None
 
-        workspace_folder = (
-            self.workspace.get_document_folder(doc_uri) if doc_uri else None
-        )
+        # Determine target workspace folder (for workspace-scoped settings)
+        workspace_folder = self.workspace.get_document_folder(doc_uri) if doc_uri else None
+        folder_uri = workspace_folder.uri if workspace_folder else self.workspace.root_uri
 
-        folder_uri = (
-            workspace_folder.uri if workspace_folder else self.workspace._root_uri
-        )
-
+        # Get a hook caller, filtering disabled plugins
         hook_handlers_caller = self.plugin_manager.subset_hook_caller(
-            hook_name, self.workspace.config.disabled_plugins
+            hook_name,
+            self.workspace.config.disabled_plugins if self.workspace.config else set(),
         )
+
+        # Build config view for the target folder
+        config_view = self._config.with_folder(folder_uri) if self._config else None
 
         if work_done_token is not None:
             await self.progress.create_async(work_done_token)
+            self.progress.begin(
+                work_done_token,
+                typlsp.WorkDoneProgressBegin(
+                    title=hook_name,
+                    cancellable=False, # TODO: Add support for cancellable hooks
+                ),
+            )
 
-        return await self._server.loop.run_in_executor(
+        result = await self._server.loop.run_in_executor(
             self._server.thread_pool_executor,
             partial(
                 hook_handlers_caller,
-                lsp=self,
-                workspace=folder_uri,
+                config=config_view,
+                workspace=self.workspace,
                 document=doc,
                 **kwargs,
             ),
         )
+
+        if work_done_token is not None:
+            self.progress.end(
+                work_done_token,
+                typlsp.WorkDoneProgressEnd(),
+            )
+
+        return result
+
+    def call_hook_sync(
+        self,
+        hook_name: str,
+        doc_uri: str | None = None,
+        **kwargs,
+    ):
+        """Synchronous variant for early initialization calls (e.g., pylsp_settings)."""
+        if doc_uri:
+            doc = self.workspace.get_text_document(doc_uri)
+        else:
+            doc = None
+        workspace_folder = self.workspace.get_document_folder(doc_uri) if doc_uri else None
+        folder_uri = workspace_folder.uri if workspace_folder else self.workspace.root_uri
+        hook_handlers_caller = self.plugin_manager.subset_hook_caller(
+            hook_name,
+            self.workspace.config.disabled_plugins if self.workspace.config else set(),
+        )
+        config_view = self._config.with_folder(folder_uri) if self._config else None
+        return hook_handlers_caller(
+            config=config_view,
+            workspace=self.workspace,
+            document=doc,
+            **kwargs,
+        )
+
+    async def lint_text_document(self, doc_uri: str) -> None:
+        """Lint the given text document."""
+        await self.call_hook("pylsp_lint", doc_uri=doc_uri, is_saved=False)
+
+    async def lint_notebook_document(self, doc_uri: str) -> None:
+        """Lint the given notebook document (treat as saved)."""
+        # Plugins expect pylsp_lint; pygls manages notebook docs internally.
+        await self.call_hook("pylsp_lint", doc_uri=doc_uri, is_saved=True)

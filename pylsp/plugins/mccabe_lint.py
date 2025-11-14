@@ -6,7 +6,8 @@ import logging
 
 import mccabe
 
-from pylsp import hookimpl, lsp
+from pylsp import hookimpl
+from lsprotocol import types as lsp
 
 log = logging.getLogger(__name__)
 
@@ -15,7 +16,7 @@ DEFAULT_THRESHOLD = 15
 
 
 @hookimpl
-def pylsp_lint(config, workspace, document):
+def pylsp_lint(config, workspace, document, is_saved):  # noqa: ARG001 (is_saved unused)
     with workspace.report_progress("lint: mccabe"):
         threshold = config.plugin_settings("mccabe", document_path=document.path).get(
             THRESHOLD, DEFAULT_THRESHOLD

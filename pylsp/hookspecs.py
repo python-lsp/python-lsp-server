@@ -1,7 +1,10 @@
 # Copyright 2017-2020 Palantir Technologies, Inc.
 # Copyright 2021- Python Language Server Contributors.
+from __future__ import annotations
 
 from pylsp import hookspec
+
+from pylsp.config.source import ConfigSource
 
 
 @hookspec
@@ -126,8 +129,8 @@ def pylsp_rename(config, workspace, document, position, new_name) -> None:
 
 
 @hookspec
-def pylsp_settings(config) -> None:
-    pass
+def pylsp_settings() -> dict | ConfigSource:
+    ...
 
 
 @hookspec(firstresult=True)

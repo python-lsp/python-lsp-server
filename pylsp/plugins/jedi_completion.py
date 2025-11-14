@@ -6,7 +6,8 @@ import os
 
 import parso
 
-from pylsp import _utils, hookimpl, lsp
+from pylsp import _utils, hookimpl
+from lsprotocol import types as lsp
 from pylsp.plugins._resolvers import LABEL_RESOLVER, SNIPPET_RESOLVER
 
 log = logging.getLogger(__name__)
@@ -36,7 +37,7 @@ _ERRORS = ("error_node",)
 
 
 @hookimpl
-def pylsp_completions(config, document, position):
+def pylsp_completions(config, workspace, document, position, ignored_names=None):
     """Get formatted completions for current code position"""
     settings = config.plugin_settings("jedi_completion", document_path=document.path)
     resolve_eagerly = settings.get("eager", False)
@@ -143,8 +144,9 @@ def pylsp_completions(config, document, position):
 @hookimpl
 def pylsp_completion_item_resolve(
     config,
-    completion_item,
+    workspace,
     document,
+    completion_item,
 ):
     """Resolve formatted completion for given non-resolved completion"""
     shared_data = document.shared_data["LAST_JEDI_COMPLETIONS"].get(

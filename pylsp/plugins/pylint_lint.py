@@ -12,7 +12,9 @@ import shlex
 import sys
 from subprocess import PIPE, Popen
 
-from pylsp import hookimpl, lsp
+from lsprotocol.types import DiagnosticSeverity, DiagnosticTag
+
+from pylsp import hookimpl
 
 try:
     import ujson as json
@@ -74,7 +76,7 @@ class PylintLinter:
                         },
                     }
                     'message': msg,
-                    'severity': lsp.DiagnosticSeverity.*,
+                    'severity': DiagnosticSeverity.*,
                 }
         """
         if not is_saved:
@@ -160,17 +162,20 @@ class PylintLinter:
             }
 
             if diag["type"] == "convention":
-                severity = lsp.DiagnosticSeverity.Information
+                severity = DiagnosticSeverity.Information
             elif diag["type"] == "information":
-                severity = lsp.DiagnosticSeverity.Information
+                severity = DiagnosticSeverity.Information
             elif diag["type"] == "error":
-                severity = lsp.DiagnosticSeverity.Error
+                severity = DiagnosticSeverity.Error
             elif diag["type"] == "fatal":
-                severity = lsp.DiagnosticSeverity.Error
+                severity = DiagnosticSeverity.Error
             elif diag["type"] == "refactor":
-                severity = lsp.DiagnosticSeverity.Hint
+                severity = DiagnosticSeverity.Hint
             elif diag["type"] == "warning":
-                severity = lsp.DiagnosticSeverity.Warning
+                severity = DiagnosticSeverity.Warning
+            else:
+                log.warning("Unknown pylint diagnostic type '%s'", diag["type"])
+                severity = DiagnosticSeverity.Error
 
             code = diag["message-id"]
 
@@ -183,9 +188,9 @@ class PylintLinter:
             }
 
             if code in UNNECESSITY_CODES:
-                diagnostic["tags"] = [lsp.DiagnosticTag.Unnecessary]
+                diagnostic["tags"] = [DiagnosticTag.Unnecessary]
             if code in DEPRECATION_CODES:
-                diagnostic["tags"] = [lsp.DiagnosticTag.Deprecated]
+                diagnostic["tags"] = [DiagnosticTag.Deprecated]
 
             diagnostics.append(diagnostic)
         cls.last_diags[document.path] = diagnostics
@@ -327,12 +332,12 @@ def _parse_pylint_stdio_result(document, stdout):
         line = int(line) - 1
         character = int(character)
         severity_map = {
-            "C": lsp.DiagnosticSeverity.Information,
-            "E": lsp.DiagnosticSeverity.Error,
-            "F": lsp.DiagnosticSeverity.Error,
-            "I": lsp.DiagnosticSeverity.Information,
-            "R": lsp.DiagnosticSeverity.Hint,
-            "W": lsp.DiagnosticSeverity.Warning,
+            "C": DiagnosticSeverity.Information,
+            "E": DiagnosticSeverity.Error,
+            "F": DiagnosticSeverity.Error,
+            "I": DiagnosticSeverity.Information,
+            "R": DiagnosticSeverity.Hint,
+            "W": DiagnosticSeverity.Warning,
         }
         severity = severity_map[code[0]]
         diagnostic = {
@@ -351,9 +356,9 @@ def _parse_pylint_stdio_result(document, stdout):
             "severity": severity,
         }
         if code in UNNECESSITY_CODES:
-            diagnostic["tags"] = [lsp.DiagnosticTag.Unnecessary]
+            diagnostic["tags"] = [DiagnosticTag.Unnecessary]
         if code in DEPRECATION_CODES:
-            diagnostic["tags"] = [lsp.DiagnosticTag.Deprecated]
+            diagnostic["tags"] = [DiagnosticTag.Deprecated]
         diagnostics.append(diagnostic)
 
     return diagnostics

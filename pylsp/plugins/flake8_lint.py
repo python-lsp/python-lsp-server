@@ -12,7 +12,8 @@ from subprocess import PIPE, Popen
 
 from flake8.plugins.pyflakes import FLAKE8_PYFLAKES_CODES
 
-from pylsp import hookimpl, lsp
+from pylsp import hookimpl
+from lsprotocol import types as lsp
 from pylsp.plugins.pyflakes_lint import PYFLAKES_ERROR_MESSAGES
 
 log = logging.getLogger(__name__)
@@ -42,7 +43,7 @@ def pylsp_settings():
 
 
 @hookimpl
-def pylsp_lint(workspace, document):
+def pylsp_lint(config, workspace, document, is_saved):  # noqa: ARG001 (is_saved unused)
     with workspace.report_progress("lint: flake8"):
         config = workspace._config
         settings = config.plugin_settings("flake8", document_path=document.path)
