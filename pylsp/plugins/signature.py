@@ -44,7 +44,7 @@ def pylsp_signature_help(config, document, position):
     function_sig = " ".join([line.strip() for line in function_sig_lines])
 
     signature_docstring = s.docstring(raw=True)
-    if signature_config.get("include_docstring", True) is False:
+    if not signature_config.get("include_docstring", True):
         signature_docstring = ""
 
     sig = {

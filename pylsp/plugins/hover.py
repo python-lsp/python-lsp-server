@@ -45,7 +45,7 @@ def pylsp_hover(config, document, position):
 
     # raw docstring returns only doc, without signature
     docstring = definition.docstring(raw=True)
-    if include_docstring is False:
+    if not include_docstring:
         if signature:
             docstring = ""
         else:
