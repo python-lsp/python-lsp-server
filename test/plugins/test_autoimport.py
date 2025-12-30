@@ -288,6 +288,9 @@ def test_autoimport_code_actions_and_completions_for_notebook_document(
                         "enabled": True,
                         "completions": {"enabled": True},
                     },
+                    "pylsp_rope": {
+                        "enabled": False,
+                    },
                 }
             }
         },

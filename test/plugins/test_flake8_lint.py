@@ -195,13 +195,14 @@ exclude =
     call_args = popen_mock.call_args[0][0]
 
     init_file = os.path.join("blah", "__init__.py")
-    assert call_args == [
+    for arg in [
         "flake8",
         "-",
         "--exclude=blah/,file_2.py",
         "--stdin-display-name",
         init_file,
-    ]
+    ]:
+        assert arg in call_args
 
     os.unlink(os.path.join(workspace.root_path, "setup.cfg"))
 

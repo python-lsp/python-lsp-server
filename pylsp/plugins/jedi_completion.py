@@ -230,6 +230,7 @@ def _resolve_completion(completion, d, markup_kind: str, signature_config: dict)
             signature_config=signature_config,
         )
     except Exception:
+        log.exception("Failed to format docstring")
         docs = ""
     completion["documentation"] = docs
     return completion
