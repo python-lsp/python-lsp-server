@@ -86,6 +86,7 @@ Installing these plugins will add extra functionality to the language server:
 - [pyls-memestra](https://github.com/QuantStack/pyls-memestra): detecting the use of deprecated APIs.
 - [pylsp-rope](https://github.com/python-rope/pylsp-rope): Extended refactoring capabilities using [Rope](https://github.com/python-rope/rope).
 - [python-lsp-ruff](https://github.com/python-lsp/python-lsp-ruff): Extensive and fast linting using [ruff](https://github.com/charliermarsh/ruff).
+- [pylsp-workspace-symbols](https://github.com/Hanatarou/pylsp-workspace-symbols): Workspace symbol search support using [Jedi](https://github.com/davidhalter/jedi).
 
 Please see the above repositories for examples on how to write plugins for the Python LSP Server.
 
