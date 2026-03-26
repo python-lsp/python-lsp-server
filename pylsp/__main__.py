@@ -8,7 +8,7 @@ import sys
 import time
 
 try:
-    import ujson as json
+    import orjson as json
 except Exception:
     import json
 

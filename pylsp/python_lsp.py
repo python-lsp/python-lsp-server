@@ -11,7 +11,7 @@ from functools import partial
 from typing import Any
 
 try:
-    import ujson as json
+    import orjson as json
 except Exception:
     import json
 
