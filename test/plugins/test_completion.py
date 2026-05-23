@@ -334,8 +334,8 @@ def test_snippets_completion(config, workspace) -> None:
 
     com_position = {"line": 1, "character": len(doc_snippets)}
     completions = pylsp_jedi_completions(config, doc, com_position)
-    assert completions[0]["insertText"] == "defaultdict($0)"
-    assert completions[0]["insertTextFormat"] == lsp.InsertTextFormat.Snippet
+    assert completions[0]["insertText"] == "defaultdict()"
+    assert not completions[0].get("insertTextFormat", None)
 
 
 def test_snippets_completion_at_most(config, workspace) -> None:
