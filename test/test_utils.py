@@ -2,6 +2,7 @@
 # Copyright 2021- Python Language Server Contributors.
 
 import multiprocessing
+import ntpath
 import os
 import sys
 import time
@@ -195,6 +196,19 @@ def test_find_parents(tmpdir) -> None:
     assert _utils.find_parents(tmpdir.strpath, path.strpath, ["test.cfg"]) == [
         test_cfg.strpath
     ]
+
+
+def test_find_parents_handles_cross_mount_paths(monkeypatch) -> None:
+    monkeypatch.setattr(_utils.os, "path", ntpath)
+
+    assert (
+        _utils.find_parents(
+            r"\\server\share1",
+            r"\\server\share2\path.py",
+            ["test.cfg"],
+        )
+        == []
+    )
 
 
 def test_merge_dicts() -> None:

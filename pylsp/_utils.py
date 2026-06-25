@@ -96,7 +96,11 @@ def find_parents(root, path, names):
     # Split the relative by directory, generate all the parent directories, then check each of them.
     # This avoids running a loop that has different base-cases for unix/windows
     # e.g. /a/b and /a/b/c/d/e.py -> ['/a/b', 'c', 'd']
-    dirs = [root] + os.path.relpath(os.path.dirname(path), root).split(os.path.sep)
+    try:
+        dirs = [root] + os.path.relpath(os.path.dirname(path), root).split(os.path.sep)
+    except ValueError:
+        log.warning("Path %r not in %r", path, root)
+        return []
 
     # Search each of /a/b/c, /a/b, /a
     while dirs:
