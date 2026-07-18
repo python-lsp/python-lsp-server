@@ -96,7 +96,13 @@ def find_parents(root, path, names):
     # Split the relative by directory, generate all the parent directories, then check each of them.
     # This avoids running a loop that has different base-cases for unix/windows
     # e.g. /a/b and /a/b/c/d/e.py -> ['/a/b', 'c', 'd']
-    dirs = [root] + os.path.relpath(os.path.dirname(path), root).split(os.path.sep)
+    try:
+        dirs = [root] + os.path.relpath(os.path.dirname(path), root).split(os.path.sep)
+    except ValueError:
+        # On Windows, relpath raises ValueError when path and root are on different mounts
+        # (e.g. a UNC share root vs a drive-letter path). Nothing to find in this case.
+        log.warning("Path %r not in %r", path, root)
+        return []
 
     # Search each of /a/b/c, /a/b, /a
     while dirs:
@@ -315,17 +321,24 @@ def format_docstring(
         contents = ""
 
     if markup_kind == "markdown":
-        try:
-            value = docstring_to_markdown.convert(contents)
-        except docstring_to_markdown.UnknownFormatError:
-            # try to escape the Markdown syntax instead:
-            value = escape_markdown(contents)
+        wrapped_signatures = convert_signatures_to_markdown(
+            signatures if signatures is not None else [], config=signature_config or {}
+        )
 
-        if signatures:
-            wrapped_signatures = convert_signatures_to_markdown(
-                signatures, config=signature_config or {}
-            )
-            value = wrapped_signatures + "\n\n" + value
+        if contents != "":
+            try:
+                value = docstring_to_markdown.convert(contents)
+            except docstring_to_markdown.UnknownFormatError:
+                # try to escape the Markdown syntax instead:
+                value = escape_markdown(contents)
+
+            if signatures:
+                value = wrapped_signatures + "\n\n" + value
+        else:
+            value = contents
+
+            if signatures:
+                value = wrapped_signatures
 
         return {"kind": "markdown", "value": value}
     value = contents
