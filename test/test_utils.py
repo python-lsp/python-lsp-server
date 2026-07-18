@@ -204,7 +204,12 @@ def test_find_parents_cross_mount(tmpdir, monkeypatch) -> None:
     subsubdir = tmpdir.ensure_dir("subdir", "subsubdir")
     path = subsubdir.ensure("path.py")
 
-    with mock.patch("os.path.relpath", side_effect=ValueError("path is on mount 'C:', start on mount '\\\\unc\\share'")):
+    with mock.patch(
+        "os.path.relpath",
+        side_effect=ValueError(
+            "path is on mount 'C:', start on mount '\\\\unc\\share'"
+        ),
+    ):
         result = _utils.find_parents(tmpdir.strpath, path.strpath, ["test.cfg"])
 
     assert result == []
