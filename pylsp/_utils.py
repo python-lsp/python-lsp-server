@@ -141,6 +141,7 @@ def match_uri_to_workspace(uri, workspaces):
         workspace_parts = pathlib.Path(workspace).parts
         if len(workspace_parts) > len(path):
             continue
+
         match_len = 0
         is_parent = True
         for workspace_part, path_part in zip(workspace_parts, path):
@@ -149,20 +150,24 @@ def match_uri_to_workspace(uri, workspaces):
             if IS_WIN:
                 workspace_part = workspace_part.lower()
                 path_part = path_part.lower()
+
             if workspace_part == path_part:
                 match_len += 1
             else:
                 # give up, any subsequent match is no longer relevant
                 is_parent = False
                 break
+
         # prefer a match that is actually a parent of uri
         # otherwise fall back to longest matching non-parent
         if is_parent and match_len > 0:
             match_len += 1000
+
         if match_len > 0:
             if match_len > max_len:
                 max_len = match_len
                 chosen_workspace = workspace
+
     return chosen_workspace
 
 
