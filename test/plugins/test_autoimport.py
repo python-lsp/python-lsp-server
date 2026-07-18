@@ -352,11 +352,11 @@ def make_mypy_context(module_name, line, character_start, character_end):
     return {
         "diagnostics": [
             {
-                'range': {
-                    'start': {'line': line, 'character': character_start},
-                    'end': {'line': line, 'character': character_end}
+                "range": {
+                    "start": {"line": line, "character": character_start},
+                    "end": {"line": line, "character": character_end},
                 },
-                'code': 'name-defined'
+                "code": "name-defined",
             }
         ]
     }
@@ -407,7 +407,9 @@ def test_autoimport_code_actions_and_completions_based_on_mypy_error(
     wait_for_condition(lambda: not cache.is_blocked())
 
     # 1.
-    quick_fixes = server.code_actions("cell_1_uri", {}, make_mypy_context("os", 0, 0, 2))
+    quick_fixes = server.code_actions(
+        "cell_1_uri", {}, make_mypy_context("os", 0, 0, 2)
+    )
     assert any(s for s in quick_fixes if contains_autoimport_quickfix(s, "os"))
 
     completions = server.completions("cell_1_uri", position(0, 2)).get("items")
