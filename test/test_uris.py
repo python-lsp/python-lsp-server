@@ -70,3 +70,16 @@ def test_win_from_fs_path(path, uri) -> None:
 )
 def test_uri_with(uri, kwargs, new_uri) -> None:
     assert uris.uri_with(uri, **kwargs) == new_uri
+
+
+@pytest.mark.parametrize(
+    "uri,normalized",
+    [
+        ("file:///C:/far/boo", "file:///c:/far/boo"),
+        ("file:///c:/far/boo", "file:///c:/far/boo"),
+        ("file:///C:/far/space%20%3Fboo", "file:///c:/far/space%20%3Fboo"),
+        ("file:///foo/bar", "file:///foo/bar"),
+    ],
+)
+def test_normalize(uri, normalized) -> None:
+    assert uris.normalize(uri) == normalized

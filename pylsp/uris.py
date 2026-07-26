@@ -85,6 +85,20 @@ def from_fs_path(path):
     return urlunparse((scheme, netloc, path, params, query, fragment))
 
 
+def normalize(uri):
+    """Return a canonical form of the given URI.
+
+    Windows drive letters are case-insensitive, so clients may send either
+    ``file:///C:/foo`` or ``file:///c:/foo`` for the same file. Both forms
+    normalize to the lower-case one used by :func:`from_fs_path`, so that a
+    URI can be used as a stable dictionary key.
+    """
+    scheme, netloc, path, params, query, fragment = urlparse(uri)
+    if RE_DRIVE_LETTER_PATH.match(path):
+        path = path[0] + path[1].lower() + path[2:]
+    return urlunparse((scheme, netloc, path, params, query, fragment))
+
+
 def uri_with(
     uri, scheme=None, netloc=None, path=None, params=None, query=None, fragment=None
 ):

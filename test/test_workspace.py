@@ -430,3 +430,14 @@ def test_progress_with_exception(workspace, consumer) -> None:
         {"kind": "begin", "title": "some_title"},
         {"kind": "end"},
     ]
+
+
+def test_put_document_normalizes_drive_letter_case(pylsp) -> None:
+    """A drive letter is case-insensitive, so both spellings are one document."""
+    upper_uri = "file:///C:/far/boo.py"
+    lower_uri = "file:///c:/far/boo.py"
+
+    pylsp.workspace.put_document(upper_uri, "content")
+
+    assert pylsp.workspace.get_maybe_document(lower_uri) is not None
+    assert pylsp.workspace.get_document(lower_uri).source == "content"
