@@ -100,8 +100,8 @@ def test_multiple_workspaces_from_initialize(pylsp_w_workspace_folders) -> None:
     msg1 = {"uri": path_as_uri(str(file1)), "version": 1, "text": "import os"}
 
     pylsp.m_text_document__did_open(textDocument=msg1)
-    assert msg1["uri"] in pylsp.workspace._docs
-    assert msg1["uri"] in pylsp.workspaces[folders_uris[0]]._docs
+    assert uris.normalize(msg1["uri"]) in pylsp.workspace._docs
+    assert uris.normalize(msg1["uri"]) in pylsp.workspaces[folders_uris[0]]._docs
 
     # Create file in the second workspace folder.
     file2 = workspace_folders[1].join("file2.py")
@@ -109,8 +109,8 @@ def test_multiple_workspaces_from_initialize(pylsp_w_workspace_folders) -> None:
     msg2 = {"uri": path_as_uri(str(file2)), "version": 1, "text": "import sys"}
 
     pylsp.m_text_document__did_open(textDocument=msg2)
-    assert msg2["uri"] not in pylsp.workspace._docs
-    assert msg2["uri"] in pylsp.workspaces[folders_uris[1]]._docs
+    assert uris.normalize(msg2["uri"]) not in pylsp.workspace._docs
+    assert uris.normalize(msg2["uri"]) in pylsp.workspaces[folders_uris[1]]._docs
 
 
 def test_multiple_workspaces(tmpdir, pylsp) -> None:
@@ -124,7 +124,7 @@ def test_multiple_workspaces(tmpdir, pylsp) -> None:
     msg = {"uri": path_as_uri(str(file1)), "version": 1, "text": "import os"}
 
     pylsp.m_text_document__did_open(textDocument=msg)
-    assert msg["uri"] in pylsp.workspace._docs
+    assert uris.normalize(msg["uri"]) in pylsp.workspace._docs
 
     added_workspaces = [
         {"uri": path_as_uri(str(x))} for x in (workspace1_dir, workspace2_dir)
@@ -136,14 +136,14 @@ def test_multiple_workspaces(tmpdir, pylsp) -> None:
         assert workspace["uri"] in pylsp.workspaces
 
     workspace1_uri = added_workspaces[0]["uri"]
-    assert msg["uri"] not in pylsp.workspace._docs
-    assert msg["uri"] in pylsp.workspaces[workspace1_uri]._docs
+    assert uris.normalize(msg["uri"]) not in pylsp.workspace._docs
+    assert uris.normalize(msg["uri"]) in pylsp.workspaces[workspace1_uri]._docs
 
     msg = {"uri": path_as_uri(str(file2)), "version": 1, "text": "import sys"}
     pylsp.m_text_document__did_open(textDocument=msg)
 
     workspace2_uri = added_workspaces[1]["uri"]
-    assert msg["uri"] in pylsp.workspaces[workspace2_uri]._docs
+    assert uris.normalize(msg["uri"]) in pylsp.workspaces[workspace2_uri]._docs
 
     event = {"added": [], "removed": [added_workspaces[0]]}
     pylsp.m_workspace__did_change_workspace_folders(event)
