@@ -112,23 +112,23 @@ class Workspace:
 
         See https://github.com/Microsoft/language-server-protocol/issues/177
         """
-        return self._docs.get(doc_uri) or self._create_document(doc_uri)
+        return self._docs.get(uris.normalize(doc_uri)) or self._create_document(doc_uri)
 
     def get_cell_document(self, doc_uri):
-        return self._docs.get(doc_uri)
+        return self._docs.get(uris.normalize(doc_uri))
 
     def get_maybe_document(self, doc_uri):
-        return self._docs.get(doc_uri)
+        return self._docs.get(uris.normalize(doc_uri))
 
     def put_document(self, doc_uri, source, version=None) -> None:
-        self._docs[doc_uri] = self._create_document(
+        self._docs[uris.normalize(doc_uri)] = self._create_document(
             doc_uri, source=source, version=version
         )
 
     def put_notebook_document(
         self, doc_uri, notebook_type, cells, version=None, metadata=None
     ) -> None:
-        self._docs[doc_uri] = self._create_notebook_document(
+        self._docs[uris.normalize(doc_uri)] = self._create_notebook_document(
             doc_uri, notebook_type, cells, version, metadata
         )
 
@@ -144,27 +144,27 @@ class Workspace:
             self.rm_document(uri)
 
     def add_notebook_cells(self, doc_uri, cells, start) -> None:
-        self._docs[doc_uri].add_cells(cells, start)
+        self._docs[uris.normalize(doc_uri)].add_cells(cells, start)
 
     def remove_notebook_cells(self, doc_uri, start, delete_count) -> None:
-        self._docs[doc_uri].remove_cells(start, delete_count)
+        self._docs[uris.normalize(doc_uri)].remove_cells(start, delete_count)
 
     def update_notebook_metadata(self, doc_uri, metadata) -> None:
-        self._docs[doc_uri].metadata = metadata
+        self._docs[uris.normalize(doc_uri)].metadata = metadata
 
     def put_cell_document(
         self, doc_uri, notebook_uri, language_id, source, version=None
     ) -> None:
-        self._docs[doc_uri] = self._create_cell_document(
+        self._docs[uris.normalize(doc_uri)] = self._create_cell_document(
             doc_uri, notebook_uri, language_id, source, version
         )
 
     def rm_document(self, doc_uri) -> None:
-        self._docs.pop(doc_uri)
+        self._docs.pop(uris.normalize(doc_uri))
 
     def update_document(self, doc_uri, change, version=None) -> None:
-        self._docs[doc_uri].apply_change(change)
-        self._docs[doc_uri].version = version
+        self._docs[uris.normalize(doc_uri)].apply_change(change)
+        self._docs[uris.normalize(doc_uri)].version = version
 
     def update_config(self, settings):
         self._config.update((settings or {}).get("pylsp", {}))
