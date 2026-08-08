@@ -38,6 +38,28 @@ def test_pydocstyle(config, workspace) -> None:
     }
 
 
+def test_pydocstyle_add_ignore_with_select(config, workspace) -> None:
+    config.update(
+        {"plugins": {"pydocstyle": {"select": ["D100"], "addIgnore": ["D100"]}}}
+    )
+    doc = Document(DOC_URI, workspace, DOC)
+
+    diags = pydocstyle_lint.pylsp_lint(config, workspace, doc)
+
+    assert not diags
+
+
+def test_pydocstyle_add_select_with_ignore(config, workspace) -> None:
+    config.update(
+        {"plugins": {"pydocstyle": {"ignore": ["D100"], "addSelect": ["D100"]}}}
+    )
+    doc = Document(DOC_URI, workspace, DOC)
+
+    diags = pydocstyle_lint.pylsp_lint(config, workspace, doc)
+
+    assert {diag["code"] for diag in diags} == {"D100", "D103"}
+
+
 def test_pydocstyle_test_document(config, workspace) -> None:
     # The default --match argument excludes test_* documents.
     doc = Document(TEST_DOC_URI, workspace, "")

@@ -47,16 +47,15 @@ def pylsp_lint(config, workspace, document):
 
         if settings.get("convention"):
             args.append("--convention=" + settings["convention"])
-
-            if settings.get("addSelect"):
-                args.append("--add-select=" + ",".join(settings["addSelect"]))
-            if settings.get("addIgnore"):
-                args.append("--add-ignore=" + ",".join(settings["addIgnore"]))
-
         elif settings.get("select"):
             args.append("--select=" + ",".join(settings["select"]))
         elif settings.get("ignore"):
             args.append("--ignore=" + ",".join(settings["ignore"]))
+
+        if settings.get("addSelect"):
+            args.append("--add-select=" + ",".join(settings["addSelect"]))
+        if settings.get("addIgnore"):
+            args.append("--add-ignore=" + ",".join(settings["addIgnore"]))
 
         log.info("Using pydocstyle args: %s", args)
 

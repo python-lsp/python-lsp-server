@@ -396,7 +396,7 @@
         "type": "string"
       },
       "uniqueItems": true,
-      "description": "Ignore errors and warnings in addition to the specified convention."
+      "description": "Ignore errors and warnings in addition to the basic list of checked errors."
     },
     "pylsp.plugins.pydocstyle.addSelect": {
       "type": "array",
@@ -405,7 +405,7 @@
         "type": "string"
       },
       "uniqueItems": true,
-      "description": "Select errors and warnings in addition to the specified convention."
+      "description": "Select errors and warnings in addition to the basic list of checked errors."
     },
     "pylsp.plugins.pydocstyle.ignore": {
       "type": "array",

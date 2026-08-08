@@ -57,8 +57,8 @@ This server can be configured using the `workspace/didChangeConfiguration` metho
 | `pylsp.plugins.pycodestyle.indentSize` | `integer` | Set indentation spaces. | `null` |
 | `pylsp.plugins.pydocstyle.enabled` | `boolean` | Enable or disable the plugin. | `false` |
 | `pylsp.plugins.pydocstyle.convention` | `string` (one of: `'pep257'`, `'numpy'`, `'google'`, `None`) | Choose the basic list of checked errors by specifying an existing convention. | `null` |
-| `pylsp.plugins.pydocstyle.addIgnore` | `array` of unique `string` items | Ignore errors and warnings in addition to the specified convention. | `[]` |
-| `pylsp.plugins.pydocstyle.addSelect` | `array` of unique `string` items | Select errors and warnings in addition to the specified convention. | `[]` |
+| `pylsp.plugins.pydocstyle.addIgnore` | `array` of unique `string` items | Ignore errors and warnings in addition to the basic list of checked errors. | `[]` |
+| `pylsp.plugins.pydocstyle.addSelect` | `array` of unique `string` items | Select errors and warnings in addition to the basic list of checked errors. | `[]` |
 | `pylsp.plugins.pydocstyle.ignore` | `array` of unique `string` items | Ignore errors and warnings | `[]` |
 | `pylsp.plugins.pydocstyle.select` | `array` of unique `string` items | Select errors and warnings | `null` |
 | `pylsp.plugins.pydocstyle.match` | `string` | Check only files that exactly match the given regular expression; default is to match files that don't start with 'test_' but end with '.py'. | `"(?!test_).*\\.py"` |
