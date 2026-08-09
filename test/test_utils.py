@@ -222,6 +222,17 @@ def test_merge_dicts() -> None:
     ) == {"a": False, "b": {"x": 123, "y": [], "z": 987}}
 
 
+def test_merge_dicts_preserves_list_order() -> None:
+    assert _utils.merge_dicts({"items": [3, 2]}, {"items": [1, 3]}) == {
+        "items": [3, 2, 1]
+    }
+
+    overrides = ["--python-executable", "/tmp/venv/bin/python", True]
+    assert _utils.merge_dicts({"overrides": []}, {"overrides": overrides}) == {
+        "overrides": overrides
+    }
+
+
 def test_clip_column() -> None:
     assert _utils.clip_column(0, [], 0) == 0
     assert _utils.clip_column(2, ["123"], 0) == 2
