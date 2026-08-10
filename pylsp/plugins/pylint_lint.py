@@ -15,7 +15,7 @@ from subprocess import PIPE, Popen
 from pylsp import hookimpl, lsp
 
 try:
-    import ujson as json
+    import orjson as json
 except Exception:
     import json
 

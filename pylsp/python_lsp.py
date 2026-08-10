@@ -11,7 +11,7 @@ from functools import partial
 from typing import Any
 
 try:
-    import ujson as json
+    import orjson as json
 except Exception:
     import json
 
@@ -152,7 +152,10 @@ def start_ws_lang_server(port, check_parent_process, handler_class) -> None:
         def send_message(message, websocket):
             """Handler to send responses of  processed requests to respective web socket clients"""
             try:
-                payload = json.dumps(message, ensure_ascii=False)
+                if json.__name__ == "orjson":
+                    payload = json.dumps(message).decode("utf-8")
+                else:
+                    payload = json.dumps(message, ensure_ascii=False)
                 loop.call_soon_threadsafe(send_queue.put_nowait, (payload, websocket))
             except Exception as e:
                 log.exception("Failed to write message %s, %s", message, str(e))
@@ -266,6 +269,8 @@ class PythonLSPServer(MethodDispatcher):
 
     def _hook(self, hook_name, doc_uri=None, **kwargs):
         """Calls hook_name and returns a list of results from all registered handlers"""
+        if self.config is None:
+            return []
         workspace = self._match_uri_to_workspace(doc_uri)
         doc = workspace.get_document(doc_uri) if doc_uri else None
         hook_handlers = self.config.plugin_manager.subset_hook_caller(

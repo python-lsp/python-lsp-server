@@ -8,7 +8,7 @@ import sys
 import time
 
 try:
-    import ujson as json
+    import orjson as json
 except Exception:
     import json
 
@@ -99,7 +99,10 @@ def _configure_logger(verbose=0, log_config=None, log_file=None) -> None:
 
     if log_config:
         with open(log_config, encoding="utf-8") as f:
-            logging.config.dictConfig(json.load(f))
+            if json.__name__ == "orjson":
+                logging.config.dictConfig(json.loads(f.read()))
+            else:
+                logging.config.dictConfig(json.load(f))
     else:
         formatter = logging.Formatter(LOG_FORMAT)
         if log_file:
