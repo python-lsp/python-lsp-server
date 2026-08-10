@@ -93,6 +93,10 @@ Please see the above repositories for examples on how to write plugins for the P
 
 Please file an issue if you require assistance writing a plugin.
 
+## Choice of Python interpreter / virtual environment
+
+For a detailed discussion on the choice of _where_ to install and run `python-lsp-server` and whether/how to make sure its plugins have access to your project's environment, see [Python Environment Considerations](docs/python-env.md).
+
 ## Configuration
 
 Like all language servers, configuration can be passed from the client that talks to this server (i.e. your editor/IDE or other tool that has the same purpose). The details of how this is done depend on the editor or plugin that you are using to communicate with `python-lsp-server`. The configuration options available at that level are documented in [`CONFIGURATION.md`](https://github.com/python-lsp/python-lsp-server/blob/develop/CONFIGURATION.md).
