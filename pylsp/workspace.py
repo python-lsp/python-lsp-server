@@ -549,7 +549,7 @@ class Document:
             env_vars = os.environ.copy()
         env_vars.pop("PYTHONPATH", None)
 
-        environment = self.get_enviroment(environment_path, env_vars=env_vars)
+        environment = self.get_environment(environment_path, env_vars=env_vars)
         sys_path = self.sys_path(
             environment_path, env_vars, prioritize_extra_paths, extra_paths
         )
@@ -573,7 +573,7 @@ class Document:
 
         return jedi.Script(**kwargs)
 
-    def get_enviroment(self, environment_path=None, env_vars=None):
+    def get_environment(self, environment_path=None, env_vars=None):
         # TODO(gatesn): #339 - make better use of jedi environments, they seem pretty powerful
         if environment_path is None:
             environment = jedi.api.environment.get_cached_default_environment()
@@ -597,7 +597,7 @@ class Document:
     ):
         # Copy our extra sys path
         path = list(self._extra_sys_path)
-        environment = self.get_enviroment(
+        environment = self.get_environment(
             environment_path=environment_path, env_vars=env_vars
         )
         path.extend(environment.get_sys_path())
