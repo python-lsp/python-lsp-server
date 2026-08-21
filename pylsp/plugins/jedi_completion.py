@@ -147,6 +147,13 @@ def pylsp_completion_item_resolve(
     document,
 ):
     """Resolve formatted completion for given non-resolved completion"""
+
+    if (
+        "LAST_JEDI_COMPLETIONS" not in document.shared_data
+        or completion_item["label"] not in document.shared_data["LAST_JEDI_COMPLETIONS"]
+    ):
+        return None
+
     shared_data = document.shared_data["LAST_JEDI_COMPLETIONS"].get(
         completion_item["label"]
     )
@@ -158,15 +165,13 @@ def pylsp_completion_item_resolve(
     supported_markup_kinds = item_capabilities.get("documentationFormat", ["markdown"])
     preferred_markup_kind = _utils.choose_markup_kind(supported_markup_kinds)
 
-    if shared_data:
-        completion, data = shared_data
-        return _resolve_completion(
-            completion,
-            data,
-            markup_kind=preferred_markup_kind,
-            signature_config=config.settings().get("signature", {}),
-        )
-    return completion_item
+    completion, data = shared_data
+    return _resolve_completion(
+        completion,
+        data,
+        markup_kind=preferred_markup_kind,
+        signature_config=config.settings().get("signature", {}),
+    )
 
 
 def is_exception_class(name):

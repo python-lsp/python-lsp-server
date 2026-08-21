@@ -420,8 +420,13 @@ class PythonLSPServer(MethodDispatcher):
 
     def completion_item_resolve(self, completion_item):
         doc_uri = completion_item.get("data", {}).get("doc_uri", None)
-        return self._hook(
-            "pylsp_completion_item_resolve", doc_uri, completion_item=completion_item
+        return (
+            self._hook(
+                "pylsp_completion_item_resolve",
+                doc_uri,
+                completion_item=completion_item,
+            )
+            or completion_item
         )
 
     def definitions(self, doc_uri, position):
