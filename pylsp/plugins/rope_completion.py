@@ -92,6 +92,13 @@ def pylsp_completions(config, workspace, document, position):
 @hookimpl
 def pylsp_completion_item_resolve(config, completion_item, document):
     """Resolve formatted completion for given non-resolved completion"""
+
+    if (
+        "LAST_ROPE_COMPLETIONS" not in document.shared_data
+        or completion_item["label"] not in document.shared_data["LAST_ROPE_COMPLETIONS"]
+    ):
+        return None
+
     shared_data = document.shared_data["LAST_ROPE_COMPLETIONS"].get(
         completion_item["label"]
     )
@@ -102,11 +109,8 @@ def pylsp_completion_item_resolve(config, completion_item, document):
     item_capabilities = completion_capabilities.get("completionItem", {})
     supported_markup_kinds = item_capabilities.get("documentationFormat", ["markdown"])
     preferred_markup_kind = _utils.choose_markup_kind(supported_markup_kinds)
-
-    if shared_data:
-        completion, data = shared_data
-        return _resolve_completion(completion, data, preferred_markup_kind)
-    return completion_item
+    completion, data = shared_data
+    return _resolve_completion(completion, data, preferred_markup_kind)
 
 
 def _sort_text(definition):
