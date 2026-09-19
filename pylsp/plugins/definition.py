@@ -64,7 +64,7 @@ def pylsp_definitions(
     follow_builtin_defns = settings.get("follow_builtin_definitions", True)
     return [
         {
-            "uri": uris.uri_with(document.uri, path=str(d.module_path)),
+            "uri": uris.from_fs_path(str(d.module_path)),
             "range": {
                 "start": {"line": d.line - 1, "character": d.column},
                 "end": {"line": d.line - 1, "character": d.column + len(d.name)},

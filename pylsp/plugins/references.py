@@ -20,7 +20,7 @@ def pylsp_references(document, position, exclude_declaration):
     # Filter out builtin modules
     return [
         {
-            "uri": uris.uri_with(document.uri, path=str(d.module_path))
+            "uri": uris.from_fs_path(str(d.module_path))
             if d.module_path
             else document.uri,
             "range": {
