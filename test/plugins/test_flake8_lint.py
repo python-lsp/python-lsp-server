@@ -6,6 +6,8 @@ import tempfile
 from textwrap import dedent
 from unittest.mock import patch
 
+import pytest
+
 from pylsp import lsp, uris
 from pylsp.plugins import flake8_lint
 from pylsp.workspace import Document
@@ -58,6 +60,33 @@ def test_flake8_lint(workspace) -> None:
         assert unused_var["severity"] == lsp.DiagnosticSeverity.Warning
     finally:
         os.remove(name)
+
+
+@pytest.mark.parametrize(
+    "line, column, expected_character",
+    [
+        ("    # comment", 0, 0),
+        ("", 0, 0),
+        ("    # comment", 1, 0),
+        ("    # comment", 5, 4),
+    ],
+)
+def test_flake8_diagnostic_columns(workspace, line, column, expected_character) -> None:
+    source = f"def myfun():\n{line}\n    pass\n"
+    doc = Document("", workspace, source)
+    output = (
+        f"stdin:2:{column}: ANN201 Missing return type annotation for public function\n"
+    )
+
+    with patch("pylsp.plugins.flake8_lint.run_flake8", return_value=output):
+        diagnostics = flake8_lint.pylsp_lint(workspace, doc)
+
+    assert len(diagnostics) == 1
+    assert diagnostics[0]["range"] == {
+        "start": {"line": 1, "character": expected_character},
+        "end": {"line": 1, "character": len(line) + 1},
+    }
+    assert diagnostics[0]["code"] == "ANN201"
 
 
 def test_flake8_respecting_configuration(workspace) -> None:
