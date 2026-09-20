@@ -223,7 +223,8 @@ def parse_stdout(source, stdout):
 
         _, line, character, code, msg = parsed_line
         line = int(line) - 1
-        character = int(character) - 1
+        # Some plugins report column zero when no precise column is available.
+        character = max(0, int(character) - 1)
         # show also the code in message
         msg = code + " " + msg
         severity = lsp.DiagnosticSeverity.Warning
