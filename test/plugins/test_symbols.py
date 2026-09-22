@@ -118,6 +118,44 @@ def test_symbols_non_existing_file(config, workspace, tmpdir) -> None:
     helper_check_symbols_all_scope(symbols)
 
 
+@pytest.mark.parametrize("all_scopes", [False, True])
+@pytest.mark.parametrize("include_import_symbols", [False, True])
+def test_symbols_imported_namedtuple(
+    config, temp_workspace_factory, all_scopes, include_import_symbols
+) -> None:
+    workspace = temp_workspace_factory(
+        {
+            "__init__.py": "",
+            "a.py": 'from .b import MyNamedTuple\na_symbol = "a_symbol"\n',
+            "b.py": (
+                "from collections import namedtuple\n"
+                'MyNamedTuple = namedtuple("MyNamedTuple", ["abc"])\n'
+            ),
+        }
+    )
+    doc = workspace.get_document(
+        uris.from_fs_path(os.path.join(workspace.root_path, "a.py"))
+    )
+    config.update(
+        {
+            "plugins": {
+                "jedi_symbols": {
+                    "all_scopes": all_scopes,
+                    "include_import_symbols": include_import_symbols,
+                }
+            }
+        }
+    )
+
+    symbols = pylsp_document_symbols(config, doc)
+
+    expected = {"a_symbol": SymbolKind.Variable}
+    if include_import_symbols:
+        expected["MyNamedTuple"] = SymbolKind.Class
+    assert {symbol["name"]: symbol["kind"] for symbol in symbols} == expected
+    assert all(symbol["location"]["uri"] == doc.uri for symbol in symbols)
+
+
 @pytest.mark.skipif(
     PY2 or not LINUX or not CI, reason="tested on linux and python 3 only"
 )

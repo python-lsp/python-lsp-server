@@ -90,7 +90,11 @@ def pylsp_document_symbols(config, document):
                 else:
                     continue
 
-        if _include_def(d) and Path(document.path) == Path(d.module_path):
+        if (
+            _include_def(d)
+            and d.module_path is not None
+            and Path(document.path) == Path(d.module_path)
+        ):
             tuple_range = _tuple_range(d)
             if tuple_range in exclude:
                 continue
