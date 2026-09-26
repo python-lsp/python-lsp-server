@@ -37,11 +37,23 @@ def pylsp_signature_help(config, document, position):
 
     s = signatures[0]
 
+    try:
+        function_sig = s.to_string()
+    except Exception:
+        function_sig = ""
+
     docstring = s.docstring()
 
-    # Docstring contains one or more lines of signature, followed by empty line, followed by docstring
-    function_sig_lines = (docstring.split("\n\n") or [""])[0].splitlines()
-    function_sig = " ".join([line.strip() for line in function_sig_lines])
+    if not function_sig:
+        # Docstring contains one or more lines of signature, followed by empty line, followed by docstring
+        function_sig_lines = (docstring.split("\n\n") or [""])[0].splitlines()
+        function_sig = " ".join([line.strip() for line in function_sig_lines])
+
+    # Ensure LSP 3.17 compliance: parameter labels must be substrings of the signature label.
+    if s.params and not all(p.name in function_sig for p in s.params):
+        name = s.name or "callable"
+        param_list = ", ".join(p.name for p in s.params)
+        function_sig = f"{name}({param_list})"
 
     signature_docstring = s.docstring(raw=True)
     if not signature_config.get("include_docstring", True):
@@ -64,6 +76,7 @@ def pylsp_signature_help(config, document, position):
                 ),
             }
             for p in s.params
+            if p.name in function_sig
         ]
 
     # We only return a single signature because Python doesn't allow overloading

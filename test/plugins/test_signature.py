@@ -118,3 +118,59 @@ def test_signature_without_docstring(
     sigs = sig_info["signatures"]
     assert len(sigs) == 1
     assert sigs[0]["documentation"] == {"kind": "markdown", "value": ""}
+
+
+CALLABLE_CLASS_DOC = """class MyCallable:
+    \"\"\"Docstring for MyCallable\"\"\"
+    def __call__(self, a, b=1):
+        \"\"\"Call docstring\"\"\"
+        pass
+
+c = MyCallable()
+c(
+"""
+
+
+def test_callable_instance_signature(workspace) -> None:
+    # Over '( ' in c(
+    sig_position = {"line": 8, "character": 2}
+    doc = Document(DOC_URI, workspace, CALLABLE_CLASS_DOC)
+
+    sig_info = signature.pylsp_signature_help(doc._config, doc, sig_position)
+
+    sigs = sig_info["signatures"]
+    assert len(sigs) == 1
+    # Parameter labels must be substrings of the signature label per LSP 3.17
+    assert sigs[0]["label"] == "MyCallable(a, b=1)"
+    param_labels = [p["label"] for p in sigs[0]["parameters"]]
+    assert param_labels == ["a", "b"]
+    assert all(label in sigs[0]["label"] for label in param_labels)
+
+
+def test_signature_fallback_when_label_missing_params(workspace, monkeypatch) -> None:
+    # Test fallback when s.to_string() does not contain all parameter names
+    sig_position = {"line": 10, "character": 5}
+    doc = Document(DOC_URI, workspace, DOC)
+
+    orig_jedi_script = doc.jedi_script
+
+    class MockScript:
+        def get_signatures(self, **kwargs):
+            signatures = orig_jedi_script().get_signatures(**kwargs)
+            if not signatures:
+                return signatures
+            s = signatures[0]
+            # Mock to_string to return a label missing the parameters (like ufunc())
+            monkeypatch.setattr(s, "to_string", lambda: "mock_func()")
+            return [s]
+
+    monkeypatch.setattr(doc, "jedi_script", lambda: MockScript())
+
+    sig_info = signature.pylsp_signature_help(doc._config, doc, sig_position)
+    sigs = sig_info["signatures"]
+    assert len(sigs) == 1
+    # Fallback should ensure parameter labels are substrings of signature label
+    assert sigs[0]["label"] == "main(param1, param2)"
+    param_labels = [p["label"] for p in sigs[0]["parameters"]]
+    assert param_labels == ["param1", "param2"]
+    assert all(label in sigs[0]["label"] for label in param_labels)
