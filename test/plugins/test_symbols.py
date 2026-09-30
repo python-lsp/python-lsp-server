@@ -130,3 +130,39 @@ def test_symbols_all_scopes_with_jedi_environment(workspace) -> None:
     doc.update_config(settings)
     symbols = pylsp_document_symbols(doc._config, doc)
     helper_check_symbols_all_scope(symbols)
+
+
+@pytest.mark.parametrize("all_scopes", [False, True])
+@pytest.mark.parametrize("include_import_symbols", [False, True])
+def test_symbols_imported_namedtuple(
+    config, temp_workspace_factory, all_scopes, include_import_symbols
+):
+    workspace = temp_workspace_factory(
+        {
+            "__init__.py": "",
+            "b.py": (
+                "from collections import namedtuple\n"
+                'MyNamedTuple = namedtuple("MyNamedTuple", ["abc"])\n'
+            ),
+            "a.py": 'from .b import MyNamedTuple\na_symbol = "a_symbol"\n',
+        }
+    )
+    config.update(
+        {
+            "plugins": {
+                "jedi_symbols": {
+                    "all_scopes": all_scopes,
+                    "include_import_symbols": include_import_symbols,
+                }
+            }
+        }
+    )
+    uri = uris.from_fs_path(os.path.join(workspace.root_path, "a.py"))
+    symbols = pylsp_document_symbols(config, workspace.get_document(uri))
+
+    expected_names = (
+        ["MyNamedTuple", "a_symbol"] if include_import_symbols else ["a_symbol"]
+    )
+    assert [symbol["name"] for symbol in symbols] == expected_names
+    assert all(symbol["location"]["uri"] == uri for symbol in symbols)
+    assert symbols[-1]["location"]["range"]["start"] == {"line": 1, "character": 0}
