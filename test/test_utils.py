@@ -9,6 +9,7 @@ from threading import Thread
 from typing import Any
 from unittest import mock
 
+import pytest
 from docstring_to_markdown import UnknownFormatError
 from flaky import flaky
 
@@ -232,6 +233,54 @@ def test_clip_column() -> None:
     assert _utils.clip_column(2, ["123\n", "123"], 0) == 2
     assert _utils.clip_column(3, ["123\n", "123"], 0) == 3
     assert _utils.clip_column(4, ["123\n", "123"], 1) == 3
+
+
+@pytest.mark.parametrize(
+    ("contents", "expected"),
+    [
+        (
+            "Use ``object_hook`` and object_hook.",
+            r"Use ``object_hook`` and object\_hook.",
+        ),
+        ("`*a_b*[c]#d` *a_b*[c]#d", r"`*a_b*[c]#d` \*a\_b\*\[c\]\#d"),
+        ("``a `b_c` d_e`` f_g", r"``a `b_c` d_e`` f\_g"),
+        ("`a_b` ``c_d``", "`a_b` ``c_d``"),
+        ("`  `", "`  `"),
+        (r"\`a_b`", r"\\`a_b`"),
+        (r"\\`a_b`", r"\\\\`a_b`"),
+        (r"`path\name`", r"`path\name`"),
+        (r"`a\` tail_word", r"`a\` tail\_word"),
+        ("`a_b`` c_d", r"`a\_b`` c\_d"),
+        ("``a_b` c_d`", r"``a\_b` c_d`"),
+        ("`a_b\nc_d`", "`a\\_b\nc\\_d`"),
+        ("`a\nb` *outside* `c_d`", "`a\nb` \\*outside\\* `c\\_d`"),
+        ("`a_b`\n`c_d`", "`a_b`\n`c_d`"),
+        ("`*a_b*\n# c_d\nend`", "`\\*a\\_b\\*\n\\# c\\_d\nend`"),
+        ("`a_b\n\nc_d`", "`a\\_b\n\nc\\_d`"),
+        ("`a_b\n  \nc_d`", "`a\\_b\n\u00a0\u00a0\nc\\_d`"),
+        ("`a_b\r\n\r\nc_d`", "`a\\_b\r\n\r\nc\\_d`"),
+        ("`a_b\rc_d`", "`a\\_b\rc\\_d`"),
+        ("`a  b\t_c` tail  _word", "`a  b\t_c` tail\u00a0\u00a0\\_word"),
+        (r"unmatched `path\name_value", r"unmatched `path\\name\_value"),
+    ],
+)
+def test_escape_markdown_code_spans(contents, expected) -> None:
+    assert _utils.escape_markdown(contents) == expected
+
+
+@pytest.mark.parametrize(
+    ("markup_kind", "contents", "expected"),
+    [
+        ("markdown", "Use ``object_hook``.", "Use ``object_hook``."),
+        ("markdown", "Use object_hook.", r"Use object\_hook."),
+        ("plaintext", "Use ``object_hook``.", "Use ``object_hook``."),
+        ("markdown", r"Use ``path\name``.", r"Use ``path\name``."),
+    ],
+)
+def test_format_docstring_code_spans(markup_kind, contents, expected) -> None:
+    assert _utils.format_docstring(
+        contents, markup_kind, signature_config={"formatter": None}
+    ) == {"kind": markup_kind, "value": expected}
 
 
 @mock.patch("docstring_to_markdown.convert")
