@@ -72,6 +72,7 @@ def pylsp_definitions(
         }
         for d in definitions
         if d.is_definition()
+        and d.module_path is not None
         and d.line is not None
         and d.column is not None
         and (follow_builtin_defns or _not_internal_definition(d))
