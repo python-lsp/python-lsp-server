@@ -4,6 +4,7 @@
 import os
 
 import jedi
+import pytest
 
 from pylsp import uris
 from pylsp.plugins.definition import pylsp_definitions
@@ -199,3 +200,44 @@ def test_definition_without_source_position(config, workspace, monkeypatch) -> N
     # follow_builtin_definitions defaults to True, so the None-guard in the
     # return comprehension is the only thing preventing the crash.
     assert pylsp_definitions(config, doc, {"line": 3, "character": 6}) == []
+
+
+@pytest.mark.parametrize("follow_builtin_definitions", [True, False])
+@pytest.mark.parametrize(
+    "character, expected_range",
+    [
+        pytest.param(3, None, id="generated-attribute"),
+        pytest.param(
+            0,
+            {
+                "start": {"line": 4, "character": 0},
+                "end": {"line": 4, "character": 1},
+            },
+            id="source-backed-instance",
+        ),
+    ],
+)
+def test_namedtuple_definitions(
+    config, workspace, follow_builtin_definitions, character, expected_range
+) -> None:
+    source = """from collections import namedtuple
+
+Access = namedtuple("Access", ["address", "type"])
+
+a = Access(100, "w")
+a.address
+"""
+    doc = Document(DOC_URI, workspace, source)
+    config.update(
+        {
+            "plugins": {
+                "jedi_definition": {
+                    "follow_builtin_definitions": follow_builtin_definitions
+                }
+            }
+        }
+    )
+    expected = [{"uri": DOC_URI, "range": expected_range}] if expected_range else []
+    assert (
+        pylsp_definitions(config, doc, {"line": 5, "character": character}) == expected
+    )
