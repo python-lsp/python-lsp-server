@@ -210,14 +210,43 @@ def escape_plain_text(contents: str) -> str:
 
 
 def escape_markdown(contents: str) -> str:
+    """Escape Markdown syntax outside single-line code spans.
+
+    Keep the previous escaping behavior when paired backticks cross a line.
     """
-    Format plain text to display nicely in Markdown environment.
-    """
-    # escape markdown syntax
-    contents = re.sub(r"([\\*_#[\]])", r"\\\1", contents)
-    # preserve white space characters
-    contents = escape_plain_text(contents)
-    return contents
+
+    def escape_text(text):
+        return escape_plain_text(re.sub(r"([\\*_#[\]])", r"\\\1", text))
+
+    runs = list(re.finditer(r"`+", contents))
+    closing_runs = {}
+    next_run_by_length = {}
+    # Index equal-length runs once instead of repeatedly searching the suffix.
+    for index in range(len(runs) - 1, -1, -1):
+        length = runs[index].end() - runs[index].start()
+        if length in next_run_by_length:
+            closing_runs[index] = next_run_by_length[length]
+        next_run_by_length[length] = index
+
+    parts = []
+    offset = index = 0
+    while index < len(runs):
+        closing_index = closing_runs.get(index)
+        if closing_index is None:
+            index += 1
+            continue
+        start, end = runs[index].start(), runs[closing_index].end()
+        span = contents[start:end]
+        if "\n" in span or "\r" in span:
+            # Multiline spans interact with Markdown block parsing. Preserve
+            # the whole input's previous behavior rather than re-pairing ticks.
+            return escape_text(contents)
+        parts.append(escape_text(contents[offset:start]))
+        parts.append(span)
+        offset = end
+        index = closing_index + 1
+    parts.append(escape_text(contents[offset:]))
+    return "".join(parts)
 
 
 def wrap_signature(signature):
