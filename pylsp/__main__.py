@@ -4,6 +4,7 @@
 import argparse
 import logging
 import logging.config
+import platform
 import sys
 import time
 
@@ -63,7 +64,10 @@ def add_arguments(parser) -> None:
     )
 
     parser.add_argument(
-        "-V", "--version", action="version", version="%(prog)s v" + __version__
+        "-V",
+        "--version",
+        action="version",
+        version=f"%(prog)s v{__version__} (Python {platform.python_version()})",
     )
 
 

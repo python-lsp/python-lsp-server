@@ -76,6 +76,10 @@ Only on Alpine Linux the package is named differently. You can install it there 
 apk add py3-lsp-server
 ```
 
+Run `pylsp --version` (or `pylsp -V`) to see both the server version and the
+Python version running it. This reports the server runtime, which may differ
+from the interpreter or target Python version configured for individual plugins.
+
 ### 3rd Party Plugins
 
 Installing these plugins will add extra functionality to the language server:
