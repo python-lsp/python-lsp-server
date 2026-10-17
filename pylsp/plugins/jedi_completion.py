@@ -26,6 +26,7 @@ _TYPE_MAP = {
     "keyword": lsp.CompletionItemKind.Keyword,
     "property": lsp.CompletionItemKind.Property,  # added in Jedi 0.18
     "statement": lsp.CompletionItemKind.Variable,
+    "string": lsp.CompletionItemKind.Value,
 }
 
 # Types of parso nodes for which snippet is not included in the completion
