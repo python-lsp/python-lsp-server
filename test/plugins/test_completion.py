@@ -133,6 +133,25 @@ def test_jedi_completion_type(case, config, workspace):
     assert items[case.label]["kind"] == case.expected
 
 
+@pytest.mark.parametrize("enum_name", ["Kind", "Foo"])
+def test_jedi_dictionary_key_completion_type(enum_name, config, workspace):
+    source = (
+        "from enum import Enum\n"
+        f"class {enum_name}(str, Enum):\n"
+        "    something = 'value'\n"
+        "def foo():\n"
+        f"    a = {{'some_key': {enum_name}.something}}\n"
+        "    a['some"
+    )
+    doc = Document(DOC_URI, workspace, source)
+    items = pylsp_jedi_completions(config, doc, {"line": 5, "character": 11})
+
+    assert items
+    item = next(item for item in items if item["label"].strip("'") == "some_key")
+    assert item["kind"] == lsp.CompletionItemKind.Value
+    assert item["insertText"] == item["label"]
+
+
 def test_jedi_completion(config, workspace) -> None:
     # Over 'i' in os.path.isabs(...)
     com_position = {"line": 1, "character": 15}
