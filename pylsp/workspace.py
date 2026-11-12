@@ -431,7 +431,7 @@ class Document:
     @property
     @lock
     def lines(self):
-        return self.source.splitlines(True)
+        return io.StringIO(self.source, newline="").readlines()
 
     @property
     @lock

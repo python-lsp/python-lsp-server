@@ -1,6 +1,8 @@
 # Copyright 2017-2020 Palantir Technologies, Inc.
 # Copyright 2021- Python Language Server Contributors.
 
+import pytest
+
 from pylsp.workspace import Document
 from test.fixtures import DOC, DOC_URI
 
@@ -103,3 +105,39 @@ def test_document_end_of_file_edit(workspace) -> None:
         "print 'b'\n",
         "o",
     ]
+
+
+@pytest.mark.parametrize(
+    "separator", ["\f", "\v", "\x1c", "\x1d", "\x1e", "\x85", "\u2028", "\u2029"]
+)
+def test_document_non_line_break_characters(workspace, separator) -> None:
+    first_line = f'label = "a{separator}b"\n'
+    document = Document(DOC_URI, workspace, first_line + "value = 1\n")
+
+    assert document.lines == [first_line, "value = 1\n"]
+    assert document.offset_at_position({"line": 1, "character": 0}) == len(first_line)
+    assert document.word_at_position({"line": 1, "character": 2}) == "value"
+
+
+@pytest.mark.parametrize("line_ending", ["\n", "\r", "\r\n"])
+@pytest.mark.parametrize("final_newline", [False, True])
+def test_document_preserves_line_endings(workspace, line_ending, final_newline) -> None:
+    lines = [f"first{line_ending}", "second" + (line_ending if final_newline else "")]
+    document = Document(DOC_URI, workspace, "".join(lines))
+
+    assert document.lines == lines
+
+
+def test_document_edit_after_form_feed(workspace) -> None:
+    document = Document(DOC_URI, workspace, "def foo():\n\f    return 1\n")
+    document.apply_change(
+        {
+            "range": {
+                "start": {"line": 1, "character": 12},
+                "end": {"line": 1, "character": 13},
+            },
+            "text": "2",
+        }
+    )
+
+    assert document.source == "def foo():\n\f    return 2\n"

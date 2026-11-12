@@ -1,6 +1,8 @@
 # Copyright 2017-2020 Palantir Technologies, Inc.
 # Copyright 2021- Python Language Server Contributors.
 
+import pytest
+
 from pylsp import uris
 from pylsp.text_edit import OverLappingTextEditException, apply_text_edits
 
@@ -301,3 +303,27 @@ def test_apply_text_edits_multiline(pylsp) -> None:
         )
         == "0\n1World\nHello3\n4"
     )
+
+
+@pytest.mark.parametrize(
+    "separator", ["\f", "\v", "\x1c", "\x1d", "\x1e", "\x85", "\u2028", "\u2029"]
+)
+def test_apply_text_edits_after_non_line_break(pylsp, separator) -> None:
+    first_line = f'label = "a{separator}b"\n'
+    pylsp.workspace.put_document(DOC_URI, first_line + "value = 1\n")
+    document = pylsp.workspace.get_document(DOC_URI)
+
+    result = apply_text_edits(
+        document,
+        [
+            {
+                "range": {
+                    "start": {"line": 1, "character": 8},
+                    "end": {"line": 1, "character": 9},
+                },
+                "newText": "2",
+            }
+        ],
+    )
+
+    assert result == first_line + "value = 2\n"
